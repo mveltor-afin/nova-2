@@ -9,3 +9,16 @@ html, body {
   height: 100%;
   overflow: hidden;
 }
+
+/* Mobile responsive overrides */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Stack grid layouts on mobile */
+  div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}

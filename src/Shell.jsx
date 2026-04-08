@@ -133,6 +133,15 @@ export default function Shell({ userType }) {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Responsive: detect mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const toggleGroup = (g) => setCollapsedGroups(p => ({ ...p, [g]: !p[g] }));
 
@@ -265,7 +274,15 @@ export default function Shell({ userType }) {
 
   // ── Sidebar ──
   const Sidebar = () => (
-    <div style={{ width:252, background:`linear-gradient(180deg,${T.navy},#0C1829)`, color:"#fff", display:"flex", flexDirection:"column", flexShrink:0, height:"100vh", position:"sticky", top:0 }}>
+    <>
+    {/* Mobile backdrop */}
+    {isMobile && sidebarOpen && (
+      <div onClick={() => setSidebarOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:199 }} />
+    )}
+    <div style={{
+      width:252, background:`linear-gradient(180deg,${T.navy},#0C1829)`, color:"#fff", display:"flex", flexDirection:"column", flexShrink:0, height:"100vh",
+      ...(isMobile ? { position:"fixed", left:0, top:0, zIndex:200, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition:"transform 0.25s ease" } : { position:"sticky", top:0 }),
+    }}>
       {/* Logo */}
       <div style={{ padding:"20px 16px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -274,6 +291,7 @@ export default function Shell({ userType }) {
             <div style={{ fontWeight:700, fontSize:16, letterSpacing:-0.3 }}>Nova <span style={{ fontSize:12, fontWeight:500, color:"rgba(255,255,255,0.4)" }}>2.0</span></div>
             <div style={{ fontSize:10, color:"#64748B", letterSpacing:0.5, textTransform:"uppercase" }}>Afin Bank</div>
           </div>
+          {isMobile && <span onClick={() => setSidebarOpen(false)} style={{ marginLeft:"auto", cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:20 }}>×</span>}
         </div>
       </div>
 
@@ -325,7 +343,7 @@ export default function Shell({ userType }) {
               </div>
             )}
             {!collapsedGroups[group.group] && group.items.map(item => (
-              <div key={item.id} onClick={() => { setScreen(item.id); }}
+              <div key={item.id} onClick={() => { setScreen(item.id); if (isMobile) setSidebarOpen(false); }}
                 style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
                   cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
                   color: screen===item.id ? "#fff" : "#7B8BA3",
@@ -353,30 +371,39 @@ export default function Shell({ userType }) {
         </div>
       </div>
     </div>
+    </>
   );
 
   // ── Top Bar ──
   const TopBar = () => {
     const crumbs = getBreadcrumb();
     return (
-      <div style={{ height:56, borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 28px", background:T.card, flexShrink:0 }}>
-        {/* Breadcrumbs */}
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:T.textMuted }}>
-          {crumbs.map((c, i) => (
-            <span key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
-              {i > 0 && <span style={{ color:T.border }}>/</span>}
-              <span style={{ color: i === crumbs.length - 1 ? T.text : T.textMuted, fontWeight: i === crumbs.length - 1 ? 600 : 400 }}>{c}</span>
-            </span>
-          ))}
+      <div style={{ height:56, borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding: isMobile ? "0 16px" : "0 28px", background:T.card, flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {/* Hamburger on mobile */}
+          {isMobile && (
+            <div onClick={() => setSidebarOpen(true)} style={{ cursor:"pointer", color:T.text, display:"flex", padding:4 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            </div>
+          )}
+          {/* Breadcrumbs */}
+          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:T.textMuted, overflow:"hidden" }}>
+            {(isMobile ? crumbs.slice(-1) : crumbs).map((c, i) => (
+              <span key={i} style={{ display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                {i > 0 && <span style={{ color:T.border }}>/</span>}
+                <span style={{ color: i === (isMobile ? 0 : crumbs.length - 1) ? T.text : T.textMuted, fontWeight:600 }}>{c}</span>
+              </span>
+            ))}
+          </div>
         </div>
         {/* Right actions */}
-        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-          {/* Search trigger */}
-          <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:8, border:`1px solid ${T.border}`, cursor:"pointer", background:"#F8FAFC" }}
+        <div style={{ display:"flex", alignItems:"center", gap: isMobile ? 10 : 14 }}>
+          {/* Search trigger — icon only on mobile */}
+          <div style={{ display:"flex", alignItems:"center", gap:6, padding: isMobile ? "6px" : "6px 14px", borderRadius:8, border:`1px solid ${T.border}`, cursor:"pointer", background:"#F8FAFC" }}
             onClick={() => setShowCommandPalette(true)}>
             <span style={{ color:T.textMuted, display:"flex" }}>{Ico.search(14)}</span>
-            <span style={{ fontSize:12, color:T.textMuted }}>Search...</span>
-            <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"1px 6px", borderRadius:4, fontWeight:600, marginLeft:8, fontFamily:"monospace" }}>⌘K</span>
+            {!isMobile && <span style={{ fontSize:12, color:T.textMuted }}>Search...</span>}
+            {!isMobile && <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"1px 6px", borderRadius:4, fontWeight:600, marginLeft:8, fontFamily:"monospace" }}>⌘K</span>}
           </div>
           {/* Notifications */}
           <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }}>
@@ -804,7 +831,7 @@ export default function Shell({ userType }) {
         <Sidebar />
         <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
           <TopBar />
-          <div style={{ flex:1, padding:"24px 30px", overflowY:"auto", background:T.bg }}>
+          <div style={{ flex:1, padding: isMobile ? "16px 12px" : "24px 30px", overflowY:"auto", background:T.bg }}>
             <ApplicationDetail
               loan={selectedLoan}
               persona={persona}
@@ -824,7 +851,7 @@ export default function Shell({ userType }) {
         <TopBar />
         <ContextBar />
         {/* Main content */}
-        <div style={{ flex:1, padding:"24px 30px", overflowY:"auto", background:T.bg }}>
+        <div style={{ flex:1, padding: isMobile ? "16px 12px" : "24px 30px", overflowY:"auto", background:T.bg }}>
           {renderScreen()}
         </div>
       </div>
