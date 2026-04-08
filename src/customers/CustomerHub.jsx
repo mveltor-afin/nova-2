@@ -891,9 +891,9 @@ export default function CustomerHub({ customerId, onBack }) {
 
         {/* ═══════ TAB: INTEGRATIONS ═══════ */}
         {activeTab === "Integrations" && (() => {
-          const custMortgage = custProducts.find(p => p.type === "Mortgage");
-          const hasSavings = custProducts.some(p => p.type === "Fixed Term Deposit" || p.type === "Notice Account");
-          const hasInsurance = custProducts.some(p => p.type === "Insurance");
+          const custMortgage = customerProducts.find(p => p.type === "Mortgage");
+          const hasSavings = customerProducts.some(p => p.type === "Fixed Term Deposit" || p.type === "Notice Account");
+          const hasInsurance = customerProducts.some(p => p.type === "Insurance");
           const integrations = [
             { name:"Open Banking", icon:"dollar", status: customer.kyc==="Verified" ? "Connected" : "Not Connected",
               statusColor: customer.kyc==="Verified" ? T.success : T.textMuted,
