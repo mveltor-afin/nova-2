@@ -765,7 +765,18 @@ export default function Shell({ userType }) {
       case "flags":           return <FeatureFlagsScreen />;
       case "audit":           return <AuditScreen />;
       case "anomalies":       return <AnomalyScreen />;
-      case "integrations":    return <IntegrationsScreen />;
+      case "integrations":    return (
+        <div style={{ textAlign:"center", padding:60 }}>
+          <Card style={{ maxWidth:500, margin:"0 auto", padding:40 }}>
+            <div style={{ marginBottom:16 }}>{Ico.zap(40)}</div>
+            <h2 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px" }}>Integrations Moved</h2>
+            <p style={{ fontSize:13, color:T.textMuted, marginBottom:20, lineHeight:1.6 }}>
+              Integration data is now shown per customer. Open a customer from All Customers and click the Integrations tab to see their Open Banking, Credit Bureau, Land Registry, HMRC, and E-Signature status.
+            </p>
+            <Btn primary onClick={() => setScreen("allcustomers")}>Go to All Customers</Btn>
+          </Card>
+        </div>
+      );
       case "settings":        return <SettingsScreen />;
       // Compliance
       case "complaints":      return <ComplaintsScreen />;
