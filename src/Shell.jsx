@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { T, Ico, PERSONAS } from "./shared/tokens";
 import { Btn, Card, KPICard } from "./shared/primitives";
 import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES } from "./data/customers";
+import { MOCK_LOANS } from "./data/loans";
+import { StatusBadge } from "./shared/tokens";
 // Shared overlays
 import NotificationsPanel from "./shared/NotificationsPanel";
 import CommandPalette from "./shared/CommandPalette";
@@ -573,68 +575,119 @@ export default function Shell({ userType }) {
     </div>
   );
 
-  // Broker Dashboard
-  const BrokerDashboard = () => {
-    const mortgages = PRODUCTS.filter(p => p.type === "Mortgage");
-    return (
-      <div>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-          <div>
-            <h1 style={{ fontSize:22, fontWeight:700, margin:0 }}>Good morning</h1>
-            <p style={{ margin:"4px 0 0", fontSize:13, color:T.textMuted }}>Here's your pipeline overview</p>
-          </div>
-          <Btn primary icon="plus" onClick={() => setMode("wizard")}>New Application</Btn>
+  // Broker Dashboard — origination pipeline
+  const openLoan = (loan) => { setSelectedLoan(loan); setMode("casedetail"); };
+
+  const BrokerDashboard = () => (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+        <div>
+          <h1 style={{ fontSize:22, fontWeight:700, margin:0 }}>Good morning 👋</h1>
+          <p style={{ margin:"4px 0 0", fontSize:13, color:T.textSecondary }}>Here's your pipeline overview</p>
         </div>
-        <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
-          <KPICard label="Active Cases" value={String(mortgages.filter(m => m.status === "Active" || m.status === "Application").length)} sub="In pipeline" color={T.primary} />
-          <KPICard label="Total Pipeline" value={"£" + Math.round(mortgages.filter(m => m.balance !== "—").reduce((s,m) => s + parseInt(m.balance.replace(/[£,]/g,"")), 0) / 1000).toLocaleString() + "K"} sub="Across all cases" color="#8B5CF6" />
-          <KPICard label="Avg Rate" value={
-            (mortgages.filter(m => m.rate !== "—").reduce((s,m) => s + parseFloat(m.rate), 0) / mortgages.filter(m => m.rate !== "—").length).toFixed(2) + "%"
-          } sub="Weighted average" color={T.success} />
-          <KPICard label="Pending" value={String(mortgages.filter(m => m.status === "Application").length)} sub="Awaiting decision" color={T.warning} />
+        <div style={{ display:"flex", gap:8 }}>
+          <Btn primary iconNode={Ico.plus(16)} onClick={() => setMode("wizard")}>New Loan</Btn>
         </div>
-        <Card noPad>
-          <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <span style={{ fontSize:14, fontWeight:600 }}>Recent Mortgage Cases</span>
-            <span style={{ fontSize:12, color:T.primary, cursor:"pointer", fontWeight:500 }}>View all</span>
-          </div>
-          <table style={{ width:"100%", borderCollapse:"collapse" }}>
-            <thead>
-              <tr style={{ background:"#F8FAFC" }}>
-                {["Case ID","Customer","Product","Balance","Rate","Status","Next Payment"].map(h => (
+      </div>
+      <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
+        <KPICard label="Active Cases" value={String(MOCK_LOANS.length)} sub="2 need attention" color={T.primary} />
+        <KPICard label="Total Pipeline" value="£2.35M" sub="across all cases" color="#8B5CF6" />
+        <KPICard label="Avg DIP Time" value="4.2 min" sub="↓ 92% vs manual" color={T.success} />
+        <KPICard label="This Month" value="£890K" sub="3 completions" color={T.warning} />
+      </div>
+      <div style={{ display:"flex", gap:18 }}>
+        <div style={{ flex:2 }}>
+          <Card noPad>
+            <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <span style={{ fontSize:14, fontWeight:600 }}>Recent Cases</span>
+              <span style={{ fontSize:12, color:T.primary, cursor:"pointer", fontWeight:500 }} onClick={() => setScreen("myapplications")}>View all →</span>
+            </div>
+            <table style={{ width:"100%", borderCollapse:"collapse" }}>
+              <thead><tr style={{ background:"#F8FAFC" }}>
+                {["Case ID","Customer","Amount","Status","Updated"].map(h => (
                   <th key={h} style={{ textAlign:"left", padding:"9px 16px", fontSize:11, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:0.4 }}>{h}</th>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {mortgages.map((m, i) => {
-                const cust = CUSTOMERS.find(c => c.id === m.customerId);
-                const sc = m.status === "Active" ? { bg:T.successBg, text:T.success }
-                         : m.status === "Active in Arrears" ? { bg:T.dangerBg, text:T.danger }
-                         : m.status === "Locked" ? { bg:T.warningBg, text:T.warning }
-                         : m.status === "Application" ? { bg:"#DBEAFE", text:"#1E40AF" }
-                         : { bg:"#E5E7EB", text:"#374151" };
-                return (
-                  <tr key={m.id} onClick={() => { setSelectedLoan({ id:m.origRef||m.id, names:cust?.name||"—", product:m.product, amount:m.balance, term:m.term||"—", rate:m.rate, type:"C&I", status:m.status==="Active"?"Disbursed":m.status==="Application"?"Underwriting":m.status, updated:"—", servicingId:m.id }); setMode("casedetail"); }}
-                    style={{ borderTop:`1px solid ${T.borderLight}`, cursor:"pointer" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#FAFAF7"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <td style={{ padding:"12px 16px", fontSize:13, fontWeight:600, color:T.primary }}>{m.id}</td>
-                    <td style={{ padding:"12px 16px", fontSize:13 }}>{cust?.name || "—"}</td>
-                    <td style={{ padding:"12px 16px", fontSize:12, color:T.textMuted }}>{m.product}</td>
-                    <td style={{ padding:"12px 16px", fontSize:13, fontWeight:500 }}>{m.balance}</td>
-                    <td style={{ padding:"12px 16px", fontSize:13 }}>{m.rate}</td>
-                    <td style={{ padding:"12px 16px" }}><Badge bg={sc.bg} text={sc.text}>{m.status}</Badge></td>
-                    <td style={{ padding:"12px 16px", fontSize:12, color: m.nextPayment === "OVERDUE" || m.nextPayment === "SUSPENDED" ? T.danger : T.textMuted, fontWeight: m.nextPayment === "OVERDUE" ? 700 : 400 }}>{m.nextPayment}</td>
+              </tr></thead>
+              <tbody>
+                {MOCK_LOANS.slice(0,5).map((loan,i) => (
+                  <tr key={i} onClick={() => openLoan(loan)} style={{ cursor:"pointer", borderTop:`1px solid ${T.borderLight}` }}>
+                    <td style={{ padding:"12px 16px", fontSize:13, fontWeight:600, color:T.primary }}>{loan.id}</td>
+                    <td style={{ padding:"12px 16px", fontSize:13 }}>{loan.names}</td>
+                    <td style={{ padding:"12px 16px", fontSize:13, fontWeight:500 }}>{loan.amount}</td>
+                    <td style={{ padding:"12px 16px" }}><StatusBadge status={loan.status} /></td>
+                    <td style={{ padding:"12px 16px", fontSize:12, color:T.textMuted }}>{loan.updated}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </Card>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+        <div style={{ flex:1 }}>
+          <Card>
+            <div style={{ fontSize:14, fontWeight:600, marginBottom:14 }}>Notifications</div>
+            {[
+              { text:"Offer issued for AFN-2026-00139", time:"1h ago", color:T.success },
+              { text:"DIP approved: Afin Fix 2yr 75%", time:"3h ago", color:T.primary },
+              { text:"Document flagged on AFN-00135", time:"1d ago", color:T.warning },
+              { text:"New message from Afin Ops", time:"2d ago", color:T.primary },
+            ].map((n,i) => (
+              <div key={i} style={{ padding:"10px 0", borderTop:i?`1px solid ${T.borderLight}`:"none", display:"flex", gap:10, alignItems:"flex-start" }}>
+                <div style={{ width:8, height:8, borderRadius:4, marginTop:5, flexShrink:0, background:n.color }} />
+                <div><div style={{ fontSize:13 }}>{n.text}</div><div style={{ fontSize:11, color:T.textMuted, marginTop:2 }}>{n.time}</div></div>
+              </div>
+            ))}
+          </Card>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+
+  // Broker Loans Screen — full pipeline
+  const BrokerLoansScreen = () => (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+        <div>
+          <h1 style={{ fontSize:22, fontWeight:700, margin:0 }}>My Applications</h1>
+          <p style={{ margin:"4px 0 0", fontSize:13, color:T.textSecondary }}>Manage your loan applications</p>
+        </div>
+        <div style={{ display:"flex", gap:8 }}>
+          <Btn primary iconNode={Ico.plus(16)} onClick={() => setMode("wizard")}>Create Loan</Btn>
+          <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", background:T.card, borderRadius:9, border:`1px solid ${T.border}` }}>
+            {Ico.search(15)}<input placeholder="Search…" style={{ border:"none", background:"transparent", outline:"none", fontSize:13, width:160, fontFamily:T.font }} />
+          </div>
+        </div>
+      </div>
+      <Card noPad>
+        <div style={{ padding:"10px 16px", borderBottom:`1px solid ${T.border}`, display:"flex", gap:6, flexWrap:"wrap" }}>
+          {["All","DIP","Submitted","KYC","Underwriting","Offer","Completion","Disbursed"].map((f,i) => (
+            <span key={f} style={{ padding:"4px 12px", borderRadius:6, fontSize:12, fontWeight:500, cursor:"pointer", background:i===0?T.navy:T.bg, color:i===0?"#fff":T.textSecondary }}>{f}</span>
+          ))}
+        </div>
+        <table style={{ width:"100%", borderCollapse:"collapse" }}>
+          <thead><tr style={{ background:"#F8FAFC" }}>
+            {["Case ID","Customer(s)","Product","Amount","Term","Rate","Type","Status","Updated"].map(h => (
+              <th key={h} style={{ textAlign:"left", padding:"9px 12px", fontSize:11, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:0.4 }}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {MOCK_LOANS.map((loan,i) => (
+              <tr key={i} onClick={() => openLoan(loan)} style={{ cursor:"pointer", borderTop:`1px solid ${T.borderLight}` }}>
+                <td style={{ padding:"11px 12px", fontWeight:600, color:T.primary, fontSize:13 }}>{loan.id}</td>
+                <td style={{ padding:"11px 12px", fontSize:13 }}>{loan.names}</td>
+                <td style={{ padding:"11px 12px", fontSize:12, color:T.textMuted }}>{loan.product}</td>
+                <td style={{ padding:"11px 12px", fontWeight:500 }}>{loan.amount}</td>
+                <td style={{ padding:"11px 12px", fontSize:12, color:T.textMuted }}>{loan.term}</td>
+                <td style={{ padding:"11px 12px", fontSize:12, color:T.textMuted }}>{loan.rate}</td>
+                <td style={{ padding:"11px 12px", fontSize:12, color:T.textMuted }}>{loan.type}</td>
+                <td style={{ padding:"11px 12px" }}><StatusBadge status={loan.status} /></td>
+                <td style={{ padding:"11px 12px", fontSize:12, color:T.textMuted }}>{loan.updated}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
 
   // Placeholder screen
   const PlaceholderScreen = ({ id, label }) => {
@@ -669,7 +722,7 @@ export default function Shell({ userType }) {
       case "brokerdashboard": return <BrokerDashboard />;
       // Broker aliases
       case "brokermi":        return <MIScreen persona="Broker" />;
-      case "myapplications":  return <MortgagesScreen />;
+      case "myapplications":  return <BrokerLoansScreen />;
       case "brokercustomers": return <AllCustomersScreen />;
       case "brokersettings":  return <SettingsScreen />;
       case "smartapply":      return <SmartPrefill />;
