@@ -121,7 +121,7 @@ function buildComms(customer) {
 }
 
 const CHANNEL_COLORS = { Email: "#3B82F6", SMS: "#31B897", Call: "#8B5CF6", Push: "#F59E0B", System: "#6B7280" };
-const TABS = ["Products", "Timeline", "Documents", "Communications", "Risk & Vulnerability", "Gamification"];
+const TABS = ["Products", "Timeline", "Documents", "Communications", "Integrations", "Risk & Vulnerability", "Gamification"];
 
 // ═════════════════════════════════════════════════════════════════
 // CUSTOMER HUB
@@ -888,6 +888,83 @@ export default function CustomerHub({ customerId, onBack }) {
             ))}
           </div>
         )}
+
+        {/* ═══════ TAB: INTEGRATIONS ═══════ */}
+        {activeTab === "Integrations" && (() => {
+          const custMortgage = custProducts.find(p => p.type === "Mortgage");
+          const hasSavings = custProducts.some(p => p.type === "Fixed Term Deposit" || p.type === "Notice Account");
+          const hasInsurance = custProducts.some(p => p.type === "Insurance");
+          const integrations = [
+            { name:"Open Banking", icon:"dollar", status: customer.kyc==="Verified" ? "Connected" : "Not Connected",
+              statusColor: customer.kyc==="Verified" ? T.success : T.textMuted,
+              detail: customer.kyc==="Verified" ? `HSBC Current Account ****4521 · Last synced: 2h ago · Income: £5,833/mo verified` : "Customer has not connected bank account",
+              actions: customer.kyc==="Verified" ? ["Refresh Data","View Transactions","Disconnect"] : ["Send Connection Request"] },
+            { name:"Credit Bureau", icon:"shield", status: customer.kyc==="Verified" ? "Report Available" : customer.kyc==="Expired" ? "Expired" : "Not Run",
+              statusColor: customer.kyc==="Verified" ? T.success : customer.kyc==="Expired" ? T.danger : T.textMuted,
+              detail: customer.kyc==="Verified" ? `Equifax Score: ${customer.riskScore < 30 ? "742 (Good)" : customer.riskScore < 60 ? "620 (Fair)" : "580 (Poor)"} · Last pulled: ${customer.since} · No adverse` : customer.kyc==="Expired" ? "Credit report expired — re-pull required" : "Credit check not yet initiated",
+              actions: ["Pull Report","View Full Report"] },
+            { name:"Land Registry", icon:"file", status: custMortgage ? "Verified" : "N/A",
+              statusColor: custMortgage ? T.success : T.textMuted,
+              detail: custMortgage ? `Title: ${customer.address} · Freehold · No existing charges · Owner verified` : "No mortgage product — Land Registry not applicable",
+              actions: custMortgage ? ["View Title","Refresh"] : [] },
+            { name:"HMRC", icon:"check", status: customer.kyc==="Verified" ? "Verified" : "Not Checked",
+              statusColor: customer.kyc==="Verified" ? T.success : T.textMuted,
+              detail: customer.kyc==="Verified" ? "Employment confirmed · Tax code 1257L · PAYE active · Income matches declared" : "HMRC verification not yet run",
+              actions: customer.kyc==="Verified" ? ["View Details","Re-verify"] : ["Run Verification"] },
+            { name:"Companies House", icon:"products", status: "Not Applicable",
+              statusColor: T.textMuted,
+              detail: "Customer is employed — Companies House check not required",
+              actions: [] },
+            { name:"E-Signature", icon:"send", status: custMortgage && custMortgage.status === "Active" ? "Completed" : custMortgage ? "Pending" : "N/A",
+              statusColor: custMortgage && custMortgage.status === "Active" ? T.success : custMortgage ? T.warning : T.textMuted,
+              detail: custMortgage && custMortgage.status === "Active" ? "Offer letter: Signed 14 Feb 2026 · Mortgage deed: Signed 14 Feb 2026" : custMortgage ? "Offer letter sent — awaiting signature" : "No documents pending signature",
+              actions: custMortgage ? ["View Envelope","Resend Reminder"] : [] },
+          ];
+          return (
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
+                {Ico.zap(20)}
+                <div>
+                  <div style={{ fontSize:16, fontWeight:700 }}>Integrations for {customer.name}</div>
+                  <div style={{ fontSize:12, color:T.textMuted }}>{integrations.filter(i=>i.status!=="Not Applicable"&&i.status!=="N/A"&&i.status!=="Not Connected"&&i.status!=="Not Run"&&i.status!=="Not Checked").length} of {integrations.length} connected</div>
+                </div>
+              </div>
+              {integrations.map((intg, i) => (
+                <Card key={i} style={{ marginBottom:12, padding:0, overflow:"hidden" }}>
+                  <div style={{ display:"flex", alignItems:"stretch" }}>
+                    <div style={{ width:4, background:intg.statusColor, flexShrink:0 }} />
+                    <div style={{ flex:1, padding:"16px 20px" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                          <div style={{ width:36, height:36, borderRadius:10, background:`${intg.statusColor}15`,
+                            display:"flex", alignItems:"center", justifyContent:"center", color:intg.statusColor }}>
+                            {Ico[intg.icon]?.(18)}
+                          </div>
+                          <div>
+                            <div style={{ fontSize:14, fontWeight:700 }}>{intg.name}</div>
+                            <span style={{ fontSize:11, fontWeight:700, padding:"2px 8px", borderRadius:5,
+                              background:`${intg.statusColor}15`, color:intg.statusColor }}>{intg.status}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize:13, color:T.textSecondary, lineHeight:1.6, padding:"8px 12px",
+                        background:T.bg, borderRadius:8, marginBottom:intg.actions.length?10:0 }}>
+                        {intg.detail}
+                      </div>
+                      {intg.actions.length > 0 && (
+                        <div style={{ display:"flex", gap:8 }}>
+                          {intg.actions.map((a, j) => (
+                            <Btn key={j} small ghost={j>0} primary={j===0}>{a}</Btn>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* ═══════ TAB: RISK & VULNERABILITY ═══════ */}
         {activeTab === "Risk & Vulnerability" && (

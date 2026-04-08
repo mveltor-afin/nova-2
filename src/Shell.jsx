@@ -232,7 +232,6 @@ export default function Shell({ userType }) {
             { id:"flags",         label:"Feature Flags",   icon:"zap" },
             { id:"audit",         label:"Audit Trail",     icon:"clock" },
             { id:"anomalies",     label:"AI Anomalies",    icon:"alert" },
-            { id:"integrations",  label:"Integrations",    icon:"zap" },
           ],
         }] : []),
         ...((persona === "Risk Analyst" || persona === "Ops") ? [{
