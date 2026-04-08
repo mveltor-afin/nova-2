@@ -213,16 +213,26 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
   const monthlyPayment = selectedAccount ? parseBalance(selectedAccount.payment) : 0;
 
   // ═════════════════════════════════════════════
-  // INLINE ACTION CONTENT
+  // ACTION MODAL CONTENT
   // ═════════════════════════════════════════════
   const renderActionContent = () => {
     if (!activeAction || !selectedAccount) return null;
     const acc = selectedAccount;
 
     const ActionHeader = ({ title, onClose }) => (
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{title}</div>
-        <Btn small ghost onClick={onClose} icon="x">Close</Btn>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingBottom:16, marginBottom:20, borderBottom:`1px solid ${T.border}` }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:36, height:36, borderRadius:10, background:T.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", color:T.primary }}>
+            {Ico.sparkle(18)}
+          </div>
+          <div>
+            <div style={{ fontSize:18, fontWeight:700, color:T.text }}>{title}</div>
+            <div style={{ fontSize:12, color:T.textMuted }}>{acc.name} · {acc.id} · {acc.product}</div>
+          </div>
+        </div>
+        <div onClick={onClose} style={{ width:32, height:32, borderRadius:8, background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:T.textMuted, border:`1px solid ${T.border}` }}>
+          {Ico.x(16)}
+        </div>
       </div>
     );
 
@@ -232,7 +242,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
         const termExtension = holidayMonths;
         const newPayment = Math.round(monthlyPayment * (1 + (holidayMonths * 0.008)));
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Payment Holiday Configuration" onClose={() => setActiveAction(null)} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               <div>
@@ -263,7 +273,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               <Btn ghost onClick={() => setActiveAction(null)}>Cancel</Btn>
               <Btn primary>Apply Payment Holiday</Btn>
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -273,7 +283,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
         const totalBefore = monthlyPayment * currentTerm * 12;
         const totalAfter = newMonthly * reschedTerm * 12;
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Loan Rescheduling" onClose={() => setActiveAction(null)} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               <div>
@@ -307,7 +317,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               <Btn ghost onClick={() => setActiveAction(null)}>Cancel</Btn>
               <Btn primary>Apply Rescheduling</Btn>
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -319,7 +329,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
         const newBalance = bal - partialAmount;
         const newLTV = Math.round((newBalance / (bal / (parseFloat(acc.ltv) / 100))) * 100);
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Redemption Calculator" onClose={() => setActiveAction(null)} />
             <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
               <Btn small primary={redemptionMode === "full"} ghost={redemptionMode !== "full"} onClick={() => setRedemptionMode("full")}>Full Redemption</Btn>
@@ -372,13 +382,13 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               <Btn ghost onClick={() => setActiveAction(null)}>Cancel</Btn>
               <Btn primary>Generate Settlement Statement</Btn>
             </div>
-          </Card>
+          </div>
         );
       }
 
       case "rateswitch":
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Rate Switch Products" onClose={() => setActiveAction(null)} />
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
@@ -409,7 +419,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </div>
         );
 
       case "fees": {
@@ -422,7 +432,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
           { name: "Duplicate Statement", amount: "£10", trigger: "On request" },
         ];
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Fees & Penalties" onClose={() => setActiveAction(null)} />
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
@@ -442,7 +452,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
                 ))}
               </tbody>
             </table>
-          </Card>
+          </div>
         );
       }
 
@@ -453,7 +463,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
         const newLTV = Math.round((newTotal / propValue) * 100);
         const addlPayment = Math.round((furtherAdvance * rate) / 12);
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Refinance / Further Advance" onClose={() => setActiveAction(null)} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               <div>
@@ -484,7 +494,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               <Btn ghost onClick={() => setActiveAction(null)}>Cancel</Btn>
               <Btn primary>Submit Application</Btn>
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -494,7 +504,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
         const effectiveBalance = Math.max(0, bal - totalOffset);
         const monthlySaving = Math.round((totalOffset * rate) / 12);
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Offset & Credit" onClose={() => setActiveAction(null)} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               <div>
@@ -529,7 +539,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               <Btn ghost onClick={() => setActiveAction(null)}>Cancel</Btn>
               <Btn primary>Apply Offset Changes</Btn>
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -541,7 +551,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
           { change: "+0.50%", newRate: (parseFloat(acc.rate) + 0.50).toFixed(2) + "%", newPayment: fmtCurrency(Math.round(monthlyPayment * 1.06)), impact: "cost" },
         ];
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title="Interest Rate Change Impact" onClose={() => setActiveAction(null)} />
             <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>Current rate: {acc.rate} | Product: {acc.product}</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
@@ -556,7 +566,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
             <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <Btn ghost onClick={() => setActiveAction(null)}>Close</Btn>
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -572,7 +582,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
         };
         const vulnAlert = MOCK_VULN_ALERTS.find(v => v.account === acc.id);
         return (
-          <Card style={{ marginTop: 16, border: `2px solid ${T.primary}` }}>
+          <div>
             <ActionHeader title={titles[activeAction] || "Action"} onClose={() => setActiveAction(null)} />
             {activeAction === "collections" && acc.arrears && (
               <div>
@@ -651,7 +661,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
                 </div>
               </div>
             )}
-          </Card>
+          </div>
         );
       }
     }
@@ -869,8 +879,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
           </div>
         ))}
 
-        {/* Inline action content */}
-        {renderActionContent()}
+        {/* Action content is now rendered as a modal — see below */}
       </div>
     );
   };
@@ -1232,6 +1241,16 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
           {activeTab === "actions" && renderActionsTab()}
           {activeTab === "timeline" && renderTimelineTab()}
           {activeTab === "documents" && renderDocumentsTab()}
+        </div>
+      )}
+      {/* ═══ ACTION MODAL ═══ */}
+      {activeAction && selectedAccount && (
+        <div style={{ position:"fixed", inset:0, zIndex:200, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div onClick={() => setActiveAction(null)} style={{ position:"absolute", inset:0, background:"rgba(12,45,59,0.45)", backdropFilter:"blur(4px)" }} />
+          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"90%", maxWidth:720, maxHeight:"85vh", overflow:"auto",
+            boxShadow:"0 12px 48px rgba(0,0,0,0.18)", padding:28, border:`1px solid ${T.border}` }}>
+            {renderActionContent()}
+          </div>
         </div>
       )}
     </div>
