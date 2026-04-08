@@ -1,0 +1,834 @@
+import { useState, useEffect } from "react";
+import { T, Ico, PERSONAS } from "./shared/tokens";
+import { Btn, Card, KPICard } from "./shared/primitives";
+import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES } from "./data/customers";
+// Shared overlays
+import NotificationsPanel from "./shared/NotificationsPanel";
+import CommandPalette from "./shared/CommandPalette";
+import NovaCopilot from "./shared/NovaCopilot";
+import MessagesScreen from "./shared/MessagesScreen";
+// Customers
+import CustomerHub from "./customers/CustomerHub";
+import CustomerPortal from "./customers/CustomerPortal";
+// Products
+import MortgagesScreen from "./products/MortgagesScreen";
+import SavingsScreen from "./products/SavingsScreen";
+import SavingsDashboard from "./products/SavingsDashboard";
+import CurrentAccountsScreen from "./products/CurrentAccountsScreen";
+import InsuranceScreen from "./products/InsuranceScreen";
+import SharedOwnershipScreen from "./products/SharedOwnershipScreen";
+import DisbursementsScreen from "./products/DisbursementsScreen";
+// Workflows
+import IntakeQueue from "./workflows/IntakeQueue";
+import ApprovalsScreen from "./workflows/ApprovalsScreen";
+import CaseWorkbench from "./workflows/CaseWorkbench";
+// Origination
+import LoanWizard from "./origination/LoanWizard";
+import ApplicationDetail from "./origination/ApplicationDetail";
+import EligibilityCalculator from "./origination/EligibilityCalculator";
+import SmartPrefill from "./origination/SmartPrefill";
+import PropertyScreen from "./origination/PropertyScreen";
+import ValuationScreen from "./origination/ValuationScreen";
+// Intelligence
+import AIDashboard from "./intelligence/AIDashboard";
+import RiskAnomalies from "./intelligence/RiskAnomalies";
+import PipelineForecaster from "./intelligence/PipelineForecaster";
+import PortfolioRiskScreen from "./intelligence/PortfolioRiskScreen";
+import BrokerScorecardScreen from "./intelligence/BrokerScorecardScreen";
+import AIModelScreen from "./intelligence/AIModelScreen";
+import MIScreen from "./intelligence/MIScreen";
+// Servicing
+import ServicingScreen from "./servicing/ServicingScreen";
+import CollectionsScreen from "./servicing/CollectionsScreen";
+import RateSwitchPortal from "./servicing/RateSwitchPortal";
+// Admin
+import UsersRolesScreen from "./admin/UsersRolesScreen";
+import TeamHierarchyScreen from "./admin/TeamHierarchyScreen";
+import MandatesScreen from "./admin/MandatesScreen";
+import SessionsScreen from "./admin/SessionsScreen";
+import FeatureFlagsScreen from "./admin/FeatureFlagsScreen";
+import AuditScreen from "./admin/AuditScreen";
+import AnomalyScreen from "./admin/AnomalyScreen";
+import PermissionsScreen from "./admin/PermissionsScreen";
+import ComplaintsScreen from "./admin/ComplaintsScreen";
+import ConsumerDutyScreen from "./admin/ConsumerDutyScreen";
+import RegulatoryReportingScreen from "./admin/RegulatoryReportingScreen";
+import IntegrationsScreen from "./admin/IntegrationsScreen";
+import SettingsScreen from "./admin/SettingsScreen";
+
+// ─────────────────────────────────────────────
+// NOVA 2.0 — MAIN SHELL
+// Customer-first mortgage/savings/insurance platform
+// ─────────────────────────────────────────────
+
+const PRIORITY_COLORS = {
+  Critical: { bg:"#FEE2E2", text:"#991B1B", border:"#FCA5A5" },
+  High:     { bg:"#FFF8E0", text:"#92400E", border:"#FFD966" },
+  Medium:   { bg:"#DBEAFE", text:"#1E40AF", border:"#93C5FD" },
+  Low:      { bg:"#E6F7F3", text:"#065F46", border:"#A3DDD1" },
+};
+
+const SEGMENT_COLORS = {
+  Premier:  { bg:"#EDE9FE", text:"#5B21B6" },
+  Standard: { bg:"#DBEAFE", text:"#1E40AF" },
+  "At Risk":{ bg:"#FEE2E2", text:"#991B1B" },
+  New:      { bg:"#E6F7F3", text:"#065F46" },
+};
+
+const KYC_COLORS = {
+  Verified: { bg:"#D1FAE5", text:"#065F46" },
+  Expired:  { bg:"#FEE2E2", text:"#991B1B" },
+  Pending:  { bg:"#FEF3C7", text:"#92400E" },
+};
+
+const RISK_COLORS = {
+  Low:    { bg:"#D1FAE5", text:"#065F46" },
+  Medium: { bg:"#FEF3C7", text:"#92400E" },
+  High:   { bg:"#FEE2E2", text:"#991B1B" },
+};
+
+const TIER_COLORS = {
+  Bronze:   "#CD7F32",
+  Silver:   "#C0C0C0",
+  Gold:     "#FFD700",
+  Platinum: "#8B5CF6",
+};
+
+// Helpers
+const Badge = ({ bg, text, children }) => (
+  <span style={{ background:bg, color:text, padding:"3px 10px", borderRadius:4, fontSize:11, fontWeight:600, letterSpacing:0.3, whiteSpace:"nowrap" }}>{children}</span>
+);
+
+const getCustomerProducts = (cust) => PRODUCTS.filter(p => cust.products.includes(p.id));
+const getProductTypes = (cust) => {
+  const prods = getCustomerProducts(cust);
+  const types = [...new Set(prods.map(p => p.type))];
+  return types;
+};
+
+// Customers that need attention (Critical or High AI actions)
+const getNeedsAttention = () => {
+  const results = [];
+  for (const cust of CUSTOMERS) {
+    const actions = AI_ACTIONS[cust.id];
+    if (!actions) continue;
+    const urgent = actions.filter(a => a.priority === "Critical" || a.priority === "High");
+    if (urgent.length > 0) {
+      results.push({ customer: cust, actions: urgent, topAction: urgent[0] });
+    }
+  }
+  return results;
+};
+
+export default function Shell({ userType }) {
+  const [persona, setPersona] = useState(userType === "external" ? "Broker" : "Ops");
+  const [screen, setScreen] = useState(userType === "external" ? "brokerdashboard" : "needsattention");
+  const [personaOpen, setPersonaOpen] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [contextCustomer, setContextCustomer] = useState(null);
+  const [showCopilot, setShowCopilot] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
+  const [selectedLoan, setSelectedLoan] = useState(null);
+
+  const toggleGroup = (g) => setCollapsedGroups(p => ({ ...p, [g]: !p[g] }));
+
+  // Cmd+K handler
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const isBroker = persona === "Broker";
+  const needsAttentionCount = getNeedsAttention().length;
+
+  // ── Nav groups ──
+  const navGroups = isBroker
+    ? [
+        { group:"MY CASES", items:[
+          { id:"brokerdashboard", label:"Dashboard",        icon:"dashboard" },
+          { id:"myapplications",  label:"My Applications",  icon:"loans" },
+          { id:"eligibility",     label:"Eligibility Check", icon:"zap" },
+          { id:"smartapply",      label:"Smart Apply",       icon:"sparkle" },
+        ]},
+        { group:"CUSTOMERS", items:[
+          { id:"brokercustomers", label:"My Customers", icon:"customers" },
+          { id:"customerportal",  label:"Portal Preview", icon:"eye" },
+        ]},
+        { group:"INSIGHTS", items:[
+          { id:"brokermi",       label:"My MI",      icon:"chart" },
+          { id:"messages",       label:"Messages",    icon:"messages", badge:3 },
+        ]},
+        { group:null, items:[
+          { id:"settings", label:"Settings", icon:"settings" },
+        ]},
+      ]
+    : [
+        { group:"MY CUSTOMERS", items:[
+          { id:"needsattention", label:"Needs Attention", icon:"alert",     badge:needsAttentionCount },
+          { id:"allcustomers",   label:"All Customers",   icon:"customers" },
+          { id:"newcustomer",    label:"New Customer",    icon:"plus" },
+        ]},
+        { group:"WORKFLOWS", items:[
+          { id:"intake",         label:"Intake Queue",     icon:"zap",    badge:3 },
+          { id:"caseworkbench",  label:"Case Workbench",   icon:"loans" },
+          { id:"approvals",      label:"Approvals",        icon:"check" },
+          ...((persona === "Ops" || persona === "Admin") ? [
+            { id:"valuations",   label:"Valuations",       icon:"eye" },
+            { id:"property",     label:"Property Intel",   icon:"search" },
+          ] : []),
+          ...(persona === "Finance" ? [
+            { id:"disbursements",label:"Disbursements",    icon:"dollar" },
+          ] : []),
+        ]},
+        { group:"PRODUCTS", items:[
+          { id:"mortgages",       label:"Mortgages",         icon:"loans" },
+          { id:"savings",         label:"Savings",           icon:"dollar" },
+          ...((persona === "Ops" || persona === "Finance" || persona === "Admin") ? [
+            { id:"savingsdashboard", label:"Savings Operations", icon:"wallet" },
+          ] : []),
+          { id:"currentaccounts", label:"Current Accounts",  icon:"wallet" },
+          { id:"insurance",       label:"Insurance",         icon:"shield" },
+          { id:"sharedownership", label:"Shared Ownership",  icon:"assign" },
+        ]},
+        { group:"SERVICING", visible:["Ops","Admin","Underwriter","Finance","Risk Analyst"].includes(persona), items:[
+          { id:"servicing",      label:"Mortgage Servicing", icon:"wallet" },
+          ...((persona === "Ops" || persona === "Admin") ? [
+            { id:"collections",  label:"Collections",       icon:"alert" },
+            { id:"rateswitch",   label:"Rate Switches",     icon:"arrow" },
+          ] : []),
+        ]},
+        { group:"INTELLIGENCE", items:[
+          { id:"aidashboard",        label:"AI Dashboard",       icon:"sparkle" },
+          { id:"riskanomaly",        label:"Risk & Anomalies",   icon:"alert" },
+          ...((persona === "Admin" || persona === "Ops") ? [
+            { id:"forecaster",       label:"Pipeline Forecaster", icon:"chart" },
+          ] : []),
+          ...((persona === "Admin" || persona === "Finance") ? [
+            { id:"aimodels",         label:"AI Models",           icon:"sparkle" },
+          ] : []),
+        ]},
+        { group:"ANALYTICS", items:[
+          { id:"mymi",              label:"My MI",           icon:"chart" },
+          ...((persona === "Admin" || persona === "Finance") ? [
+            { id:"portfoliorisk",   label:"Portfolio Risk",  icon:"shield" },
+            { id:"brokerscorecard", label:"Broker Scorecard",icon:"customers" },
+          ] : []),
+          { id:"messages",          label:"Messages",        icon:"messages", badge:5 },
+        ]},
+        ...(persona === "Admin" ? [{
+          group:"ADMIN", items:[
+            { id:"usersroles",    label:"Users & Roles",  icon:"users" },
+            { id:"permissions",   label:"Permissions",     icon:"shield" },
+            { id:"team",          label:"Team Hierarchy",  icon:"assign" },
+            { id:"mandates",      label:"Mandates",        icon:"shield" },
+            { id:"sessions",      label:"Sessions",        icon:"lock" },
+            { id:"flags",         label:"Feature Flags",   icon:"zap" },
+            { id:"audit",         label:"Audit Trail",     icon:"clock" },
+            { id:"anomalies",     label:"AI Anomalies",    icon:"alert" },
+            { id:"integrations",  label:"Integrations",    icon:"zap" },
+          ],
+        }] : []),
+        ...((persona === "Risk Analyst" || persona === "Ops") ? [{
+          group:"COMPLIANCE", items:[
+            ...(persona === "Ops" ? [{ id:"complaints", label:"Complaints", icon:"alert" }] : []),
+            ...(persona === "Risk Analyst" ? [
+              { id:"consumerduty", label:"Consumer Duty", icon:"shield" },
+              { id:"regulatory",   label:"Regulatory",    icon:"file" },
+            ] : []),
+          ],
+        }] : []),
+        { group:null, items:[
+          { id:"customerportal",  label:"Customer Portal", icon:"eye" },
+          { id:"settings",        label:"Settings",        icon:"settings" },
+        ]},
+      ];
+
+  // ── Breadcrumb ──
+  const getBreadcrumb = () => {
+    const parts = ["Nova 2.0"];
+    for (const g of navGroups) {
+      const found = g.items.find(i => i.id === screen);
+      if (found) {
+        if (g.group) parts.push(g.group.charAt(0) + g.group.slice(1).toLowerCase());
+        parts.push(found.label);
+        break;
+      }
+    }
+    return parts;
+  };
+
+  // ── Sidebar ──
+  const Sidebar = () => (
+    <div style={{ width:252, background:`linear-gradient(180deg,${T.navy},#0C1829)`, color:"#fff", display:"flex", flexDirection:"column", flexShrink:0, height:"100vh", position:"sticky", top:0 }}>
+      {/* Logo */}
+      <div style={{ padding:"20px 16px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${T.primary},${T.accent})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, color:"#fff" }}>N</div>
+          <div>
+            <div style={{ fontWeight:700, fontSize:16, letterSpacing:-0.3 }}>Nova <span style={{ fontSize:12, fontWeight:500, color:"rgba(255,255,255,0.4)" }}>2.0</span></div>
+            <div style={{ fontSize:10, color:"#64748B", letterSpacing:0.5, textTransform:"uppercase" }}>Afin Bank</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Persona switcher */}
+      <div style={{ padding:"10px 10px 4px" }}>
+        <div onClick={() => setPersonaOpen(!personaOpen)}
+          style={{ padding:"8px 12px", borderRadius:8, background:"rgba(255,255,255,0.05)", cursor:"pointer",
+            display:"flex", justifyContent:"space-between", alignItems:"center",
+            border:"1px solid rgba(255,255,255,0.08)", transition:"all 0.15s" }}>
+          <div>
+            <div style={{ fontSize:10, color:"#64748B", textTransform:"uppercase", letterSpacing:0.5 }}>Viewing as</div>
+            <div style={{ fontSize:13, fontWeight:600, color:"#CBD5E1" }}>{persona}</div>
+          </div>
+          <span style={{ color:"#64748B", fontSize:10, transition:"transform 0.2s", transform:personaOpen?"rotate(180deg)":"rotate(0)" }}>&#x25BC;</span>
+        </div>
+        {personaOpen && (
+          <div style={{ marginTop:4, background:"#1E293B", borderRadius:8, overflow:"hidden", border:"1px solid rgba(255,255,255,0.08)" }}>
+            {PERSONAS.map(p => (
+              <div key={p} onClick={() => {
+                setPersona(p); setPersonaOpen(false);
+                setScreen(p === "Broker" ? "brokerdashboard" : "needsattention");
+                setCollapsedGroups({});
+                setContextCustomer(null);
+              }}
+                style={{ padding:"8px 12px", cursor:"pointer", fontSize:13,
+                  fontWeight:p===persona?600:400, color:p===persona?T.accent:"#94A3B8",
+                  background:p===persona?"rgba(49,184,151,0.08)":"transparent",
+                  transition:"background 0.12s" }}
+                onMouseEnter={e => { if (p !== persona) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseLeave={e => { if (p !== persona) e.currentTarget.style.background = "transparent"; }}>
+                {p}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Nav groups */}
+      <nav style={{ flex:1, padding:"6px 8px", display:"flex", flexDirection:"column", gap:0, overflowY:"auto" }}>
+        {navGroups.filter(g => g.visible !== false).map((group, gi) => (
+          <div key={gi}>
+            {group.group && (
+              <div onClick={() => toggleGroup(group.group)}
+                style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px 4px",
+                  cursor:"pointer", userSelect:"none" }}>
+                <span style={{ fontSize:10, fontWeight:700, color:"#4A5568", textTransform:"uppercase", letterSpacing:1 }}>{group.group}</span>
+                <span style={{ fontSize:9, color:"#4A5568", transition:"transform 0.2s",
+                  transform:collapsedGroups[group.group]?"rotate(-90deg)":"rotate(0)" }}>&#x25BC;</span>
+              </div>
+            )}
+            {!collapsedGroups[group.group] && group.items.map(item => (
+              <div key={item.id} onClick={() => { setScreen(item.id); }}
+                style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
+                  cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
+                  color: screen===item.id ? "#fff" : "#7B8BA3",
+                  background: screen===item.id ? "rgba(255,255,255,0.08)" : "transparent",
+                  marginBottom:1 }}
+                onMouseEnter={e => { if (screen !== item.id) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseLeave={e => { if (screen !== item.id) e.currentTarget.style.background = "transparent"; }}>
+                {item.icon && Ico[item.icon]?.(15)}
+                <span style={{ flex:1 }}>{item.label}</span>
+                {item.badge && <span style={{ background:"#EF4444", color:"#fff", fontSize:10, fontWeight:700, padding:"2px 6px", borderRadius:10, minWidth:16, textAlign:"center" }}>{item.badge}</span>}
+              </div>
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      {/* User footer */}
+      <div style={{ padding:"12px 16px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:8 }}>
+        <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#6366F1,#8B5CF6)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff" }}>
+          {isBroker ? "JW" : persona[0]}
+        </div>
+        <div>
+          <div style={{ fontSize:12, fontWeight:500, color:"#E2E8F0" }}>{isBroker ? "John Watson" : `${persona} User`}</div>
+          <div style={{ fontSize:10, color:"#64748B" }}>{isBroker ? "FCA: 123456" : "Afin Bank"}</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Top Bar ──
+  const TopBar = () => {
+    const crumbs = getBreadcrumb();
+    return (
+      <div style={{ height:56, borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 28px", background:T.card, flexShrink:0 }}>
+        {/* Breadcrumbs */}
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:T.textMuted }}>
+          {crumbs.map((c, i) => (
+            <span key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
+              {i > 0 && <span style={{ color:T.border }}>/</span>}
+              <span style={{ color: i === crumbs.length - 1 ? T.text : T.textMuted, fontWeight: i === crumbs.length - 1 ? 600 : 400 }}>{c}</span>
+            </span>
+          ))}
+        </div>
+        {/* Right actions */}
+        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+          {/* Search trigger */}
+          <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:8, border:`1px solid ${T.border}`, cursor:"pointer", background:"#F8FAFC" }}
+            onClick={() => setShowCommandPalette(true)}>
+            <span style={{ color:T.textMuted, display:"flex" }}>{Ico.search(14)}</span>
+            <span style={{ fontSize:12, color:T.textMuted }}>Search...</span>
+            <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"1px 6px", borderRadius:4, fontWeight:600, marginLeft:8, fontFamily:"monospace" }}>⌘K</span>
+          </div>
+          {/* Notifications */}
+          <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }}>
+            {Ico.bell(18)}
+            <div style={{ position:"absolute", top:2, right:2, width:8, height:8, borderRadius:4, background:"#EF4444", border:"2px solid #fff" }} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Context Bar ──
+  const ContextBar = () => {
+    if (!contextCustomer) return null;
+    const custProducts = getCustomerProducts(contextCustomer);
+    return (
+      <div style={{ height:40, background:"linear-gradient(135deg, rgba(26,74,84,0.06), rgba(49,184,151,0.04))", borderBottom:`1px solid ${T.border}`,
+        display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 28px", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, fontSize:13 }}>
+          <span style={{ color:T.accent, display:"flex" }}>{Ico.user(14)}</span>
+          <span style={{ fontWeight:600, color:T.text }}>Working on: {contextCustomer.name}</span>
+          <span style={{ color:T.textMuted }}>({contextCustomer.id})</span>
+          <span style={{ color:T.border }}>|</span>
+          <span style={{ color:T.textMuted }}>{custProducts.length} product{custProducts.length !== 1 ? "s" : ""}</span>
+        </div>
+        <span onClick={() => setContextCustomer(null)} style={{ fontSize:11, color:T.textMuted, cursor:"pointer", fontWeight:600, display:"flex", alignItems:"center", gap:4 }}>
+          {Ico.x(12)} Clear
+        </span>
+      </div>
+    );
+  };
+
+  // ── SCREENS ──
+
+  // Needs Attention (default home for internal users)
+  const NeedsAttentionScreen = () => {
+    const items = getNeedsAttention();
+    return (
+      <div>
+        <div style={{ marginBottom:24 }}>
+          <h1 style={{ fontSize:22, fontWeight:700, margin:"0 0 4px", color:T.text }}>Needs Attention</h1>
+          <p style={{ margin:0, fontSize:13, color:T.textMuted }}>{items.length} customers require action today</p>
+        </div>
+
+        <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
+          <KPICard label="Critical" value={String(items.filter(i => i.topAction.priority === "Critical").length)} sub="Immediate action" color="#EF4444" />
+          <KPICard label="High Priority" value={String(items.filter(i => i.topAction.priority === "High").length)} sub="Within 24 hours" color="#F59E0B" />
+          <KPICard label="Total Actions" value={String(items.reduce((s, i) => s + i.actions.length, 0))} sub="Across all customers" color={T.primary} />
+          <KPICard label="Arrears" value={
+            "£" + PRODUCTS.filter(p => p.arrears).reduce((s, p) => s + parseInt(p.arrears.replace(/[£,]/g, "")), 0).toLocaleString()
+          } sub="Total outstanding" color="#EF4444" />
+        </div>
+
+        <Card noPad>
+          <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <span style={{ fontSize:14, fontWeight:700, color:T.text }}>Customers Requiring Action</span>
+            <span style={{ fontSize:12, color:T.textMuted }}>{items.length} customer{items.length !== 1 ? "s" : ""}</span>
+          </div>
+          {items.map((item, idx) => {
+            const { customer: c, actions, topAction } = item;
+            const prods = getCustomerProducts(c);
+            const pc = PRIORITY_COLORS[topAction.priority];
+            return (
+              <div key={c.id} onClick={() => { setContextCustomer(c); setScreen("customerhub"); }}
+                style={{ display:"flex", alignItems:"flex-start", gap:16, padding:"16px 20px",
+                  borderTop: idx ? `1px solid ${T.borderLight}` : "none", cursor:"pointer",
+                  transition:"background 0.12s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#F8FAFC"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                {/* Avatar */}
+                <div style={{ width:40, height:40, borderRadius:10, background:`linear-gradient(135deg,${T.primary},${T.primaryDark})`,
+                  display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:14, fontWeight:700, flexShrink:0 }}>
+                  {c.name.split(" ").map(w => w[0]).slice(0,2).join("")}
+                </div>
+                {/* Info */}
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                    <span style={{ fontSize:14, fontWeight:600, color:T.text }}>{c.name}</span>
+                    <span style={{ fontSize:11, color:T.textMuted }}>{c.id}</span>
+                    <Badge bg={SEGMENT_COLORS[c.segment]?.bg} text={SEGMENT_COLORS[c.segment]?.text}>{c.segment}</Badge>
+                    {c.vuln && <Badge bg="#FEE2E2" text="#991B1B">Vulnerable</Badge>}
+                  </div>
+                  <div style={{ fontSize:12, color:T.textMuted, marginBottom:8 }}>
+                    {prods.length} product{prods.length !== 1 ? "s" : ""} &middot; {c.since} &middot; LTV {c.ltv}
+                  </div>
+                  {/* Top action */}
+                  <div style={{ padding:"10px 14px", borderRadius:8, background:pc.bg, border:`1px solid ${pc.border}` }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+                      <Badge bg={pc.bg} text={pc.text}>{topAction.priority}</Badge>
+                      <span style={{ fontSize:11, color:pc.text, fontWeight:500 }}>{topAction.type}</span>
+                    </div>
+                    <div style={{ fontSize:13, color:pc.text, fontWeight:500, lineHeight:1.5 }}>{topAction.action}</div>
+                    <div style={{ fontSize:11, color:pc.text, opacity:0.7, marginTop:4 }}>Impact: {topAction.impact}</div>
+                  </div>
+                  {actions.length > 1 && (
+                    <div style={{ fontSize:11, color:T.textMuted, marginTop:6 }}>+ {actions.length - 1} more action{actions.length - 1 > 1 ? "s" : ""}</div>
+                  )}
+                </div>
+                {/* Risk badge */}
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, flexShrink:0 }}>
+                  <Badge bg={RISK_COLORS[c.risk]?.bg} text={RISK_COLORS[c.risk]?.text}>Risk: {c.risk}</Badge>
+                  <Badge bg={KYC_COLORS[c.kyc]?.bg} text={KYC_COLORS[c.kyc]?.text}>KYC: {c.kyc}</Badge>
+                </div>
+              </div>
+            );
+          })}
+        </Card>
+      </div>
+    );
+  };
+
+  // All Customers
+  const AllCustomersScreen = () => (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+        <div>
+          <h1 style={{ fontSize:22, fontWeight:700, margin:"0 0 4px", color:T.text }}>All Customers</h1>
+          <p style={{ margin:0, fontSize:13, color:T.textMuted }}>{CUSTOMERS.length} customers across all segments</p>
+        </div>
+        <Btn primary icon="plus">New Customer</Btn>
+      </div>
+      <Card noPad>
+        <table style={{ width:"100%", borderCollapse:"collapse" }}>
+          <thead>
+            <tr style={{ background:"#F8FAFC" }}>
+              {["Name","Segment","Products","Risk","KYC","NPS","Rel. Value","Tier"].map(h => (
+                <th key={h} style={{ textAlign:"left", padding:"10px 16px", fontSize:11, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:0.4 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {CUSTOMERS.map((c, i) => {
+              const prods = getCustomerProducts(c);
+              const types = getProductTypes(c);
+              return (
+                <tr key={c.id} onClick={() => { setContextCustomer(c); setScreen("customerhub"); }}
+                  style={{ cursor:"pointer", borderTop:`1px solid ${T.borderLight}`, transition:"background 0.1s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#FAFAF7"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <td style={{ padding:"14px 16px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:32, height:32, borderRadius:8, background:`linear-gradient(135deg,${T.primary},${T.primaryDark})`,
+                        display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:11, fontWeight:700, flexShrink:0 }}>
+                        {c.name.split(" ").map(w => w[0]).slice(0,2).join("")}
+                      </div>
+                      <div>
+                        <div style={{ fontSize:13, fontWeight:600, color:T.text }}>{c.name}</div>
+                        <div style={{ fontSize:11, color:T.textMuted }}>{c.id} &middot; Since {c.since}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <Badge bg={SEGMENT_COLORS[c.segment]?.bg} text={SEGMENT_COLORS[c.segment]?.text}>{c.segment}</Badge>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <span style={{ fontSize:13, fontWeight:600, color:T.text }}>{prods.length}</span>
+                      <div style={{ display:"flex", gap:3 }}>
+                        {types.map((t, ti) => (
+                          <span key={ti} style={{ color:PRODUCT_TYPES[t]?.color || T.textMuted, display:"flex" }} title={PRODUCT_TYPES[t]?.label}>
+                            {Ico[PRODUCT_TYPES[t]?.icon]?.(12)}
+                          </span>
+                        ))}
+                      </div>
+                      {c.pendingProducts.length > 0 && (
+                        <span style={{ fontSize:10, color:T.warning, fontWeight:600 }}>+{c.pendingProducts.length} pending</span>
+                      )}
+                    </div>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <Badge bg={RISK_COLORS[c.risk]?.bg} text={RISK_COLORS[c.risk]?.text}>{c.risk}</Badge>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <Badge bg={KYC_COLORS[c.kyc]?.bg} text={KYC_COLORS[c.kyc]?.text}>{c.kyc}</Badge>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <span style={{ fontSize:13, fontWeight:600, color: c.nps == null ? T.textMuted : c.nps >= 9 ? T.success : c.nps >= 7 ? T.text : T.danger }}>
+                      {c.nps != null ? c.nps : "—"}
+                    </span>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <span style={{ fontSize:13, fontWeight:600, color:T.text }}>{c.ltv}</span>
+                  </td>
+                  <td style={{ padding:"14px 16px" }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:TIER_COLORS[c.gamification.tier], letterSpacing:0.3 }}>
+                      {c.gamification.tier}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+
+  // Broker Dashboard
+  const BrokerDashboard = () => {
+    const mortgages = PRODUCTS.filter(p => p.type === "Mortgage");
+    return (
+      <div>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+          <div>
+            <h1 style={{ fontSize:22, fontWeight:700, margin:0 }}>Good morning</h1>
+            <p style={{ margin:"4px 0 0", fontSize:13, color:T.textMuted }}>Here's your pipeline overview</p>
+          </div>
+          <Btn primary icon="plus" onClick={() => setMode("wizard")}>New Application</Btn>
+        </div>
+        <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
+          <KPICard label="Active Cases" value={String(mortgages.filter(m => m.status === "Active" || m.status === "Application").length)} sub="In pipeline" color={T.primary} />
+          <KPICard label="Total Pipeline" value={"£" + Math.round(mortgages.filter(m => m.balance !== "—").reduce((s,m) => s + parseInt(m.balance.replace(/[£,]/g,"")), 0) / 1000).toLocaleString() + "K"} sub="Across all cases" color="#8B5CF6" />
+          <KPICard label="Avg Rate" value={
+            (mortgages.filter(m => m.rate !== "—").reduce((s,m) => s + parseFloat(m.rate), 0) / mortgages.filter(m => m.rate !== "—").length).toFixed(2) + "%"
+          } sub="Weighted average" color={T.success} />
+          <KPICard label="Pending" value={String(mortgages.filter(m => m.status === "Application").length)} sub="Awaiting decision" color={T.warning} />
+        </div>
+        <Card noPad>
+          <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <span style={{ fontSize:14, fontWeight:600 }}>Recent Mortgage Cases</span>
+            <span style={{ fontSize:12, color:T.primary, cursor:"pointer", fontWeight:500 }}>View all</span>
+          </div>
+          <table style={{ width:"100%", borderCollapse:"collapse" }}>
+            <thead>
+              <tr style={{ background:"#F8FAFC" }}>
+                {["Case ID","Customer","Product","Balance","Rate","Status","Next Payment"].map(h => (
+                  <th key={h} style={{ textAlign:"left", padding:"9px 16px", fontSize:11, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:0.4 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {mortgages.map((m, i) => {
+                const cust = CUSTOMERS.find(c => c.id === m.customerId);
+                const sc = m.status === "Active" ? { bg:T.successBg, text:T.success }
+                         : m.status === "Active in Arrears" ? { bg:T.dangerBg, text:T.danger }
+                         : m.status === "Locked" ? { bg:T.warningBg, text:T.warning }
+                         : m.status === "Application" ? { bg:"#DBEAFE", text:"#1E40AF" }
+                         : { bg:"#E5E7EB", text:"#374151" };
+                return (
+                  <tr key={m.id} onClick={() => { setSelectedLoan({ id:m.origRef||m.id, names:cust?.name||"—", product:m.product, amount:m.balance, term:m.term||"—", rate:m.rate, type:"C&I", status:m.status==="Active"?"Disbursed":m.status==="Application"?"Underwriting":m.status, updated:"—", servicingId:m.id }); setMode("casedetail"); }}
+                    style={{ borderTop:`1px solid ${T.borderLight}`, cursor:"pointer" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#FAFAF7"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <td style={{ padding:"12px 16px", fontSize:13, fontWeight:600, color:T.primary }}>{m.id}</td>
+                    <td style={{ padding:"12px 16px", fontSize:13 }}>{cust?.name || "—"}</td>
+                    <td style={{ padding:"12px 16px", fontSize:12, color:T.textMuted }}>{m.product}</td>
+                    <td style={{ padding:"12px 16px", fontSize:13, fontWeight:500 }}>{m.balance}</td>
+                    <td style={{ padding:"12px 16px", fontSize:13 }}>{m.rate}</td>
+                    <td style={{ padding:"12px 16px" }}><Badge bg={sc.bg} text={sc.text}>{m.status}</Badge></td>
+                    <td style={{ padding:"12px 16px", fontSize:12, color: m.nextPayment === "OVERDUE" || m.nextPayment === "SUSPENDED" ? T.danger : T.textMuted, fontWeight: m.nextPayment === "OVERDUE" ? 700 : 400 }}>{m.nextPayment}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </Card>
+      </div>
+    );
+  };
+
+  // Placeholder screen
+  const PlaceholderScreen = ({ id, label }) => {
+    // Find icon for screen
+    let iconName = "dashboard";
+    for (const g of navGroups) {
+      const found = g.items.find(i => i.id === id);
+      if (found) { iconName = found.icon; break; }
+    }
+    return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"60vh" }}>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ width:72, height:72, borderRadius:18, background:T.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", color:T.primary }}>
+            {Ico[iconName]?.(32)}
+          </div>
+          <h2 style={{ fontSize:20, fontWeight:700, color:T.text, margin:"0 0 6px" }}>{label}</h2>
+          <p style={{ fontSize:14, color:T.textMuted, margin:0 }}>Coming in Nova 2.0</p>
+          <div style={{ marginTop:16, display:"inline-flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:8, background:T.bg, border:`1px solid ${T.border}` }}>
+            <span style={{ color:T.accent, display:"flex" }}>{Ico.sparkle(14)}</span>
+            <span style={{ fontSize:12, color:T.textMuted, fontWeight:500 }}>This screen is under development</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Screen router ──
+  const renderScreen = () => {
+    switch (screen) {
+      case "needsattention":  return <NeedsAttentionScreen />;
+      case "allcustomers":    return <AllCustomersScreen />;
+      case "brokerdashboard": return <BrokerDashboard />;
+      // Broker aliases
+      case "brokermi":        return <MIScreen persona="Broker" />;
+      case "myapplications":  return <MortgagesScreen />;
+      case "brokercustomers": return <AllCustomersScreen />;
+      case "brokersettings":  return <SettingsScreen />;
+      case "smartapply":      return <SmartPrefill />;
+      case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id} onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }} /> : <AllCustomersScreen />;
+      case "customerportal":  return <CustomerPortal />;
+      // Products
+      case "mortgages":       return <MortgagesScreen />;
+      case "savings":         return <SavingsScreen />;
+      case "savingsdashboard":return <SavingsDashboard />;
+      case "currentaccounts": return <CurrentAccountsScreen />;
+      case "insurance":       return <InsuranceScreen />;
+      case "sharedownership": return <SharedOwnershipScreen />;
+      case "disbursements":   return <DisbursementsScreen />;
+      // Servicing
+      case "servicing":       return <ServicingScreen />;
+      case "collections":     return <CollectionsScreen />;
+      case "rateswitch":      return <RateSwitchPortal />;
+      // Workflows
+      case "intake":          return <IntakeQueue />;
+      case "approvals":       return <ApprovalsScreen />;
+      case "caseworkbench":   return <CaseWorkbench />;
+      case "valuations":      return <ValuationScreen />;
+      case "property":        return <PropertyScreen />;
+      case "eligibility":     return <EligibilityCalculator />;
+      case "smartapply":      return <SmartPrefill />;
+      // Intelligence
+      case "aidashboard":     return <AIDashboard />;
+      case "riskanomaly":     return <RiskAnomalies />;
+      case "forecaster":      return <PipelineForecaster />;
+      case "portfoliorisk":   return <PortfolioRiskScreen />;
+      case "brokerscorecard": return <BrokerScorecardScreen />;
+      case "aimodels":        return <AIModelScreen />;
+      case "mymi":            return <MIScreen persona={persona} />;
+      case "messages":        return <MessagesScreen />;
+      // Admin
+      case "usersroles":      return <UsersRolesScreen />;
+      case "permissions":     return <PermissionsScreen />;
+      case "team":            return <TeamHierarchyScreen />;
+      case "mandates":        return <MandatesScreen />;
+      case "sessions":        return <SessionsScreen />;
+      case "flags":           return <FeatureFlagsScreen />;
+      case "audit":           return <AuditScreen />;
+      case "anomalies":       return <AnomalyScreen />;
+      case "integrations":    return <IntegrationsScreen />;
+      case "settings":        return <SettingsScreen />;
+      // Compliance
+      case "complaints":      return <ComplaintsScreen />;
+      case "consumerduty":    return <ConsumerDutyScreen />;
+      case "regulatory":      return <RegulatoryReportingScreen />;
+      default: {
+        // Find label from nav
+        let label = screen;
+        for (const g of navGroups) {
+          const found = g.items.find(i => i.id === screen);
+          if (found) { label = found.label; break; }
+        }
+        return <PlaceholderScreen id={screen} label={label} />;
+      }
+    }
+  };
+
+  // Full-screen modes (wizard / case detail)
+  if (mode === "wizard") {
+    return <LoanWizard onCancel={() => setMode("shell")} onComplete={() => setMode("shell")} />;
+  }
+  if (mode === "casedetail" && selectedLoan) {
+    return (
+      <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
+        <Sidebar />
+        <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
+          <TopBar />
+          <div style={{ flex:1, padding:"24px 30px", overflowY:"auto", background:T.bg }}>
+            <ApplicationDetail
+              loan={selectedLoan}
+              persona={persona}
+              onBack={() => { setMode("shell"); setSelectedLoan(null); }}
+              onCreateLoan={() => setMode("wizard")}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
+      <Sidebar />
+      <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
+        <TopBar />
+        <ContextBar />
+        {/* Main content */}
+        <div style={{ flex:1, padding:"24px 30px", overflowY:"auto", background:T.bg }}>
+          {renderScreen()}
+        </div>
+      </div>
+
+      {/* Nova AI Copilot FAB */}
+      <div onClick={() => setShowCopilot(!showCopilot)}
+        style={{ position:"fixed", bottom:28, right:28, width:52, height:52, borderRadius:16,
+          background:`linear-gradient(135deg,${T.accent},#27a080)`, display:"flex", alignItems:"center", justifyContent:"center",
+          cursor:"pointer", boxShadow:"0 4px 24px rgba(49,184,151,0.35)", color:"#fff", zIndex:100,
+          transition:"transform 0.2s, box-shadow 0.2s",
+          transform: showCopilot ? "scale(0.95)" : "scale(1)" }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 32px rgba(49,184,151,0.45)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = showCopilot ? "scale(0.95)" : "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(49,184,151,0.35)"; }}>
+        {Ico.sparkle(22)}
+      </div>
+
+      {/* Copilot panel */}
+      {showCopilot && (
+        <div style={{ position:"fixed", bottom:92, right:28, width:380, maxHeight:520, borderRadius:16,
+          background:T.card, border:`1px solid ${T.border}`, boxShadow:"0 8px 40px rgba(0,0,0,0.12)",
+          display:"flex", flexDirection:"column", zIndex:99, overflow:"hidden" }}>
+          <div style={{ padding:"16px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ color:T.accent, display:"flex" }}>{Ico.sparkle(18)}</span>
+              <span style={{ fontWeight:700, fontSize:14, color:T.text }}>Nova AI</span>
+              <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"2px 8px", borderRadius:4, fontWeight:600 }}>Copilot</span>
+            </div>
+            <span onClick={() => setShowCopilot(false)} style={{ cursor:"pointer", color:T.textMuted, display:"flex" }}>{Ico.x(16)}</span>
+          </div>
+          <div style={{ flex:1, padding:20, overflowY:"auto" }}>
+            <div style={{ fontSize:13, color:T.textMuted, lineHeight:1.7 }}>
+              {contextCustomer ? (
+                <>
+                  <div style={{ fontWeight:600, color:T.text, marginBottom:8 }}>Context: {contextCustomer.name}</div>
+                  {AI_ACTIONS[contextCustomer.id] ? (
+                    AI_ACTIONS[contextCustomer.id].map((a, i) => (
+                      <div key={i} style={{ padding:"10px 12px", borderRadius:8, background:PRIORITY_COLORS[a.priority]?.bg || T.bg,
+                        border:`1px solid ${PRIORITY_COLORS[a.priority]?.border || T.border}`, marginBottom:8 }}>
+                        <div style={{ fontSize:11, fontWeight:600, color:PRIORITY_COLORS[a.priority]?.text, marginBottom:4 }}>{a.priority} - {a.type}</div>
+                        <div style={{ fontSize:12, color:PRIORITY_COLORS[a.priority]?.text, lineHeight:1.5 }}>{a.action}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div>No AI actions for this customer.</div>
+                  )}
+                </>
+              ) : (
+                <div style={{ textAlign:"center", padding:"20px 0" }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:T.text, marginBottom:8 }}>How can I help?</div>
+                  <div>Select a customer for context-aware suggestions, or ask me anything about your portfolio.</div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ padding:"12px 16px", borderTop:`1px solid ${T.border}`, display:"flex", gap:8 }}>
+            <input placeholder="Ask Nova AI..." style={{ flex:1, padding:"8px 12px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:13, fontFamily:T.font, outline:"none", background:T.bg }} />
+            <div style={{ width:34, height:34, borderRadius:8, background:`linear-gradient(135deg,${T.accent},#27a080)`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+              {Ico.send(14)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Overlays */}
+      <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} persona={persona} />
+      <CommandPalette open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
+        onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); }} />
+    </div>
+  );
+}
