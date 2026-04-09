@@ -183,18 +183,17 @@ export default function Shell({ userType }) {
   const isBroker = persona === "Broker";
   const needsAttentionCount = getNeedsAttention().length;
 
-  // ── Nav groups ──
+  // ── Nav groups — simplified per-persona ──
   const navGroups = isBroker
     ? [
-        { group:"MY CASES", items:[
-          { id:"brokerdashboard", label:"Dashboard",        icon:"dashboard" },
-          { id:"myapplications",  label:"My Applications",  icon:"loans" },
-          { id:"eligibility",     label:"Eligibility Check", icon:"zap" },
-          { id:"smartapply",      label:"Smart Apply",       icon:"sparkle" },
+        // Broker: 3 things — submit, track, earn
+        { group:"HOME", items:[
+          { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
+          { id:"smartapply",      label:"Smart Apply",          icon:"sparkle" },
+          { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
         { group:"CUSTOMERS", items:[
-          { id:"brokercustomers", label:"My Customers", icon:"customers" },
-          { id:"customerportal",  label:"Portal Preview", icon:"eye" },
+          { id:"brokercustomers", label:"My Customers",  icon:"customers" },
         ]},
         { group:"INSIGHTS", items:[
           { id:"brokermi",       label:"My MI",        icon:"chart" },
@@ -205,105 +204,164 @@ export default function Shell({ userType }) {
           { id:"settings", label:"Settings", icon:"settings" },
         ]},
       ]
+    : persona === "Underwriter"
+    ? [
+        // Underwriter: queue → case → decision. That's it.
+        { group:"MY WORK", items:[
+          { id:"intake",          label:"My Queue",           icon:"shield", badge:3 },
+          { id:"approvals",       label:"Approvals",          icon:"check" },
+        ]},
+        { group:"CUSTOMERS", items:[
+          { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
+          { id:"allcustomers",    label:"All Customers",      icon:"customers" },
+        ]},
+        { group:"INTELLIGENCE", items:[
+          { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
+          { id:"mymi",            label:"My MI",              icon:"chart" },
+          { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
+        ]},
+        { group:"SERVICING", items:[
+          { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
+        ]},
+        { group:null, items:[
+          { id:"settings",        label:"Settings",           icon:"settings" },
+        ]},
+      ]
+    : persona === "Finance"
+    ? [
+        // Finance: disbursements first, then risk tools
+        { group:"MY WORK", items:[
+          { id:"disbursements",   label:"Disbursements",      icon:"dollar" },
+          { id:"approvals",       label:"Approvals",          icon:"check" },
+        ]},
+        { group:"CUSTOMERS", items:[
+          { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
+          { id:"allcustomers",    label:"All Customers",      icon:"customers" },
+        ]},
+        { group:"PRODUCTS", items:[
+          { id:"mortgages",       label:"Mortgages",           icon:"loans" },
+          { id:"savings",         label:"Savings",             icon:"dollar" },
+          { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
+        ]},
+        { group:"RISK & ANALYTICS", items:[
+          { id:"portfoliorisk",   label:"Portfolio Risk",      icon:"shield" },
+          { id:"stresstest",      label:"Stress Testing",      icon:"alert" },
+          { id:"pricing",         label:"Pricing Engine",      icon:"dollar" },
+          { id:"mymi",            label:"My MI",               icon:"chart" },
+          { id:"brokerscorecard", label:"Broker Scorecard",    icon:"customers" },
+        ]},
+        { group:"TOOLS", items:[
+          { id:"boardpack",       label:"Board Pack",          icon:"file" },
+          { id:"compliance_cal",  label:"Compliance Calendar", icon:"clock" },
+          { id:"messages",        label:"Messages",            icon:"messages", badge:5 },
+        ]},
+        { group:null, items:[
+          { id:"settings",        label:"Settings",           icon:"settings" },
+        ]},
+      ]
+    : persona === "Risk Analyst"
+    ? [
+        // Risk Analyst: compliance hub + risk tools
+        { group:"COMPLIANCE HUB", items:[
+          { id:"consumerduty",    label:"Consumer Duty",       icon:"shield" },
+          { id:"regulatory",      label:"Regulatory",          icon:"file" },
+          { id:"compliance_cal",  label:"Compliance Calendar", icon:"clock" },
+        ]},
+        { group:"RISK ANALYSIS", items:[
+          { id:"portfoliorisk",   label:"Portfolio Risk",      icon:"shield" },
+          { id:"stresstest",      label:"Stress Testing",      icon:"alert" },
+          { id:"riskanomaly",     label:"Risk & Anomalies",    icon:"alert" },
+          { id:"aimodels",        label:"AI Models",           icon:"sparkle" },
+        ]},
+        { group:"CUSTOMERS", items:[
+          { id:"needsattention",  label:"Needs Attention",     icon:"alert", badge:needsAttentionCount },
+          { id:"allcustomers",    label:"All Customers",       icon:"customers" },
+        ]},
+        { group:"SERVICING", items:[
+          { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
+        ]},
+        { group:null, items:[
+          { id:"mymi",            label:"My MI",              icon:"chart" },
+          { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
+          { id:"settings",        label:"Settings",           icon:"settings" },
+        ]},
+      ]
     : [
+        // Ops & Admin — shared base, Admin gets extra sections
         { group:"MY CUSTOMERS", items:[
-          { id:"needsattention", label:"Needs Attention", icon:"alert",     badge:needsAttentionCount },
-          { id:"allcustomers",   label:"All Customers",   icon:"customers" },
-          { id:"newcustomer",    label:"New Customer",    icon:"plus" },
+          { id:"needsattention",  label:"Needs Attention",     icon:"alert", badge:needsAttentionCount },
+          { id:"allcustomers",    label:"All Customers",       icon:"customers" },
+          { id:"newcustomer",     label:"New Customer",        icon:"plus" },
         ]},
         { group:"WORKFLOWS", items:[
-          { id:"intake",         label:"Intake Queue",     icon:"zap",    badge:3 },
-          { id:"caseworkbench",  label:"Case Workbench",   icon:"loans" },
-          { id:"approvals",      label:"Approvals",        icon:"check" },
-          ...((persona === "Ops" || persona === "Admin") ? [
-            { id:"valuations",   label:"Valuations",       icon:"eye" },
-            { id:"property",     label:"Property Intel",   icon:"search" },
-          ] : []),
-          ...(persona === "Finance" ? [
-            { id:"disbursements",label:"Disbursements",    icon:"dollar" },
+          { id:"intake",          label:"Intake Queue",        icon:"zap", badge:3 },
+          { id:"approvals",       label:"Approvals",           icon:"check" },
+          ...(persona === "Ops" || persona === "Admin" ? [
+            { id:"valuations",    label:"Valuations & Property",icon:"eye" },
           ] : []),
         ]},
         { group:"PRODUCTS", items:[
-          { id:"mortgages",       label:"Mortgages",         icon:"loans" },
-          { id:"savings",         label:"Savings",           icon:"dollar" },
-          ...((persona === "Ops" || persona === "Finance" || persona === "Admin") ? [
-            { id:"savingsdashboard", label:"Savings Operations", icon:"wallet" },
-          ] : []),
-          { id:"currentaccounts", label:"Current Accounts",  icon:"wallet" },
-          { id:"insurance",       label:"Insurance",         icon:"shield" },
-          { id:"sharedownership", label:"Shared Ownership",  icon:"assign" },
+          { id:"mortgages",       label:"Mortgages",            icon:"loans" },
+          { id:"savings",         label:"Savings",              icon:"dollar" },
+          { id:"currentaccounts", label:"Current Accounts",     icon:"wallet" },
+          { id:"insurance",       label:"Insurance",            icon:"shield" },
+          { id:"sharedownership", label:"Shared Ownership",     icon:"assign" },
         ]},
-        { group:"SERVICING", visible:["Ops","Admin","Underwriter","Finance","Risk Analyst"].includes(persona), items:[
-          { id:"servicing",      label:"Mortgage Servicing", icon:"wallet" },
-          ...((persona === "Ops" || persona === "Admin") ? [
-            { id:"collections",  label:"Collections",       icon:"alert" },
-            { id:"rateswitch",   label:"Rate Switches",     icon:"arrow" },
+        { group:"SERVICING", items:[
+          { id:"servicing",       label:"Mortgage Servicing",   icon:"wallet" },
+          ...(persona === "Ops" ? [
+            { id:"complaints",    label:"Complaints",           icon:"alert" },
           ] : []),
         ]},
         { group:"INTELLIGENCE", items:[
-          { id:"aidashboard",        label:"AI Dashboard",       icon:"sparkle" },
-          { id:"riskanomaly",        label:"Risk & Anomalies",   icon:"alert" },
-          ...((persona === "Admin" || persona === "Ops") ? [
-            { id:"forecaster",       label:"Pipeline Forecaster", icon:"chart" },
+          { id:"aidashboard",     label:"AI Dashboard",         icon:"sparkle" },
+          { id:"mymi",            label:"My MI",                icon:"chart" },
+          ...(persona === "Admin" ? [
+            { id:"forecaster",    label:"Pipeline Forecaster",  icon:"chart" },
+            { id:"brokerscorecard",label:"Broker Scorecard",    icon:"customers" },
           ] : []),
-          ...((persona === "Admin" || persona === "Finance") ? [
-            { id:"aimodels",         label:"AI Models",           icon:"sparkle" },
-          ] : []),
-        ]},
-        { group:"ANALYTICS", items:[
-          { id:"mymi",              label:"My MI",           icon:"chart" },
-          ...((persona === "Admin" || persona === "Finance") ? [
-            { id:"portfoliorisk",   label:"Portfolio Risk",  icon:"shield" },
-            { id:"brokerscorecard", label:"Broker Scorecard",icon:"customers" },
-          ] : []),
-          { id:"messages",          label:"Messages",        icon:"messages", badge:5 },
+          { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
         ]},
         ...((persona === "Ops" || persona === "Admin") ? [{
-          group:"OPERATIONS", items:[
-            { id:"commscentre",    label:"Comms Centre",     icon:"send" },
-            { id:"doctemplates",   label:"Doc Templates",    icon:"file" },
-            { id:"casejourney",    label:"Case Journey",     icon:"clock" },
+          group:"OPS TOOLKIT", items:[
+            { id:"commscentre",    label:"Comms Centre",        icon:"send" },
+            { id:"doctemplates",   label:"Doc Templates",       icon:"file" },
+            { id:"casejourney",    label:"Case Journey",        icon:"clock" },
           ],
         }] : []),
         ...(persona === "Admin" ? [{
-          group:"ADMIN", items:[
-            { id:"usersroles",    label:"Users & Roles",    icon:"users" },
-            { id:"permissions",   label:"Permissions",       icon:"shield" },
-            { id:"team",          label:"Team Hierarchy",    icon:"assign" },
-            { id:"mandates",      label:"Mandates",          icon:"shield" },
-            { id:"sessions",      label:"Sessions",          icon:"lock" },
-            { id:"flags",         label:"Feature Flags",     icon:"zap" },
-            { id:"audit",         label:"Audit Trail",       icon:"clock" },
-            { id:"anomalies",     label:"AI Anomalies",      icon:"alert" },
-            { id:"workflows",     label:"Workflow Builder",  icon:"zap" },
-            { id:"products",      label:"Product Catalogue", icon:"products" },
-            { id:"reportbuilder", label:"Report Builder",    icon:"chart" },
-            { id:"apihealth",     label:"API Health",        icon:"zap" },
-            { id:"brokeronboard", label:"Broker Onboarding", icon:"assign" },
-            { id:"segmentation",  label:"Segmentation",      icon:"customers" },
-            { id:"dataexport",    label:"Data Export",        icon:"download" },
+          group:"PEOPLE", collapsed:true, items:[
+            { id:"usersroles",    label:"Users & Roles",        icon:"users" },
+            { id:"permissions",   label:"Permissions",           icon:"shield" },
+            { id:"team",          label:"Team Hierarchy",        icon:"assign" },
+            { id:"brokeronboard", label:"Broker Onboarding",    icon:"assign" },
+            { id:"segmentation",  label:"Segmentation",          icon:"customers" },
           ],
-        }] : []),
-        ...((persona === "Admin" || persona === "Finance") ? [{
-          group:"FINANCE & RISK", items:[
-            { id:"pricing",       label:"Pricing Engine",    icon:"dollar" },
-            { id:"stresstest",    label:"Stress Testing",    icon:"alert" },
-            { id:"boardpack",     label:"Board Pack",        icon:"file" },
-            { id:"compliance_cal",label:"Compliance Calendar",icon:"clock" },
+        },
+        {
+          group:"PLATFORM", collapsed:true, items:[
+            { id:"workflows",     label:"Workflow Builder",      icon:"zap" },
+            { id:"products",      label:"Product Catalogue",     icon:"products" },
+            { id:"flags",         label:"Feature Flags",         icon:"zap" },
+            { id:"mandates",      label:"Mandates",              icon:"shield" },
+            { id:"reportbuilder", label:"Report Builder",        icon:"chart" },
+            { id:"apihealth",     label:"API Health",            icon:"zap" },
+            { id:"dataexport",    label:"Data Export",            icon:"download" },
+            { id:"audit",         label:"Audit & Sessions",      icon:"clock" },
+            { id:"anomalies",     label:"AI Anomalies",          icon:"alert" },
           ],
-        }] : []),
-        ...((persona === "Risk Analyst" || persona === "Ops") ? [{
-          group:"COMPLIANCE", items:[
-            ...(persona === "Ops" ? [{ id:"complaints", label:"Complaints", icon:"alert" }] : []),
-            ...(persona === "Risk Analyst" ? [
-              { id:"consumerduty", label:"Consumer Duty", icon:"shield" },
-              { id:"regulatory",   label:"Regulatory",    icon:"file" },
-            ] : []),
+        },
+        {
+          group:"FINANCE & RISK", collapsed:true, items:[
+            { id:"portfoliorisk", label:"Portfolio Risk",        icon:"shield" },
+            { id:"stresstest",    label:"Stress Testing",        icon:"alert" },
+            { id:"pricing",       label:"Pricing Engine",        icon:"dollar" },
+            { id:"boardpack",     label:"Board Pack",            icon:"file" },
+            { id:"compliance_cal",label:"Compliance Calendar",   icon:"clock" },
           ],
         }] : []),
         { group:null, items:[
-          { id:"customerportal",  label:"Customer Portal", icon:"eye" },
-          { id:"settings",        label:"Settings",        icon:"settings" },
+          { id:"settings",        label:"Settings",             icon:"settings" },
         ]},
       ];
 
@@ -361,7 +419,7 @@ export default function Shell({ userType }) {
             {PERSONAS.map(p => (
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
-                setScreen(p === "Broker" ? "brokerdashboard" : "needsattention");
+                setScreen(p === "Broker" ? "brokerdashboard" : p === "Underwriter" ? "intake" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -388,10 +446,10 @@ export default function Shell({ userType }) {
                   cursor:"pointer", userSelect:"none" }}>
                 <span style={{ fontSize:10, fontWeight:700, color:"#4A5568", textTransform:"uppercase", letterSpacing:1 }}>{group.group}</span>
                 <span style={{ fontSize:9, color:"#4A5568", transition:"transform 0.2s",
-                  transform:collapsedGroups[group.group]?"rotate(-90deg)":"rotate(0)" }}>&#x25BC;</span>
+                  transform:(collapsedGroups[group.group] ?? group.collapsed)?"rotate(-90deg)":"rotate(0)" }}>&#x25BC;</span>
               </div>
             )}
-            {!collapsedGroups[group.group] && group.items.map(item => (
+            {!(collapsedGroups[group.group] ?? group.collapsed) && group.items.map(item => (
               <div key={item.id} onClick={() => { setScreen(item.id); if (isMobile) setSidebarOpen(false); }}
                 style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
                   cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
