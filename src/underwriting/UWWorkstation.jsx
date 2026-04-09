@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
-import { MOCK_LOANS } from "../data/loans";
+import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
+import SquadPanel from "../shared/SquadPanel";
 
 /* ─── Scorecard dimensions ─── */
 const SCORE_DIMS = [
@@ -138,6 +139,11 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
             color: mandateColor,
           }}>{mandateLabel}</span>
         </div>
+      </div>
+
+      {/* ══════ SQUAD PANEL ══════ */}
+      <div style={{ marginBottom:20 }}>
+        <SquadPanel squad={loan.squad} />
       </div>
 
       {/* ══════ TWO-COLUMN LAYOUT ══════ */}

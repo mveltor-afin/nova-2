@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
-import { MOCK_LOANS } from "../data/loans";
+import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
+import SquadPanel from "../shared/SquadPanel";
 
 /* ─── Queue case data ─── */
 const QUEUE_CASES = [
@@ -229,8 +230,13 @@ function SmartQueue({ onOpenCase }) {
               </div>
 
               {/* Squad */}
-              <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 14 }}>
-                <span style={{ fontWeight: 600 }}>BDM:</span> {c.squad.bdm} &nbsp;·&nbsp; <span style={{ fontWeight: 600 }}>Ops:</span> {c.squad.ops}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+                <span style={{ fontSize:11, color:T.textMuted, fontWeight:600 }}>Squad:</span>
+                {c.loanRef?.squad ? <SquadPanel squad={c.loanRef.squad} compact /> : (
+                  <div style={{ fontSize:12, color:T.textMuted }}>
+                    <span style={{ fontWeight:600 }}>BDM:</span> {c.squad?.bdm || "—"} · <span style={{ fontWeight:600 }}>Ops:</span> {c.squad?.ops || "—"}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
