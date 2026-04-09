@@ -21,14 +21,14 @@ const DEMO_RESPONSES = {
   "Summarise this case": {
     text: `**Case Summary -- ML-2024-04821**
 
-This is a residential remortgage application for **Sarah & James Mitchell**, submitted by broker NatWest Intermediaries on 18 Mar 2026. The property at **14 Oakwood Drive, Cheltenham GL52 3HJ** was valued at **\u00a3425,000** with a requested loan of **\u00a3297,500** (LTV 70%).
+This is a residential remortgage application for **Sarah & James Mitchell**, submitted by broker NatWest Intermediaries on 18 Mar 2026. The property at **14 Oakwood Drive, Cheltenham GL52 3HJ** was valued at **£425,000** with a requested loan of **£297,500** (LTV 70%).
 
 Key observations:
-- Affordability verified at **3.2x combined income** (\u00a393,400 joint)
+- Affordability verified at **3.2x combined income** (£93,400 joint)
 - Credit score: **712** (Experian) -- no adverse in last 6 years
-- Existing mortgage with Halifax, \u00a3302,100 outstanding, rate expiry 01 May 2026
+- Existing mortgage with Halifax, £302,100 outstanding, rate expiry 01 May 2026
 - AML/KYC checks **passed** on both applicants
-- Valuation complete -- surveyor value aligned with AVM (\u00a3422,000 vs \u00a3425,000)
+- Valuation complete -- surveyor value aligned with AVM (£422,000 vs £425,000)
 - Outstanding item: **employer reference for James Mitchell** (chased 02 Apr)
 
 **Risk flags:** None. Recommend proceeding to formal offer once employer reference received.`,
@@ -48,7 +48,7 @@ Thank you for your recent submission regarding the Mitchell remortgage applicati
 
 I'm pleased to confirm the following progress:
 
-1. **Valuation** -- Completed and satisfactory (\u00a3425,000)
+1. **Valuation** -- Completed and satisfactory (£425,000)
 2. **AML/KYC** -- All checks passed for both applicants
 3. **Affordability** -- Verified and within policy parameters
 4. **Credit search** -- No adverse findings
@@ -71,25 +71,25 @@ Helix Bank Mortgage Operations
 
 Based on the customer profile, transaction history, and current product holdings, Nova identifies the following opportunities:
 
-1. **Home Insurance Bundle** -- Estimated revenue: **\u00a3480/yr**
+1. **Home Insurance Bundle** -- Estimated revenue: **£480/yr**
    - No existing home insurance on file; property completion imminent
    - Conversion probability: **82%**
 
-2. **Life & Critical Illness Cover** -- Estimated revenue: **\u00a31,200/yr**
+2. **Life & Critical Illness Cover** -- Estimated revenue: **£1,200/yr**
    - Joint mortgage with no linked protection products
-   - Combined cover \u00a3297,500 aligned with mortgage balance
+   - Combined cover £297,500 aligned with mortgage balance
    - Conversion probability: **68%**
 
-3. **Premium Current Account** -- Estimated revenue: **\u00a3228/yr**
-   - Both applicants bank with competitors; salary credits show \u00a37,800/month combined
+3. **Premium Current Account** -- Estimated revenue: **£228/yr**
+   - Both applicants bank with competitors; salary credits show £7,800/month combined
    - Offer: fee-free for 12 months with mortgage bundle
    - Conversion probability: **45%**
 
-4. **Savings Account (Fixed Rate ISA)** -- Estimated revenue: **\u00a3340/yr**
-   - Surplus monthly income of ~\u00a32,100 identified from bank statements
+4. **Savings Account (Fixed Rate ISA)** -- Estimated revenue: **£340/yr**
+   - Surplus monthly income of ~£2,100 identified from bank statements
    - Conversion probability: **55%**
 
-**Total estimated annual revenue: \u00a32,248**
+**Total estimated annual revenue: £2,248**
 **Recommended next step:** Trigger retention journey with bundled offer at completion stage.`,
     hasAction: false,
   },
@@ -114,18 +114,18 @@ Currently **4 cases** are breaching or at risk of breaching SLA:
   "Unassigned cases": {
     text: `There are currently **7 unassigned cases** in the pipeline:
 
-- **ML-04835** -- New submission, residential purchase, \u00a3380,000 (received 2 hrs ago)
-- **ML-04834** -- BTL remortgage, \u00a3520,000 (received 3 hrs ago)
-- **ML-04832** -- Help to Buy equity loan repayment, \u00a3195,000 (received 5 hrs ago)
-- **ML-04830** -- Shared ownership staircasing, \u00a3275,000 (received yesterday)
-- **ML-04828** -- Product transfer, \u00a3410,000 (received yesterday)
-- **ML-04826** -- Further advance, \u00a385,000 (received 2 days ago)
-- **ML-04820** -- New build purchase, \u00a3345,000 (received 3 days ago -- **priority**)
+- **ML-04835** -- New submission, residential purchase, £380,000 (received 2 hrs ago)
+- **ML-04834** -- BTL remortgage, £520,000 (received 3 hrs ago)
+- **ML-04832** -- Help to Buy equity loan repayment, £195,000 (received 5 hrs ago)
+- **ML-04830** -- Shared ownership staircasing, £275,000 (received yesterday)
+- **ML-04828** -- Product transfer, £410,000 (received yesterday)
+- **ML-04826** -- Further advance, £85,000 (received 2 days ago)
+- **ML-04820** -- New build purchase, £345,000 (received 3 days ago -- **priority**)
 
 **Suggested assignments** based on workload and specialisation:
-- ML-04835, ML-04828 \u2192 **Amir Hassan** (capacity: 3 slots, residential specialist)
-- ML-04834 \u2192 **Claire Dunn** (BTL specialist)
-- ML-04820 \u2192 **Mark Stevens** (new build experience, urgent)`,
+- ML-04835, ML-04828 → **Amir Hassan** (capacity: 3 slots, residential specialist)
+- ML-04834 → **Claire Dunn** (BTL specialist)
+- ML-04820 → **Mark Stevens** (new build experience, urgent)`,
     hasAction: false,
   },
   "Check affordability": {
@@ -133,14 +133,14 @@ Currently **4 cases** are breaching or at risk of breaching SLA:
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Gross joint income | \u00a393,400 | Verified |
-| Net monthly income | \u00a35,680 | Verified |
-| Loan amount | \u00a3297,500 | -- |
+| Gross joint income | £93,400 | Verified |
+| Net monthly income | £5,680 | Verified |
+| Loan amount | £297,500 | -- |
 | Income multiple | **3.18x** | Within 4.49x limit |
-| Monthly payment (stress) | \u00a31,487 | At stress rate 8.5% |
+| Monthly payment (stress) | £1,487 | At stress rate 8.5% |
 | Debt-to-income | **26.2%** | Below 45% threshold |
-| Committed expenditure | \u00a31,840/mo | Verified via bank statements |
-| Residual income | \u00a32,353/mo | Above \u00a31,200 minimum |
+| Committed expenditure | £1,840/mo | Verified via bank statements |
+| Residual income | £2,353/mo | Above £1,200 minimum |
 
 **Result: PASS** -- All affordability criteria met. No ONS adjustments required.`,
     hasAction: false,
@@ -165,12 +165,12 @@ No manual referral triggers activated.`,
 Churn probability: **34%** (moderate -- rate expiry approaching)
 
 Recommended actions:
-1. **Proactive rate switch offer** -- 4.19% 2yr fixed (saving \u00a387/mo vs revert rate)
-2. **Bundle incentive** -- Waive \u00a3499 product fee if retained with insurance add-on
+1. **Proactive rate switch offer** -- 4.19% 2yr fixed (saving £87/mo vs revert rate)
+2. **Bundle incentive** -- Waive £499 product fee if retained with insurance add-on
 3. **Personal outreach** -- Schedule RM call 14 days before rate expiry
 4. **Digital nudge** -- Trigger portal notification with personalised offer
 
-Estimated retention value: **\u00a318,200** (lifetime revenue at risk)`,
+Estimated retention value: **£18,200** (lifetime revenue at risk)`,
     hasAction: false,
   },
   "Rate switch options": {
@@ -178,12 +178,12 @@ Estimated retention value: **\u00a318,200** (lifetime revenue at risk)`,
 
 | Product | Rate | Term | Monthly Pmt | Saving vs Revert |
 |---------|------|------|------------|-----------------|
-| Fix 2yr | 4.19% | 24 mo | \u00a31,298 | \u00a3187/mo |
-| Fix 5yr | 4.49% | 60 mo | \u00a31,342 | \u00a3143/mo |
-| Tracker  | 4.09% (BBR+0.84) | 24 mo | \u00a31,283 | \u00a3202/mo |
-| Discount | 4.35% | 24 mo | \u00a31,321 | \u00a3164/mo |
+| Fix 2yr | 4.19% | 24 mo | £1,298 | £187/mo |
+| Fix 5yr | 4.49% | 60 mo | £1,342 | £143/mo |
+| Tracker  | 4.09% (BBR+0.84) | 24 mo | £1,283 | £202/mo |
+| Discount | 4.35% | 24 mo | £1,321 | £164/mo |
 
-Current revert rate: **6.49%** (\u00a31,485/mo). All options assume \u00a3297,500 balance, 25yr remaining term.`,
+Current revert rate: **6.49%** (£1,485/mo). All options assume £297,500 balance, 25yr remaining term.`,
     hasAction: false,
   },
 };
@@ -305,7 +305,7 @@ export default function NovaCopilot({ open, onClose, context = {} }) {
             fontSize: 10, marginTop: 3, padding: "2px 8px", borderRadius: 4,
             background: "rgba(255,255,255,0.15)", display: "inline-block",
           }}>
-            {screen}{loanId ? ` / ${loanId}` : ""}{persona ? ` \u00b7 ${persona}` : ""}
+            {screen}{loanId ? ` / ${loanId}` : ""}{persona ? ` · ${persona}` : ""}
           </div>
         </div>
         <div onClick={onClose} style={{ cursor: "pointer", opacity: 0.8 }}>{Ico.x(18)}</div>

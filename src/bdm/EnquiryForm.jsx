@@ -8,7 +8,7 @@ const brokerOptions = [
   { value: "Apex Mortgages", label: "Apex Mortgages" },
   { value: "Prime Financial", label: "Prime Financial" },
   { value: "Direct Broker Ltd", label: "Direct Broker Ltd" },
-  { value: "new", label: "New broker \u2014 enter details" },
+  { value: "new", label: "New broker — enter details" },
 ];
 
 const customerTypes = ["Residential", "BTL", "Shared Ownership", "Remortgage"];
@@ -139,14 +139,14 @@ function EnquiryForm({ onBack }) {
         {/* Financials */}
         <div style={{ fontSize: 13, fontWeight: 700, color: T.textSecondary, marginBottom: 10, marginTop: 20 }}>Financials</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          <Input label="Income" value={income} onChange={setIncome} prefix="\u00a3" placeholder="70,000" type="number" required />
-          <Input label="Property Value" value={propValue} onChange={setPropValue} prefix="\u00a3" placeholder="350,000" type="number" required />
-          <Input label="Deposit / Equity" value={deposit} onChange={setDeposit} prefix="\u00a3" placeholder="100,000" type="number" required />
+          <Input label="Income" value={income} onChange={setIncome} prefix="£" placeholder="70,000" type="number" required />
+          <Input label="Property Value" value={propValue} onChange={setPropValue} prefix="£" placeholder="350,000" type="number" required />
+          <Input label="Deposit / Equity" value={deposit} onChange={setDeposit} prefix="£" placeholder="100,000" type="number" required />
         </div>
         {pv > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 8, background: ltv > 90 ? T.dangerBg : ltv > 80 ? T.warningBg : T.successBg, marginBottom: 16 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: ltv > 90 ? T.danger : ltv > 80 ? "#92400E" : T.success }}>LTV: {ltv}%</span>
-            <span style={{ fontSize: 12, color: T.textMuted }}>Loan amount: \u00a3{(pv - dep).toLocaleString()}</span>
+            <span style={{ fontSize: 12, color: T.textMuted }}>Loan amount: £{(pv - dep).toLocaleString()}</span>
           </div>
         )}
 
@@ -179,7 +179,7 @@ function EnquiryForm({ onBack }) {
         </div>
 
         <Btn primary onClick={handleCheckCriteria} disabled={checking || phase > 1} icon="sparkle">
-          {checking ? "Checking..." : "Check Criteria \u2192"}
+          {checking ? "Checking..." : "Check Criteria →"}
         </Btn>
       </Card>
 
@@ -242,7 +242,7 @@ function EnquiryForm({ onBack }) {
               <div style={{ fontSize: 13, color: T.text, lineHeight: 1.5 }}>
                 {aiResult === "Ineligible"
                   ? `At ${ltv}% LTV, no products are available. Consider increasing the deposit to bring LTV below 90%.`
-                  : `Based on \u00a3${income || "70,000"} income and ${ltv}% LTV, this client fits ${mockProducts.filter(p => ltv <= p.maxLtv).length} standard ${custType || "residential"} products. Recommend Afin Fix 2yr 75% at 4.49%.`
+                  : `Based on £${income || "70,000"} income and ${ltv}% LTV, this client fits ${mockProducts.filter(p => ltv <= p.maxLtv).length} standard ${custType || "residential"} products. Recommend Afin Fix 2yr 75% at 4.49%.`
                 }
               </div>
             </div>
@@ -250,7 +250,7 @@ function EnquiryForm({ onBack }) {
 
           {aiResult !== "Ineligible" && phase === 2 && (
             <div style={{ marginTop: 20, textAlign: "center" }}>
-              <Btn primary onClick={() => setPhase(3)} icon="arrow">Continue to Squad Allocation \u2192</Btn>
+              <Btn primary onClick={() => setPhase(3)} icon="arrow">Continue to Squad Allocation →</Btn>
             </div>
           )}
         </Card>
@@ -290,7 +290,7 @@ function EnquiryForm({ onBack }) {
               ]} />
               <div style={{ fontSize: 11, color: T.textMuted, padding: "8px 10px", borderRadius: 6, background: T.primaryLight, display: "flex", gap: 6, alignItems: "flex-start" }}>
                 {Ico.bot(12)}
-                <span>Tom Walker recommended \u2014 lowest workload and BTL experience.</span>
+                <span>Tom Walker recommended — lowest workload and BTL experience.</span>
               </div>
             </div>
 
@@ -299,11 +299,11 @@ function EnquiryForm({ onBack }) {
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#5B21B6", letterSpacing: 0.4, marginBottom: 10 }}>Underwriter</div>
               <Select value={autoAssign ? "Amir Hassan" : uwChoice} onChange={setUwChoice} options={[
                 { value: "", label: "Select..." },
-                ...uwMembers.map(m => ({ value: m.name, label: `${m.name} (${m.active} active) \u2014 ${m.mandate}` })),
+                ...uwMembers.map(m => ({ value: m.name, label: `${m.name} (${m.active} active) — ${m.mandate}` })),
               ]} />
               <div style={{ fontSize: 11, color: T.textMuted, padding: "8px 10px", borderRadius: 6, background: T.primaryLight, display: "flex", gap: 6, alignItems: "flex-start" }}>
                 {Ico.bot(12)}
-                <span>Amir Hassan recommended \u2014 specialist in self-employed cases.</span>
+                <span>Amir Hassan recommended — specialist in self-employed cases.</span>
               </div>
             </div>
           </div>
@@ -320,7 +320,7 @@ function EnquiryForm({ onBack }) {
           </div>
 
           <Btn primary onClick={handleSubmitEnquiry} disabled={submitting} icon="send">
-            {submitting ? "Submitting..." : "Submit Enquiry & Notify Squad \u2192"}
+            {submitting ? "Submitting..." : "Submit Enquiry & Notify Squad →"}
           </Btn>
         </Card>
       )}

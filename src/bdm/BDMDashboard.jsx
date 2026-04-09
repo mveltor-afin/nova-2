@@ -3,10 +3,10 @@ import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 
 const enquiries = [
-  { id: "ENQ-001", broker: "Watson & Partners", scenario: "3-bed semi, employed, \u00a370k income", amount: 350000, ltv: 72, aiResult: "Eligible", status: "DIP Submitted", squad: "ST/TW/JM" },
+  { id: "ENQ-001", broker: "Watson & Partners", scenario: "3-bed semi, employed, £70k income", amount: 350000, ltv: 72, aiResult: "Eligible", status: "DIP Submitted", squad: "ST/TW/JM" },
   { id: "ENQ-002", broker: "Apex Mortgages", scenario: "BTL, 2-bed flat, portfolio landlord", amount: 220000, ltv: 75, aiResult: "Eligible", status: "Sent to Broker", squad: "ST/TW/AH" },
   { id: "ENQ-003", broker: "Prime Financial", scenario: "Self-employed, 2yr accounts", amount: 480000, ltv: 85, aiResult: "Conditional", status: "Under Review", squad: "ST/LC/JM" },
-  { id: "ENQ-004", broker: "Watson & Partners", scenario: "First time buyer, Help to Buy", amount: 180000, ltv: 95, aiResult: "Ineligible", status: "Criteria Not Met", squad: "\u2014" },
+  { id: "ENQ-004", broker: "Watson & Partners", scenario: "First time buyer, Help to Buy", amount: 180000, ltv: 95, aiResult: "Ineligible", status: "Criteria Not Met", squad: "—" },
   { id: "ENQ-005", broker: "Direct Broker Ltd", scenario: "Remortgage, 4-bed detached", amount: 520000, ltv: 65, aiResult: "Eligible", status: "New", squad: "Pending" },
   { id: "ENQ-006", broker: "Apex Mortgages", scenario: "Shared ownership, 40% share", amount: 128000, ltv: 90, aiResult: "Eligible", status: "Application", squad: "ST/TW/JM" },
   { id: "ENQ-007", broker: "Prime Financial", scenario: "Non-standard construction", amount: 290000, ltv: 78, aiResult: "Conditional", status: "Awaiting UW", squad: "ST/LC/AH" },
@@ -21,17 +21,17 @@ const brokers = [
 ];
 
 const leaderboard = [
-  { name: "Sarah Thompson", pipeline: "\u00a33.8M", enquiries: 12, current: true },
-  { name: "Mike Chen", pipeline: "\u00a32.9M", enquiries: 9, current: false },
-  { name: "Rachel Adams", pipeline: "\u00a34.1M", enquiries: 14, current: false },
-  { name: "David Park", pipeline: "\u00a31.6M", enquiries: 5, current: false },
+  { name: "Sarah Thompson", pipeline: "£3.8M", enquiries: 12, current: true },
+  { name: "Mike Chen", pipeline: "£2.9M", enquiries: 9, current: false },
+  { name: "Rachel Adams", pipeline: "£4.1M", enquiries: 14, current: false },
+  { name: "David Park", pipeline: "£1.6M", enquiries: 5, current: false },
 ];
 
 const meetings = [
-  { day: "Tue", time: "10am", desc: "Watson & Partners \u2014 Product update" },
-  { day: "Wed", time: "2pm", desc: "New broker onboarding \u2014 Apex" },
-  { day: "Thu", time: "11am", desc: "Prime Financial \u2014 Pipeline review" },
-  { day: "Fri", time: "9am", desc: "Direct Broker Ltd \u2014 Introductory visit" },
+  { day: "Tue", time: "10am", desc: "Watson & Partners — Product update" },
+  { day: "Wed", time: "2pm", desc: "New broker onboarding — Apex" },
+  { day: "Thu", time: "11am", desc: "Prime Financial — Pipeline review" },
+  { day: "Fri", time: "9am", desc: "Direct Broker Ltd — Introductory visit" },
 ];
 
 const aiResultStyle = (result) => {
@@ -56,7 +56,7 @@ function BDMDashboard({ onNewEnquiry, onOpenEnquiry }) {
       <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
         <KPICard label="Enquiries This Month" value="12" color={T.primary} />
         <KPICard label="Conversion Rate" value="42%" color={T.accent} />
-        <KPICard label="Pipeline Value" value="\u00a33.8M" color={T.primary} />
+        <KPICard label="Pipeline Value" value="£3.8M" color={T.primary} />
         <KPICard label="Broker Meetings This Week" value="4" color={T.warning} />
         <KPICard label="Active Squads" value="6" color="#7C3AED" />
       </div>
@@ -90,7 +90,7 @@ function BDMDashboard({ onNewEnquiry, onOpenEnquiry }) {
                       <td style={{ padding: "10px 14px", fontWeight: 600, color: T.primary }}>{e.id}</td>
                       <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{e.broker}</td>
                       <td style={{ padding: "10px 14px", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.scenario}</td>
-                      <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>\u00a3{e.amount.toLocaleString()}</td>
+                      <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>£{e.amount.toLocaleString()}</td>
                       <td style={{ padding: "10px 14px" }}>{e.ltv}%</td>
                       <td style={{ padding: "10px 14px" }}>
                         <span style={{ ...aiResultStyle(e.aiResult), padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{e.aiResult}</span>

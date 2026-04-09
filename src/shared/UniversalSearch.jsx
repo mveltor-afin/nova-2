@@ -86,7 +86,7 @@ function UniversalSearch({ open, onClose, onAction }) {
       results.push({ type: "header", label: "Customers" });
       customerHits.forEach(c => results.push({
         type: "customer", id: c.id, title: c.name,
-        subtitle: `${c.id} \u2022 ${c.segment} \u2022 ${c.email}`,
+        subtitle: `${c.id} • ${c.segment} • ${c.email}`,
         icon: "user", data: c,
       }));
     }
@@ -98,8 +98,8 @@ function UniversalSearch({ open, onClose, onAction }) {
     if (caseHits.length) {
       results.push({ type: "header", label: "Cases" });
       caseHits.forEach(l => results.push({
-        type: "case", id: l.id, title: `${l.id} \u2014 ${l.names}`,
-        subtitle: `${l.product} \u2022 ${l.amount} \u2022 ${l.status?.replace(/_/g, " ")}`,
+        type: "case", id: l.id, title: `${l.id} — ${l.names}`,
+        subtitle: `${l.product} • ${l.amount} • ${l.status?.replace(/_/g, " ")}`,
         icon: "loans", data: l,
       }));
     }
@@ -112,8 +112,8 @@ function UniversalSearch({ open, onClose, onAction }) {
       matchText(p.id, q) || matchText(p.product, q) || matchText(p.customerId, q)
     ).slice(0, 3);
     const combinedAccounts = [
-      ...accountHits.map(a => ({ type: "account", id: a.id, title: `${a.id} \u2014 ${a.name}`, subtitle: `${a.product} \u2022 ${a.balance} \u2022 ${a.state}`, icon: "dollar", data: a })),
-      ...productHits.filter(p => !accountHits.some(a => a.id === p.id)).map(p => ({ type: "account", id: p.id, title: `${p.id} \u2014 ${p.product}`, subtitle: `${p.type} \u2022 ${p.balance} \u2022 ${p.status}`, icon: "wallet", data: p })),
+      ...accountHits.map(a => ({ type: "account", id: a.id, title: `${a.id} — ${a.name}`, subtitle: `${a.product} • ${a.balance} • ${a.state}`, icon: "dollar", data: a })),
+      ...productHits.filter(p => !accountHits.some(a => a.id === p.id)).map(p => ({ type: "account", id: p.id, title: `${p.id} — ${p.product}`, subtitle: `${p.type} • ${p.balance} • ${p.status}`, icon: "wallet", data: p })),
     ].slice(0, 5);
     if (combinedAccounts.length) {
       results.push({ type: "header", label: "Accounts" });

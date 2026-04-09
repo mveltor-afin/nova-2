@@ -63,7 +63,7 @@ const INCOME_DATA = {
     yoy: { year1: 52000, year2: 65000, growth: "+25%", flag: "Insufficient history — only 2 years available" },
     affordability: { dti: "28.4%", dtiStressed: "42.1%", dtiColor: T.success, stressedColor: "#F59E0B" },
     sustainability: { level: "MEDIUM", color: "#F59E0B", text: "Self-employed 2 years, income growing but variable. Rental income stable." },
-    ai: "Self-employed income has grown 25% YoY but only 2 years of history available. Monthly variability is high (\u00b135%). Rental income (\u00a312,000) is stable and can be relied upon. Recommend: use 2-year average (\u00a358,500) for affordability, not latest year.",
+    ai: "Self-employed income has grown 25% YoY but only 2 years of history available. Monthly variability is high (±35%). Rental income (£12,000) is stable and can be relied upon. Recommend: use 2-year average (£58,500) for affordability, not latest year.",
     ioData: null,
     budgetData: null,
   },
@@ -94,7 +94,7 @@ const INCOME_DATA = {
     yoy: null,
     affordability: { dti: "22.5%", dtiStressed: "29.8%", dtiColor: T.success, stressedColor: T.success },
     sustainability: { level: "HIGH", color: T.success, text: "Joint income, stable employment, but IO requires robust repayment vehicle" },
-    ai: "Joint income \u00a3142,000 comfortably supports IO payment. Repayment vehicle (ISA) projected to cover shortfall by 84% \u2014 recommend condition: annual review of repayment vehicle adequacy.",
+    ai: "Joint income £142,000 comfortably supports IO payment. Repayment vehicle (ISA) projected to cover shortfall by 84% — recommend condition: annual review of repayment vehicle adequacy.",
     ioData: {
       currentAge: 46,
       retirementAge: 67,
@@ -148,7 +148,7 @@ function getIncomeData(caseId) {
     yoy: null,
     affordability: { dti: "24.0%", dtiStressed: "31.5%", dtiColor: T.success, stressedColor: T.success },
     sustainability: { level: "HIGH", color: T.success, text: "Stable employment, verified income sources" },
-    ai: `Income of \u00a3${estimatedIncome.toLocaleString()} is verified and supports the requested loan of ${loan?.amount || "\u00a3300,000"}. Standard risk profile.`,
+    ai: `Income of £${estimatedIncome.toLocaleString()} is verified and supports the requested loan of ${loan?.amount || "£300,000"}. Standard risk profile.`,
     ioData: null,
     budgetData: null,
   };
@@ -176,11 +176,11 @@ function StackedHorizontalBar({ sources, total }) {
         {sources.map((s, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, background: s.color }} />
-            <span style={{ fontSize: 12, color: T.text }}>{s.name}: <strong>\u00a3{s.amount.toLocaleString()}</strong></span>
+            <span style={{ fontSize: 12, color: T.text }}>{s.name}: <strong>£{s.amount.toLocaleString()}</strong></span>
           </div>
         ))}
         <div style={{ fontSize: 12, fontWeight: 700, color: T.primary, marginLeft: "auto" }}>
-          Total: \u00a3{total.toLocaleString()}
+          Total: £{total.toLocaleString()}
         </div>
       </div>
     </div>
@@ -200,7 +200,7 @@ function MonthlyBarChart({ data, highlightMonth }) {
           return (
             <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: barWidth }}>
               <div style={{ fontSize: 9, fontWeight: 600, color: T.textMuted, marginBottom: 2 }}>
-                \u00a3{(d.amount / 1000).toFixed(1)}k
+                £{(d.amount / 1000).toFixed(1)}k
               </div>
               <div style={{
                 width: barWidth - 2, height: h, borderRadius: 3,
@@ -256,7 +256,7 @@ function BudgetComparison({ data }) {
       <div style={{ marginBottom: 12 }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Monthly Income</div>
         <div style={{ height: 32, borderRadius: 6, background: `linear-gradient(90deg, ${T.primary}, ${T.primaryDark})`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
-          \u00a3{data.monthlyIncome.toLocaleString()}
+          £{data.monthlyIncome.toLocaleString()}
         </div>
       </div>
 
@@ -290,7 +290,7 @@ function BudgetComparison({ data }) {
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
             <div style={{ width: 8, height: 8, borderRadius: 2, background: item.color }} />
             <span style={{ color: T.textMuted }}>{item.name}:</span>
-            <span style={{ fontWeight: 600 }}>\u00a3{item.amount.toLocaleString()}</span>
+            <span style={{ fontWeight: 600 }}>£{item.amount.toLocaleString()}</span>
           </div>
         ))}
       </div>
@@ -299,11 +299,11 @@ function BudgetComparison({ data }) {
       <div style={{ display: "flex", gap: 16, padding: "12px 16px", background: T.successBg, borderRadius: 8 }}>
         <div style={{ fontSize: 12 }}>
           <span style={{ color: T.textMuted }}>Total Outgoings: </span>
-          <span style={{ fontWeight: 700 }}>\u00a3{data.totalOutgoings.toLocaleString()}</span>
+          <span style={{ fontWeight: 700 }}>£{data.totalOutgoings.toLocaleString()}</span>
         </div>
         <div style={{ fontSize: 12 }}>
           <span style={{ color: T.textMuted }}>Monthly Surplus: </span>
-          <span style={{ fontWeight: 700, color: T.success }}>\u00a3{data.surplus.toLocaleString()}</span>
+          <span style={{ fontWeight: 700, color: T.success }}>£{data.surplus.toLocaleString()}</span>
         </div>
         <div style={{ fontSize: 12 }}>
           <span style={{ color: T.textMuted }}>Surplus Ratio: </span>
@@ -345,20 +345,20 @@ function RepaymentVehicleProjection({ data }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
         <div style={{ padding: "12px", background: T.primaryLight, borderRadius: 8, textAlign: "center" }}>
           <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>Loan Amount</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.primary }}>\u00a3{data.loanAmount.toLocaleString()}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.primary }}>£{data.loanAmount.toLocaleString()}</div>
         </div>
         <div style={{ padding: "12px", background: T.primaryLight, borderRadius: 8, textAlign: "center" }}>
           <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>Endowment</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.primary }}>\u00a3{data.endowmentValue.toLocaleString()}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.primary }}>£{data.endowmentValue.toLocaleString()}</div>
         </div>
         <div style={{ padding: "12px", background: T.primaryLight, borderRadius: 8, textAlign: "center" }}>
           <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>{data.repaymentVehicle}</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.primary }}>\u00a3{data.currentValue.toLocaleString()}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.primary }}>£{data.currentValue.toLocaleString()}</div>
           <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>current</div>
         </div>
         <div style={{ padding: "12px", background: coverageColor === T.success ? T.successBg : coverageColor === "#F59E0B" ? T.warningBg : T.dangerBg, borderRadius: 8, textAlign: "center" }}>
           <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>Projected at Maturity</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: coverageColor }}>\u00a3{data.projectedValue.toLocaleString()}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: coverageColor }}>£{data.projectedValue.toLocaleString()}</div>
           <div style={{ fontSize: 10, color: coverageColor, fontWeight: 600, marginTop: 2 }}>{data.coveragePercent}% coverage</div>
         </div>
       </div>
@@ -380,17 +380,17 @@ function RepaymentVehicleProjection({ data }) {
             background: `repeating-linear-gradient(45deg, ${coverageColor}, ${coverageColor} 4px, ${coverageColor}88 4px, ${coverageColor}88 8px)`,
           }} />
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>
-            \u00a3{(data.endowmentValue + data.projectedValue).toLocaleString()} of \u00a3{data.loanAmount.toLocaleString()}
+            £{(data.endowmentValue + data.projectedValue).toLocaleString()} of £{data.loanAmount.toLocaleString()}
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, background: T.primary }} />
-            <span style={{ color: T.textMuted }}>Endowment: \u00a3{data.endowmentValue.toLocaleString()}</span>
+            <span style={{ color: T.textMuted }}>Endowment: £{data.endowmentValue.toLocaleString()}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, background: coverageColor }} />
-            <span style={{ color: T.textMuted }}>{data.repaymentVehicle} (projected): \u00a3{data.projectedValue.toLocaleString()}</span>
+            <span style={{ color: T.textMuted }}>{data.repaymentVehicle} (projected): £{data.projectedValue.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -400,7 +400,7 @@ function RepaymentVehicleProjection({ data }) {
         <div style={{ padding: "10px 14px", background: T.warningBg, borderRadius: 8, border: `1px solid ${T.warningBorder}`, display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ color: "#92400E" }}>{Ico.alert(16)}</div>
           <div style={{ fontSize: 12, color: "#92400E" }}>
-            Projected shortfall of <strong>\u00a3{data.projectedShortfall.toLocaleString()}</strong> at maturity ({100 - data.coveragePercent}% gap). Annual review of repayment vehicle adequacy recommended.
+            Projected shortfall of <strong>£{data.projectedShortfall.toLocaleString()}</strong> at maturity ({100 - data.coveragePercent}% gap). Annual review of repayment vehicle adequacy recommended.
           </div>
         </div>
       )}
@@ -447,7 +447,7 @@ export default function IncomeAnalysis() {
 
       {/* KPIs */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <KPICard label="Total Income" value={`\u00a3${incomeData.total.toLocaleString()}`} color={T.primary} sub="per annum" />
+        <KPICard label="Total Income" value={`£${incomeData.total.toLocaleString()}`} color={T.primary} sub="per annum" />
         <KPICard label="Income Sources" value={incomeData.sources.length} color="#7C3AED" sub={`${incomeData.verification.filter(v => v.status === "verified").length} verified`} />
         <KPICard label="DTI Ratio" value={incomeData.affordability.dti} color={incomeData.affordability.dtiColor} sub="current" />
         <KPICard label="Stressed DTI" value={incomeData.affordability.dtiStressed} color={incomeData.affordability.stressedColor} sub="SVR + 3%" />
@@ -492,14 +492,14 @@ export default function IncomeAnalysis() {
               <div style={{ fontSize: 11, color: T.textMuted, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>Year 1</div>
               <div style={{ height: 32, borderRadius: 6, background: T.borderLight, position: "relative", overflow: "hidden" }}>
                 <div style={{ width: `${(incomeData.yoy.year1 / incomeData.yoy.year2) * 100}%`, height: "100%", background: T.primary, borderRadius: 6, display: "flex", alignItems: "center", paddingLeft: 12 }}>
-                  <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>\u00a3{incomeData.yoy.year1.toLocaleString()}</span>
+                  <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>£{incomeData.yoy.year1.toLocaleString()}</span>
                 </div>
               </div>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: T.textMuted, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>Year 2</div>
               <div style={{ height: 32, borderRadius: 6, background: T.primary, display: "flex", alignItems: "center", paddingLeft: 12 }}>
-                <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>\u00a3{incomeData.yoy.year2.toLocaleString()}</span>
+                <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>£{incomeData.yoy.year2.toLocaleString()}</span>
                 <span style={{ color: T.successBg, fontSize: 11, fontWeight: 700, marginLeft: 8 }}>{incomeData.yoy.growth}</span>
               </div>
             </div>

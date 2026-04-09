@@ -21,10 +21,10 @@ const mockEvents = [
   { date: "19 Feb", time: "14:30", title: "KYC Initiated", actor: "Ops: Tom Walker", detail: "Biometric ID verification sent via Mitek", cat: "status" },
   { date: "19 Feb", time: "15:45", title: "KYC Complete", actor: "System", detail: "Identity verified. Electoral roll match confirmed", cat: "approval" },
   { date: "19 Feb", time: "16:00", title: "AML Check Complete", actor: "System", detail: "ComplyAdvantage: Clear. No sanctions/PEP matches", cat: "approval" },
-  { date: "20 Feb", time: "09:15", title: "Valuation Instructed", actor: "Ops: Tom Walker", detail: "Countrywide Surveying. Full valuation. Fee: \u00a3250", cat: "document" },
+  { date: "20 Feb", time: "09:15", title: "Valuation Instructed", actor: "Ops: Tom Walker", detail: "Countrywide Surveying. Full valuation. Fee: £250", cat: "document" },
   { date: "20 Feb", time: "10:15", title: "AI Fact Find Review", actor: "Nova AI", detail: "42 fields populated, 94% confidence", cat: "ai" },
-  { date: "22 Feb", time: "14:32", title: "DIP Re-run", actor: "Broker", detail: "Afin Fix 2yr 75% \u2014 Approved", cat: "approval" },
-  { date: "25 Feb", time: "10:00", title: "Valuation Report Received", actor: "Countrywide", detail: "Value: \u00a3485,000. Condition: Good. No issues", cat: "document" },
+  { date: "22 Feb", time: "14:32", title: "DIP Re-run", actor: "Broker", detail: "Afin Fix 2yr 75% — Approved", cat: "approval" },
+  { date: "25 Feb", time: "10:00", title: "Valuation Report Received", actor: "Countrywide", detail: "Value: £485,000. Condition: Good. No issues", cat: "document" },
   { date: "25 Feb", time: "11:00", title: "Valuation Approved", actor: "Ops: Tom Walker", detail: "Report value matches AVM. No retention required", cat: "approval" },
   { date: "25 Feb", time: "14:00", title: "Assigned to Underwriting", actor: "System", detail: "Routed to James Mitchell (Underwriter)", cat: "status" },
   { date: "26 Feb", time: "09:30", title: "AI Underwriting Assessment", actor: "Nova AI", detail: "Risk score 14/100. Recommendation: Approve. No conditions", cat: "ai" },
@@ -33,7 +33,7 @@ const mockEvents = [
   { date: "27 Feb", time: "09:15", title: "Offer Accepted", actor: "Customer", detail: "Digital signature received via DocuSign", cat: "approval" },
   { date: "28 Feb", time: "10:00", title: "Disbursement Created", actor: "Finance: Priya Patel", detail: "£350,000 to sort code 20-45-67", cat: "status" },
   { date: "28 Feb", time: "14:00", title: "Disbursement Authorised", actor: "Finance: James Mitchell", detail: "4-eyes check complete", cat: "approval" },
-  { date: "01 Mar", time: "09:00", title: "Funds Released", actor: "System", detail: "\u00a3350,000 disbursed", cat: "approval" },
+  { date: "01 Mar", time: "09:00", title: "Funds Released", actor: "System", detail: "£350,000 disbursed", cat: "approval" },
   { date: "01 Mar", time: "09:01", title: "Case Complete", actor: "System", detail: "Case moved to Disbursed. Onboarded to Servicing as M-001234", cat: "approval" },
 ];
 
@@ -93,7 +93,7 @@ function CaseJourney() {
             {caseId}
           </span>
           <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>James & Sarah Mitchell</span>
-          <span style={{ fontSize: 12, color: T.textMuted }}>\u2014 Residential Mortgage \u2014 \u00a3350,000</span>
+          <span style={{ fontSize: 12, color: T.textMuted }}>— Residential Mortgage — £350,000</span>
           <span style={{
             marginLeft: "auto", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 4,
             background: "#34D399", color: "#fff",

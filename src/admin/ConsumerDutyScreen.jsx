@@ -64,7 +64,7 @@ function ConsumerDutyScreen() {
 
   const ragColor = r => ({ green: T.success, amber: T.warning, red: T.danger }[r]);
   const ragBg    = r => ({ green: T.successBg, amber: T.warningBg, red: T.dangerBg }[r]);
-  const trendIcon = t => t === "up" ? "\u2191" : t === "down" ? "\u2193" : "\u2192";
+  const trendIcon = t => t === "up" ? "↑" : t === "down" ? "↓" : "→";
   const trendColor = t => t === "up" ? T.success : t === "down" ? T.danger : T.textMuted;
 
   const maxBar = 160;

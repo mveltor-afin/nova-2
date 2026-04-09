@@ -106,7 +106,7 @@ export default function AllCustomersScreen({ onSelectCustomer }) {
                   </td>
                   <td style={{ padding:"14px 16px" }}>
                     <span style={{ fontSize:13, fontWeight:600, color: c.nps == null ? T.textMuted : c.nps >= 9 ? T.success : c.nps >= 7 ? T.text : T.danger }}>
-                      {c.nps != null ? c.nps : "\u2014"}
+                      {c.nps != null ? c.nps : "—"}
                     </span>
                   </td>
                   <td style={{ padding:"14px 16px" }}>

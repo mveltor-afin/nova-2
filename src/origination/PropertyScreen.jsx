@@ -114,11 +114,11 @@ function PropertyScreen() {
 
       {/* Valuation Summary KPIs */}
       <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
-        <KPICard label="Afin AVM"           value={"\u00A3495,000"}  sub="AI automated valuation"     color={T.primary} />
-        <KPICard label="Zoopla Estimate"    value={"\u00A3488,000"}  sub="87% confidence"             color="#7B61FF" />
-        <KPICard label="Rightmove Estimate" value={"\u00A3492,000"}  sub="based on comparables"       color="#00DEB6" />
-        <KPICard label="Surveyor Report"    value={"\u00A3485,000"}  sub="RICS Level 3"               color={T.warning} />
-        <KPICard label="Avg Comparable"     value={`\u00A3${avgComparable.toLocaleString()}`} sub="6 comparable sales" color={T.accent} />
+        <KPICard label="Afin AVM"           value={"£495,000"}  sub="AI automated valuation"     color={T.primary} />
+        <KPICard label="Zoopla Estimate"    value={"£488,000"}  sub="87% confidence"             color="#7B61FF" />
+        <KPICard label="Rightmove Estimate" value={"£492,000"}  sub="based on comparables"       color="#00DEB6" />
+        <KPICard label="Surveyor Report"    value={"£485,000"}  sub="RICS Level 3"               color={T.warning} />
+        <KPICard label="Avg Comparable"     value={`£${avgComparable.toLocaleString()}`} sub="6 comparable sales" color={T.accent} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
@@ -128,13 +128,13 @@ function PropertyScreen() {
             <div style={{ background: "#7B61FF", color: "#fff", padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 700 }}>Zoopla</div>
             <span style={{ fontSize: 14, fontWeight: 700 }}>Property Estimate</span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: T.text, marginBottom: 4 }}>{"\u00A3"}488,000</div>
-          <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>Range: {"\u00A3"}465,000 — {"\u00A3"}510,000</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: T.text, marginBottom: 4 }}>{"£"}488,000</div>
+          <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>Range: {"£"}465,000 — {"£"}510,000</div>
 
-          {detailRow("12-month change", "+4.2%", badge("+\u00A3{19,600}", T.successBg, T.success))}
-          {detailRow("5-year change", "+12.1%", badge("+\u00A3{52,600}", T.successBg, T.success))}
-          {detailRow("Zed-Index (BS1)", "\u00A3412,000")}
-          {detailRow("Last listed", "Sep 2019 at \u00A3385,000")}
+          {detailRow("12-month change", "+4.2%", badge("+£{19,600}", T.successBg, T.success))}
+          {detailRow("5-year change", "+12.1%", badge("+£{52,600}", T.successBg, T.success))}
+          {detailRow("Zed-Index (BS1)", "£412,000")}
+          {detailRow("Last listed", "Sep 2019 at £385,000")}
           {detailRow("Area demand", "High", badge("Avg 22 days to sell", T.successBg, T.success))}
         </Card>
 
@@ -159,7 +159,7 @@ function PropertyScreen() {
                     <td style={{ padding: "8px 6px", fontWeight: 600 }}>{c.address}</td>
                     <td style={{ padding: "8px 6px" }}>{c.type}</td>
                     <td style={{ padding: "8px 6px" }}>{c.beds}</td>
-                    <td style={{ padding: "8px 6px", fontWeight: 600 }}>{"\u00A3"}{c.price.toLocaleString()}</td>
+                    <td style={{ padding: "8px 6px", fontWeight: 600 }}>{"£"}{c.price.toLocaleString()}</td>
                     <td style={{ padding: "8px 6px", color: T.textMuted }}>{c.date}</td>
                     <td style={{ padding: "8px 6px", color: T.textMuted }}>{c.distance}</td>
                   </tr>
@@ -169,11 +169,11 @@ function PropertyScreen() {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, padding: "10px 6px", borderTop: `2px solid ${T.border}`, fontSize: 12 }}>
             <span style={{ fontWeight: 700 }}>Avg comparable price</span>
-            <span style={{ fontWeight: 700 }}>{"\u00A3"}{avgComparable.toLocaleString()}</span>
+            <span style={{ fontWeight: 700 }}>{"£"}{avgComparable.toLocaleString()}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 6px", fontSize: 12, color: T.textMuted }}>
             <span>Avg price per sq ft</span>
-            <span style={{ fontWeight: 600, color: T.text }}>{"\u00A3"}{Math.round(avgComparable / 1060)}/sq ft</span>
+            <span style={{ fontWeight: 600, color: T.text }}>{"£"}{Math.round(avgComparable / 1060)}/sq ft</span>
           </div>
         </Card>
       </div>
@@ -181,8 +181,8 @@ function PropertyScreen() {
       {/* Price History */}
       <Card style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Price History</div>
-        <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 12 }}>Estimated property value over time ({"\u00A3"}k)</div>
-        <BarChart data={PRICE_HISTORY} color={T.primary} height={120} unit={"\u00A3"} />
+        <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 12 }}>Estimated property value over time ({"£"}k)</div>
+        <BarChart data={PRICE_HISTORY} color={T.primary} height={120} unit={"£"} />
       </Card>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
@@ -206,7 +206,7 @@ function PropertyScreen() {
               style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", cursor: "pointer", borderBottom: `1px solid ${T.borderLight}` }}>
               <span style={{ fontSize: 13, color: T.textMuted }}>Planning applications (500m)</span>
               <span style={{ fontSize: 13, fontWeight: 600, color: T.primary }}>
-                {PLANNING_APPS.length} found {showPlanning ? "\u25B2" : "\u25BC"}
+                {PLANNING_APPS.length} found {showPlanning ? "▲" : "▼"}
               </span>
             </div>
             {showPlanning && (
@@ -245,11 +245,11 @@ function PropertyScreen() {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: T.primary }}>AI Property Commentary</div>
             <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6 }}>
-              Property value of {"\u00A3"}485,000–{"\u00A3"}495,000 is supported by 6 comparable sales averaging {"\u00A3"}{avgComparable.toLocaleString()}.
+              Property value of {"£"}485,000–{"£"}495,000 is supported by 6 comparable sales averaging {"£"}{avgComparable.toLocaleString()}.
               The 3% premium is consistent with the property's superior condition rating and freehold tenure.
               BS1 is a strong market with 28 avg days to sell. No environmental risks detected.
               EPC C is typical for 1990s build — no impact on lending.
-              <span style={{ fontWeight: 700 }}> Recommend: Accept surveyor value of {"\u00A3"}485,000 for LTV calculation.</span>
+              <span style={{ fontWeight: 700 }}> Recommend: Accept surveyor value of {"£"}485,000 for LTV calculation.</span>
             </div>
           </div>
         </div>

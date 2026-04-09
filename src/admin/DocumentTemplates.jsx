@@ -123,7 +123,7 @@ function DocumentTemplates() {
                             {RECENT_GENERATIONS.filter(g => g.template === t.name).length > 0
                               ? RECENT_GENERATIONS.filter(g => g.template === t.name).slice(0, 5).map((g, i) => (
                                 <div key={i} style={{ fontSize: 12, color: T.textSecondary, marginBottom: 4 }}>
-                                  {g.date} \u2014 {g.user} ({g.count} doc{g.count > 1 ? "s" : ""})
+                                  {g.date} — {g.user} ({g.count} doc{g.count > 1 ? "s" : ""})
                                 </div>
                               ))
                               : <div style={{ fontSize: 12, color: T.textMuted }}>No recent generations</div>

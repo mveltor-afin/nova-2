@@ -57,10 +57,10 @@ function computeScenario(scenarioId) {
 const SCENARIO_SUMMARIES = {
   base: { affected: 0, arrears: 0, provision: 0, capital: 0, insight: "Under base case conditions, all accounts perform within acceptable parameters. No additional provisions required. Portfolio remains well within risk appetite." },
   rate2: { affected: 2, arrears: 14200, provision: 24000, capital: -24000, insight: "A 200bps rate increase would stress 2 accounts (Priya Sharma and Robert Hughes). Both are already flagged as high risk. Existing provisions partially cover projected losses. Recommend monitoring affordability on variable-rate exposures." },
-  rate3: { affected: 4, arrears: 38500, provision: 68000, capital: -68000, insight: "A 300bps shock brings 4 accounts into stress, including 2 previously performing accounts. The combined adverse payment increase across the book is 18%. Capital buffer remains adequate but provision top-up of \u00a368k recommended." },
+  rate3: { affected: 4, arrears: 38500, provision: 68000, capital: -68000, insight: "A 300bps shock brings 4 accounts into stress, including 2 previously performing accounts. The combined adverse payment increase across the book is 18%. Capital buffer remains adequate but provision top-up of £68k recommended." },
   income: { affected: 3, arrears: 22000, provision: 42000, capital: -42000, insight: "A 20% income reduction causes 3 accounts to fail affordability tests. Priya Sharma, Robert Hughes, and Tom Brennan are most exposed due to higher existing debt-to-income ratios. Proactive outreach recommended." },
   property: { affected: 2, arrears: 8000, provision: 18000, capital: -18000, insight: "A 15% property value decline pushes 2 accounts (David Chen and Tom Brennan) above the 90% LTV threshold. While payments remain affordable, negative equity risk increases. No immediate loss expected but collateral coverage weakens." },
-  combined: { affected: 5, arrears: 86000, provision: 142000, capital: -142000, insight: "The combined adverse scenario (rate +3%, income -20%, property -15%) is severe. 5 of 8 accounts are stressed, with Robert Hughes projected as a potential write-off (\u00a389k exposure). Total provision requirement of \u00a3142k against current buffer of \u00a32.4M. Capital ratio remains above minimum but Board notification triggered." },
+  combined: { affected: 5, arrears: 86000, provision: 142000, capital: -142000, insight: "The combined adverse scenario (rate +3%, income -20%, property -15%) is severe. 5 of 8 accounts are stressed, with Robert Hughes projected as a potential write-off (£89k exposure). Total provision requirement of £142k against current buffer of £2.4M. Capital ratio remains above minimum but Board notification triggered." },
 };
 
 const LTV_BANDS = ["<60%", "60-75%", "75-85%", "85-90%", ">90%"];
@@ -103,10 +103,10 @@ export default function StressTestDashboard() {
 
       {/* KPIs */}
       <div style={{ display: "flex", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-        <KPICard label="Portfolio at Risk" value="\u00a31.2M" color={T.danger} sub="Under combined adverse" />
+        <KPICard label="Portfolio at Risk" value="£1.2M" color={T.danger} sub="Under combined adverse" />
         <KPICard label="Accounts Impacted" value="4" color={T.warning} sub="Across scenarios" />
-        <KPICard label="Provision Required" value="\u00a3186k" color="#3B82F6" sub="Combined adverse" />
-        <KPICard label="Capital Buffer" value="\u00a32.4M" color={T.success} sub="Above minimum requirement" />
+        <KPICard label="Provision Required" value="£186k" color="#3B82F6" sub="Combined adverse" />
+        <KPICard label="Capital Buffer" value="£2.4M" color={T.success} sub="Above minimum requirement" />
       </div>
 
       {/* Scenario tabs */}
@@ -138,15 +138,15 @@ export default function StressTestDashboard() {
           </div>
           <div style={{ padding: 14, borderRadius: 8, background: "#FAFAF8", textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Additional Arrears</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: summary.arrears > 0 ? T.danger : T.success }}>{summary.arrears > 0 ? `\u00a3${(summary.arrears / 1000).toFixed(1)}k` : "\u00a30"}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: summary.arrears > 0 ? T.danger : T.success }}>{summary.arrears > 0 ? `£${(summary.arrears / 1000).toFixed(1)}k` : "£0"}</div>
           </div>
           <div style={{ padding: 14, borderRadius: 8, background: "#FAFAF8", textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Provision Increase</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: summary.provision > 0 ? T.warning : T.success }}>{summary.provision > 0 ? `+\u00a3${(summary.provision / 1000).toFixed(0)}k` : "\u00a30"}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: summary.provision > 0 ? T.warning : T.success }}>{summary.provision > 0 ? `+£${(summary.provision / 1000).toFixed(0)}k` : "£0"}</div>
           </div>
           <div style={{ padding: 14, borderRadius: 8, background: "#FAFAF8", textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Capital Impact</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: summary.capital < 0 ? T.danger : T.success }}>{summary.capital < 0 ? `-\u00a3${(Math.abs(summary.capital) / 1000).toFixed(0)}k` : "\u00a30"}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: summary.capital < 0 ? T.danger : T.success }}>{summary.capital < 0 ? `-£${(Math.abs(summary.capital) / 1000).toFixed(0)}k` : "£0"}</div>
           </div>
         </div>
       </Card>
@@ -197,8 +197,8 @@ export default function StressTestDashboard() {
                   <td style={{ padding: "10px 12px" }}>{a.customer}</td>
                   <td style={{ padding: "10px 12px" }}>{a.currentLTV}%</td>
                   <td style={{ padding: "10px 12px", fontWeight: 600, color: a.stressedLTV > 90 ? T.danger : a.stressedLTV > a.currentLTV ? T.warning : T.text }}>{a.stressedLTV}%</td>
-                  <td style={{ padding: "10px 12px" }}>{a.payment > 0 ? `\u00a3${a.payment.toLocaleString()}` : "\u2014"}</td>
-                  <td style={{ padding: "10px 12px", fontWeight: 600, color: a.stressedPayment > a.payment ? T.danger : T.text }}>{a.stressedPayment > 0 ? `\u00a3${a.stressedPayment.toLocaleString()}` : "\u2014"}</td>
+                  <td style={{ padding: "10px 12px" }}>{a.payment > 0 ? `£${a.payment.toLocaleString()}` : "—"}</td>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: a.stressedPayment > a.payment ? T.danger : T.text }}>{a.stressedPayment > 0 ? `£${a.stressedPayment.toLocaleString()}` : "—"}</td>
                   <td style={{ padding: "10px 12px" }}>
                     <span style={{
                       fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 4,
