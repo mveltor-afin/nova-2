@@ -70,6 +70,11 @@ import OnboardingTour from "./shared/OnboardingTour";
 import UniversalSearch from "./shared/UniversalSearch";
 import PresenceIndicator from "./shared/PresenceIndicator";
 import WhatsNew from "./shared/WhatsNew";
+// BDM
+import BDMDashboard from "./bdm/BDMDashboard";
+import EnquiryForm from "./bdm/EnquiryForm";
+import EnquiryDetail from "./bdm/EnquiryDetail";
+import CriteriaQuickCheck from "./bdm/CriteriaQuickCheck";
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -204,6 +209,26 @@ export default function Shell({ userType }) {
         ]},
         { group:null, items:[
           { id:"settings", label:"Settings", icon:"settings" },
+        ]},
+      ]
+    : persona === "BDM"
+    ? [
+        // BDM: enquiries, broker relationships, criteria checks
+        { group:"MY WORK", items:[
+          { id:"bdmdashboard",    label:"Dashboard",         icon:"dashboard" },
+          { id:"newenquiry",      label:"New Enquiry",       icon:"plus" },
+          { id:"criteriacheck",   label:"Criteria Check",    icon:"zap" },
+        ]},
+        { group:"BROKERS", items:[
+          { id:"allcustomers",    label:"My Brokers",        icon:"customers" },
+          { id:"messages",        label:"Messages",          icon:"messages", badge:2 },
+        ]},
+        { group:"INSIGHTS", items:[
+          { id:"mymi",            label:"My MI",             icon:"chart" },
+          { id:"myreports",       label:"My Reports",        icon:"file" },
+        ]},
+        { group:null, items:[
+          { id:"settings",        label:"Settings",          icon:"settings" },
         ]},
       ]
     : persona === "Underwriter"
@@ -425,7 +450,7 @@ export default function Shell({ userType }) {
             {PERSONAS.map(p => (
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
-                setScreen(p === "Broker" ? "brokerdashboard" : p === "Underwriter" ? "intake" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
+                setScreen(p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "intake" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -930,6 +955,11 @@ export default function Shell({ userType }) {
       case "reportbuilder":   return <ReportBuilder />;
       case "casejourney":     return <CaseJourney />;
       case "commission":      return <CommissionTracker />;
+      // BDM
+      case "bdmdashboard":   return <BDMDashboard onNewEnquiry={() => setScreen("newenquiry")} onOpenEnquiry={(enq) => { setScreen("enquirydetail"); }} />;
+      case "newenquiry":     return <EnquiryForm onBack={() => setScreen("bdmdashboard")} />;
+      case "enquirydetail":  return <EnquiryDetail enquiry={null} onBack={() => setScreen("bdmdashboard")} />;
+      case "criteriacheck":  return <CriteriaQuickCheck />;
       case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
       case "brokeronboard":   return <BrokerOnboarding />;
