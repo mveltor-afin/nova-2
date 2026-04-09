@@ -72,6 +72,7 @@ import PresenceIndicator from "./shared/PresenceIndicator";
 import WhatsNew from "./shared/WhatsNew";
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
+import MyReports from "./intelligence/MyReports";
 import BrokerDashboardV2 from "./origination/BrokerDashboardV2";
 import NewCustomerWizard from "./customers/NewCustomerWizard";
 import ComplianceCalendar from "./admin/ComplianceCalendar";
@@ -197,6 +198,7 @@ export default function Shell({ userType }) {
         ]},
         { group:"INSIGHTS", items:[
           { id:"brokermi",       label:"My MI",        icon:"chart" },
+          { id:"myreports",      label:"My Reports",   icon:"file" },
           { id:"commission",     label:"Commission",   icon:"dollar" },
           { id:"messages",       label:"Messages",     icon:"messages", badge:3 },
         ]},
@@ -218,6 +220,7 @@ export default function Shell({ userType }) {
         { group:"INTELLIGENCE", items:[
           { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
           { id:"mymi",            label:"My MI",              icon:"chart" },
+          { id:"myreports",      label:"My Reports",         icon:"file" },
           { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
         ]},
         { group:"SERVICING", items:[
@@ -248,6 +251,7 @@ export default function Shell({ userType }) {
           { id:"stresstest",      label:"Stress Testing",      icon:"alert" },
           { id:"pricing",         label:"Pricing Engine",      icon:"dollar" },
           { id:"mymi",            label:"My MI",               icon:"chart" },
+          { id:"myreports",      label:"My Reports",          icon:"file" },
           { id:"brokerscorecard", label:"Broker Scorecard",    icon:"customers" },
         ]},
         { group:"TOOLS", items:[
@@ -282,6 +286,7 @@ export default function Shell({ userType }) {
         ]},
         { group:null, items:[
           { id:"mymi",            label:"My MI",              icon:"chart" },
+          { id:"myreports",      label:"My Reports",         icon:"file" },
           { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
@@ -316,6 +321,7 @@ export default function Shell({ userType }) {
         { group:"INTELLIGENCE", items:[
           { id:"aidashboard",     label:"AI Dashboard",         icon:"sparkle" },
           { id:"mymi",            label:"My MI",                icon:"chart" },
+          { id:"myreports",      label:"My Reports",           icon:"file" },
           ...(persona === "Admin" ? [
             { id:"forecaster",    label:"Pipeline Forecaster",  icon:"chart" },
             { id:"brokerscorecard",label:"Broker Scorecard",    icon:"customers" },
@@ -924,6 +930,7 @@ export default function Shell({ userType }) {
       case "reportbuilder":   return <ReportBuilder />;
       case "casejourney":     return <CaseJourney />;
       case "commission":      return <CommissionTracker />;
+      case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
       case "brokeronboard":   return <BrokerOnboarding />;
       case "segmentation":    return <SegmentationEngine />;
