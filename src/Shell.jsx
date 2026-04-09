@@ -70,6 +70,11 @@ import OnboardingTour from "./shared/OnboardingTour";
 import UniversalSearch from "./shared/UniversalSearch";
 import PresenceIndicator from "./shared/PresenceIndicator";
 import WhatsNew from "./shared/WhatsNew";
+import HelpCentre from "./shared/HelpCentre";
+import ReleaseCentre from "./shared/ReleaseCentre";
+import AISummary from "./shared/AISummary";
+import RecentActivity from "./shared/RecentActivity";
+import AITips from "./shared/AITips";
 // BDM
 import BDMDashboard from "./bdm/BDMDashboard";
 import EnquiryForm from "./bdm/EnquiryForm";
@@ -120,7 +125,9 @@ export default function Shell({ userType }) {
     const seen = localStorage.getItem("nova_whats_new_seen");
     return seen !== "2.5.0";
   });
-  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(`nova_onboarding_done`));
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [screenHistory, setScreenHistory] = useState([]);
 
   // Responsive: detect mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -165,6 +172,7 @@ export default function Shell({ userType }) {
           { id:"messages",        label:"Messages",     icon:"messages", badge:3 },
         ]},
         { group:null, items:[
+          { id:"releases", label:"Releases", icon:"sparkle" },
           { id:"settings", label:"Settings", icon:"settings" },
         ]},
       ]
@@ -185,6 +193,7 @@ export default function Shell({ userType }) {
           { id:"myreports",      label:"My Reports",        icon:"file" },
         ]},
         { group:null, items:[
+          { id:"releases",        label:"Releases",          icon:"sparkle" },
           { id:"settings",        label:"Settings",          icon:"settings" },
         ]},
       ]
@@ -213,6 +222,7 @@ export default function Shell({ userType }) {
           { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
         ]},
         { group:null, items:[
+          { id:"releases",        label:"Releases",           icon:"sparkle" },
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
       ]
@@ -246,6 +256,7 @@ export default function Shell({ userType }) {
           { id:"messages",        label:"Messages",            icon:"messages", badge:5 },
         ]},
         { group:null, items:[
+          { id:"releases",        label:"Releases",           icon:"sparkle" },
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
       ]
@@ -273,6 +284,7 @@ export default function Shell({ userType }) {
           { id:"mymi",            label:"My MI",              icon:"chart" },
           { id:"myreports",      label:"My Reports",         icon:"file" },
           { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
+          { id:"releases",        label:"Releases",           icon:"sparkle" },
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
       ]
@@ -443,7 +455,7 @@ export default function Shell({ userType }) {
               </div>
             )}
             {!(collapsedGroups[group.group] ?? group.collapsed) && group.items.map(item => (
-              <div key={item.id} onClick={() => { setScreen(item.id); if (isMobile) setSidebarOpen(false); }}
+              <div key={item.id} onClick={() => { setScreen(item.id); setScreenHistory(h => [{ id:item.id, label:item.label, time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) }, ...h.filter(x=>x.id!==item.id)].slice(0,5)); if (isMobile) setSidebarOpen(false); }}
                 style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
                   cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
                   color: screen===item.id ? "#fff" : "#7B8BA3",
@@ -503,6 +515,9 @@ export default function Shell({ userType }) {
           </div>
           <div onClick={() => setShowWhatsNew(true)} style={{ cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }} title="What's New">
             {Ico.sparkle(16)}
+          </div>
+          <div onClick={() => setShowHelp(true)} style={{ cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }} title="Help">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
           </div>
           <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }}>
             {Ico.bell(18)}
@@ -618,6 +633,7 @@ export default function Shell({ userType }) {
         </div>
       );
       case "settings":        return <SettingsScreen />;
+      case "releases":        return <ReleaseCentre />;
       case "workflows":       return <WorkflowBuilder />;
       case "products":        return <ProductCatalogue />;
       case "doctemplates":    return <DocumentTemplates />;
@@ -695,6 +711,9 @@ export default function Shell({ userType }) {
         <ContextBar />
         {/* Main content */}
         <div style={{ flex:1, padding: isMobile ? "16px 12px" : "24px 30px", overflowY:"auto", background:T.bg }}>
+          <RecentActivity history={screenHistory} onNavigate={(id) => setScreen(id)} />
+          <AISummary screenId={screen} persona={persona} />
+          <AITips screenId={screen} />
           <PresenceIndicator screenId={screen} currentUser={isBroker ? "John Watson" : `${persona} User`} />
           <ErrorBoundary onReset={() => setScreen(errorResetScreen)}>
             {renderScreen()}
@@ -765,7 +784,8 @@ export default function Shell({ userType }) {
       <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} persona={persona} />
       <UniversalSearch open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
-      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.5.0"); }} />
+      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.6.0"); }} />
+      <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
       {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
     </div>
   );
