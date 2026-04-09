@@ -4,16 +4,16 @@ import { Btn, Card, KPICard } from "../shared/primitives";
 
 const SECTIONS = [
   { id: 1, name: "Executive Summary", metrics: ["Net Interest Margin: 2.14%", "Portfolio Growth: +8.2% YoY", "Customer NPS: 7.8 avg"] },
-  { id: 2, name: "Portfolio Overview", metrics: ["Total Book: \u00a32.21M", "Avg LTV: 67%", "Weighted Avg Rate: 5.34%"] },
+  { id: 2, name: "Portfolio Overview", metrics: ["Total Book: £2.21M", "Avg LTV: 67%", "Weighted Avg Rate: 5.34%"] },
   { id: 3, name: "Pipeline & Origination", metrics: ["Active DIPs: 12", "Avg Case Time: 18 days", "Conversion: 68%"] },
-  { id: 4, name: "Credit Quality", metrics: ["Arrears Rate: 0.8%", "Provisions: \u00a3186k", "Watch List: 2 accounts"] },
+  { id: 4, name: "Credit Quality", metrics: ["Arrears Rate: 0.8%", "Provisions: £186k", "Watch List: 2 accounts"] },
   { id: 5, name: "Risk Appetite Utilisation", metrics: ["Mandate Usage: 72%", "Concentration: Within limits", "LTV Distribution: Compliant"] },
   { id: 6, name: "Customer Outcomes", metrics: ["Complaints: 3 (2 resolved)", "Vulnerable Customers: 1", "Consumer Duty: Pass"] },
   { id: 7, name: "AI Performance", metrics: ["Automation Rate: 74%", "Model Accuracy: 96.2%", "Override Rate: 8%"] },
   { id: 8, name: "Broker Performance", metrics: ["Top Broker: Meridian Finance", "Avg Quality Score: 8.4", "Volume: 42 cases YTD"] },
   { id: 9, name: "Regulatory Compliance", metrics: ["Upcoming Deadlines: 4", "Submissions: All current", "Open Findings: 0"] },
-  { id: 10, name: "Financial Summary", metrics: ["Revenue: \u00a3284k/month", "Cost-to-Income: 48%", "NIM: 2.14%"] },
-  { id: 11, name: "Savings Portfolio", metrics: ["Deposit Book: \u00a3205k", "Avg Rate: 3.95%", "Maturities <90d: \u00a326.8k"] },
+  { id: 10, name: "Financial Summary", metrics: ["Revenue: £284k/month", "Cost-to-Income: 48%", "NIM: 2.14%"] },
+  { id: 11, name: "Savings Portfolio", metrics: ["Deposit Book: £205k", "Avg Rate: 3.95%", "Maturities <90d: £26.8k"] },
   { id: 12, name: "Appendices", metrics: ["Detailed tables", "Methodology notes", "Data sources"] },
 ];
 

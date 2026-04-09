@@ -77,22 +77,22 @@ export default function SLATimer({ status, updatedAgo, slaHours, expanded = fals
   if (remaining < 0) {
     color = T.danger;
     bg = T.dangerBg;
-    label = `BREACHED \u00B7 ${formatRemaining(-remaining)} over`;
+    label = `BREACHED · ${formatRemaining(-remaining)} over`;
     dotStyle = { animation: "sla-breach-pulse 1s infinite" };
   } else if (pct < 0.25) {
     color = T.danger;
     bg = T.dangerBg;
-    label = `Critical \u00B7 ${formatRemaining(remaining)} remaining`;
+    label = `Critical · ${formatRemaining(remaining)} remaining`;
     dotStyle = {};
   } else if (pct < 0.5) {
     color = "#D97706";
     bg = T.warningBg;
-    label = `At risk \u00B7 ${formatRemaining(remaining)} remaining`;
+    label = `At risk · ${formatRemaining(remaining)} remaining`;
     dotStyle = {};
   } else {
     color = T.success;
     bg = T.successBg;
-    label = `On track \u00B7 ${formatRemaining(remaining)} remaining`;
+    label = `On track · ${formatRemaining(remaining)} remaining`;
     dotStyle = {};
   }
 

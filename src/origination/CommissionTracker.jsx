@@ -9,7 +9,7 @@ const CASES = [
   { id: "AFN-2026-00135", customer: "David Chen", amount: 425000, product: "Afin Fix 5yr 90%", status: "KYC_In_Progress", productType: "fix5" },
   { id: "AFN-2026-00128", customer: "Emma & Tom Wilson", amount: 290000, product: "Afin Fix 2yr 75%", status: "Disbursed", productType: "standard" },
   { id: "AFN-2026-00125", customer: "Aisha Patel", amount: 510000, product: "Afin Fix 5yr 75%", status: "Approved", productType: "fix5" },
-  { id: "AFN-2026-00119", customer: "Robert Hughes", amount: 180000, product: "\u2014", status: "Referred", productType: "standard" },
+  { id: "AFN-2026-00119", customer: "Robert Hughes", amount: 180000, product: "—", status: "Referred", productType: "standard" },
   { id: "AFN-2026-00115", customer: "Sophie & Jack Brown", amount: 320000, product: "Afin Fix 2yr 90%", status: "DIP_Approved", productType: "standard" },
 ];
 
@@ -42,19 +42,19 @@ const MONTHLY = [
 ];
 
 const TIERS = [
-  { name: "Bronze", range: "0 \u2013 \u00A35k/quarter", rate: "0.30%", min: 0, max: 5000 },
-  { name: "Silver", range: "\u00A35k \u2013 \u00A315k/quarter", rate: "0.35%", min: 5000, max: 15000, current: true },
-  { name: "Gold", range: "\u00A315k \u2013 \u00A325k/quarter", rate: "0.40%", min: 15000, max: 25000, unlock: "\u00A33,600 to unlock" },
-  { name: "Platinum", range: ">\u00A325k/quarter", rate: "0.45%", min: 25000, max: 40000 },
+  { name: "Bronze", range: "0 – £5k/quarter", rate: "0.30%", min: 0, max: 5000 },
+  { name: "Silver", range: "£5k – £15k/quarter", rate: "0.35%", min: 5000, max: 15000, current: true },
+  { name: "Gold", range: "£15k – £25k/quarter", rate: "0.40%", min: 15000, max: 25000, unlock: "£3,600 to unlock" },
+  { name: "Platinum", range: ">£25k/quarter", rate: "0.45%", min: 25000, max: 40000 },
 ];
 
 const UPCOMING = [
-  { id: "AFN-2026-00128", amount: "\u00A31,015", note: "Expected 15 Apr" },
-  { id: "AFN-2026-00125", amount: "\u00A31,785", note: "On completion (est. May)" },
-  { id: "AFN-2026-00142", amount: "\u00A31,225", note: "On completion (est. Jun)" },
+  { id: "AFN-2026-00128", amount: "£1,015", note: "Expected 15 Apr" },
+  { id: "AFN-2026-00125", amount: "£1,785", note: "On completion (est. May)" },
+  { id: "AFN-2026-00142", amount: "£1,225", note: "On completion (est. Jun)" },
 ];
 
-const fmt = (n) => "\u00A3" + n.toLocaleString("en-GB");
+const fmt = (n) => "£" + n.toLocaleString("en-GB");
 
 const th = { padding: "10px 14px", textAlign: "left", fontSize: 11, fontWeight: 600, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, borderBottom: `2px solid ${T.border}` };
 const td = { padding: "10px 14px", fontSize: 13, borderBottom: `1px solid ${T.borderLight}`, color: T.text };
@@ -78,11 +78,11 @@ export default function CommissionTracker() {
 
       {/* KPIs */}
       <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
-        <KPICard label="Pending Commission" value="\u00A34,820" color={T.warning} />
-        <KPICard label="Paid This Month" value="\u00A32,140" color={T.success} />
-        <KPICard label="Projected This Quarter" value="\u00A318,600" color={T.primary} />
+        <KPICard label="Pending Commission" value="£4,820" color={T.warning} />
+        <KPICard label="Paid This Month" value="£2,140" color={T.success} />
+        <KPICard label="Projected This Quarter" value="£18,600" color={T.primary} />
         <KPICard label="Cases Earning" value="5" color="#8B5CF6" />
-        <KPICard label="Avg Commission / Case" value="\u00A3964" color="#0EA5E9" />
+        <KPICard label="Avg Commission / Case" value="£964" color="#0EA5E9" />
       </div>
 
       {/* Earnings by Case */}
@@ -211,9 +211,9 @@ export default function CommissionTracker() {
             {UPCOMING.map((u, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "#F8FAFC", border: `1px solid ${T.borderLight}` }}>
                 <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 600, color: T.primary }}>{u.id}</span>
-                <span style={{ fontSize: 11, color: T.textMuted }}>\u2014</span>
+                <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{u.amount}</span>
-                <span style={{ fontSize: 11, color: T.textMuted }}>\u2014</span>
+                <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
                 <span style={{ fontSize: 12, color: T.textSecondary }}>{u.note}</span>
               </div>
             ))}

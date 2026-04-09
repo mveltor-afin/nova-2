@@ -164,9 +164,9 @@ export default function UWPerformance() {
         <MiniTable
           headers={["Vintage", "Cases", "In Arrears", "Rate", "Status"]}
           rows={[
-            { cells: ["0\u20133 months", "38", "0", "0%", "On track"], bg: T.successBg, color: T.success },
-            { cells: ["3\u20136 months", "35", "1", "2.9%", "On track"], bg: T.successBg, color: T.success },
-            { cells: ["6\u201312 months", "42", "2", "4.8%", "Watch"], bg: T.warningBg, color: "#92400E" },
+            { cells: ["0–3 months", "38", "0", "0%", "On track"], bg: T.successBg, color: T.success },
+            { cells: ["3–6 months", "35", "1", "2.9%", "On track"], bg: T.successBg, color: T.success },
+            { cells: ["6–12 months", "42", "2", "4.8%", "Watch"], bg: T.warningBg, color: "#92400E" },
             { cells: ["12+ months", "27", "1", "3.7%", "On track"], bg: T.successBg, color: T.success },
           ]}
         />
@@ -183,7 +183,7 @@ export default function UWPerformance() {
         <HBar label="L2 Co-approved" value={2} max={24} color="#7C3AED" />
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
           <div style={{ fontSize: 12, padding: "8px 12px", background: T.primaryLight, borderRadius: 8, color: T.textSecondary }}>
-            You are authorised for L1 (up to \u00a3500k). 4 cases exceeded your mandate and were escalated.
+            You are authorised for L1 (up to £500k). 4 cases exceeded your mandate and were escalated.
           </div>
           <div style={{ fontSize: 12, padding: "10px 14px", background: "#EDE9FE", borderRadius: 8, border: "1px solid #C4B5FD", color: "#5B21B6", fontWeight: 500 }}>
             {Ico.sparkle(14)} <strong>Recommendation:</strong> Based on your quality score (94) and 3yr experience, you are eligible for L2 mandate upgrade. Discuss with Credit Risk Head.

@@ -24,7 +24,7 @@ const APPLICATIONS = [
 const CHECK_LABELS = [
   "FCA Register Verification — auto-checked against FCA register",
   "Company verification (Companies House)",
-  "PI Insurance confirmation — minimum \u00a31M cover",
+  "PI Insurance confirmation — minimum £1M cover",
   "Panel agreement signed",
   "Terms and conditions accepted",
   "Anti-money laundering training certificate",
@@ -33,14 +33,14 @@ const CHECK_LABELS = [
 ];
 
 const ACTIVE_BROKERS = [
-  { firm: "Sterling Mortgages", contact: "Anna Price", fca: "112233", joined: "12 Jan 2024", casesYTD: 38, volumeYTD: "\u00a312.4M", quality: 94, status: "Active" },
-  { firm: "Horizon Finance", contact: "Peter Clarke", fca: "223344", joined: "08 Mar 2024", casesYTD: 27, volumeYTD: "\u00a38.9M", quality: 91, status: "Active" },
-  { firm: "Blue Sky Lending", contact: "Rachel Adams", fca: "334455", joined: "15 Jun 2024", casesYTD: 45, volumeYTD: "\u00a315.1M", quality: 97, status: "Active" },
-  { firm: "Pacific Brokers", contact: "Simon Lee", fca: "445566", joined: "22 Sep 2024", casesYTD: 19, volumeYTD: "\u00a36.2M", quality: 88, status: "Active" },
-  { firm: "Maple Financial", contact: "Karen White", fca: "556677", joined: "01 Nov 2024", casesYTD: 31, volumeYTD: "\u00a310.5M", quality: 92, status: "Active" },
-  { firm: "Crest Mortgages", contact: "David O'Brien", fca: "667788", joined: "14 Feb 2025", casesYTD: 12, volumeYTD: "\u00a34.1M", quality: 90, status: "Active" },
-  { firm: "Summit Advisors", contact: "Laura Chen", fca: "778899", joined: "30 Apr 2025", casesYTD: 22, volumeYTD: "\u00a37.8M", quality: 95, status: "Active" },
-  { firm: "Pinnacle Finance", contact: "James Murray", fca: "889900", joined: "18 Jul 2025", casesYTD: 9, volumeYTD: "\u00a33.0M", quality: 87, status: "Active" },
+  { firm: "Sterling Mortgages", contact: "Anna Price", fca: "112233", joined: "12 Jan 2024", casesYTD: 38, volumeYTD: "£12.4M", quality: 94, status: "Active" },
+  { firm: "Horizon Finance", contact: "Peter Clarke", fca: "223344", joined: "08 Mar 2024", casesYTD: 27, volumeYTD: "£8.9M", quality: 91, status: "Active" },
+  { firm: "Blue Sky Lending", contact: "Rachel Adams", fca: "334455", joined: "15 Jun 2024", casesYTD: 45, volumeYTD: "£15.1M", quality: 97, status: "Active" },
+  { firm: "Pacific Brokers", contact: "Simon Lee", fca: "445566", joined: "22 Sep 2024", casesYTD: 19, volumeYTD: "£6.2M", quality: 88, status: "Active" },
+  { firm: "Maple Financial", contact: "Karen White", fca: "556677", joined: "01 Nov 2024", casesYTD: 31, volumeYTD: "£10.5M", quality: 92, status: "Active" },
+  { firm: "Crest Mortgages", contact: "David O'Brien", fca: "667788", joined: "14 Feb 2025", casesYTD: 12, volumeYTD: "£4.1M", quality: 90, status: "Active" },
+  { firm: "Summit Advisors", contact: "Laura Chen", fca: "778899", joined: "30 Apr 2025", casesYTD: 22, volumeYTD: "£7.8M", quality: 95, status: "Active" },
+  { firm: "Pinnacle Finance", contact: "James Murray", fca: "889900", joined: "18 Jul 2025", casesYTD: 9, volumeYTD: "£3.0M", quality: 87, status: "Active" },
 ];
 
 const SUSPENDED_BROKERS = [
@@ -116,7 +116,7 @@ function BrokerOnboarding() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ padding: "4px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: T.warningBg, color: T.warning }}>{app.statusLabel}</span>
-                  <span style={{ fontSize: 18, color: T.textMuted, transform: expanded === app.id ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>\u25BE</span>
+                  <span style={{ fontSize: 18, color: T.textMuted, transform: expanded === app.id ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>▾</span>
                 </div>
               </div>
 

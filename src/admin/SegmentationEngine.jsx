@@ -6,13 +6,13 @@ import { CUSTOMERS } from "../data/customers";
 const SEGMENTS = [
   {
     name: "Platinum", color: "#E5E4E2", accent: "#8B8B8B",
-    rules: ["Relationship Value > \u00a315k", "Products > 3", "NPS > 8"],
+    rules: ["Relationship Value > £15k", "Products > 3", "NPS > 8"],
     customers: ["David Chen", "Maria Santos"],
     benefits: ["VIP processing", "Named RM", "All fees waived"],
   },
   {
     name: "Premier", color: "#FFD700", accent: "#B8860B",
-    rules: ["Relationship Value > \u00a38k", "Products > 1"],
+    rules: ["Relationship Value > £8k", "Products > 1"],
     customers: ["Emma Wilson", "Aisha Patel"],
     benefits: ["Priority processing", "Dedicated handler"],
   },
@@ -154,7 +154,7 @@ export default function SegmentationEngine() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.primary, marginBottom: 4 }}>AI Segmentation Insight</div>
             <div style={{ fontSize: 13, color: T.text, lineHeight: 1.6 }}>
-              2 customers (Emma Wilson, Aisha Patel) are borderline Premier/Platinum. If Emma's deposit renews, her LTV crosses the \u00a315k threshold — auto-upgrade. Aisha Patel currently holds 3 products with an NPS of 7; a one-point NPS improvement would trigger Platinum eligibility.
+              2 customers (Emma Wilson, Aisha Patel) are borderline Premier/Platinum. If Emma's deposit renews, her LTV crosses the £15k threshold — auto-upgrade. Aisha Patel currently holds 3 products with an NPS of 7; a one-point NPS improvement would trigger Platinum eligibility.
             </div>
           </div>
         </div>

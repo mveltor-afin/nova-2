@@ -10,9 +10,9 @@ const releases = [
     version: "2.4.0",
     date: "9 Apr 2026",
     items: [
-      { tag: "New", text: "Smart Apply \u2014 conversational 3-phase application flow (5 min submissions)" },
-      { tag: "New", text: "Servicing redesign \u2014 account-centric with AI-driven action modals" },
-      { tag: "New", text: "Customer Hub integrations tab \u2014 per-customer Open Banking, Credit Bureau, HMRC status" },
+      { tag: "New", text: "Smart Apply — conversational 3-phase application flow (5 min submissions)" },
+      { tag: "New", text: "Servicing redesign — account-centric with AI-driven action modals" },
+      { tag: "New", text: "Customer Hub integrations tab — per-customer Open Banking, Credit Bureau, HMRC status" },
       { tag: "Improved", text: "Mobile responsive layout for iPhone and tablet" },
     ],
   },
@@ -21,18 +21,18 @@ const releases = [
     date: "7 Apr 2026",
     items: [
       { tag: "New", text: "Customer 360 Hub with gamification (tiers, badges, payment streaks)" },
-      { tag: "New", text: "6 product types \u2014 Mortgages, Savings, Current Accounts, Insurance, Shared Ownership" },
+      { tag: "New", text: "6 product types — Mortgages, Savings, Current Accounts, Insurance, Shared Ownership" },
       { tag: "New", text: "AI Dashboard with cross-product intelligence" },
-      { tag: "New", text: "Intake Queue \u2014 product-agnostic, AI pre-processed" },
+      { tag: "New", text: "Intake Queue — product-agnostic, AI pre-processed" },
     ],
   },
   {
     version: "2.2.0",
     date: "6 Apr 2026",
     items: [
-      { tag: "New", text: "AI Underwriting Assessment \u2014 6-section automated credit analysis" },
+      { tag: "New", text: "AI Underwriting Assessment — 6-section automated credit analysis" },
       { tag: "New", text: "Pipeline Forecaster with SLA predictions" },
-      { tag: "New", text: "Property Intelligence \u2014 Zoopla/Rightmove mock integration" },
+      { tag: "New", text: "Property Intelligence — Zoopla/Rightmove mock integration" },
       { tag: "New", text: "165 CRUD permissions matrix" },
     ],
   },
@@ -40,7 +40,7 @@ const releases = [
     version: "2.1.0",
     date: "5 Apr 2026",
     items: [
-      { tag: "New", text: "Nova AI Copilot \u2014 context-aware assistant on every screen" },
+      { tag: "New", text: "Nova AI Copilot — context-aware assistant on every screen" },
       { tag: "New", text: "Broker Eligibility Calculator" },
       { tag: "New", text: "Collections workflow with kanban pipeline" },
       { tag: "New", text: "4-eyes disbursement authorisation" },
@@ -50,7 +50,7 @@ const releases = [
     version: "2.0.0",
     date: "4 Apr 2026",
     items: [
-      { tag: "New", text: "Launch: Nova 2.0 \u2014 customer-first architecture" },
+      { tag: "New", text: "Launch: Nova 2.0 — customer-first architecture" },
       { tag: "New", text: "40+ screens, 6 personas" },
       { tag: "New", text: "AI-native mortgage lending platform" },
     ],

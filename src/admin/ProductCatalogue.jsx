@@ -14,10 +14,10 @@ const LENDING = [
 ];
 
 const SAVINGS = [
-  { id: 9,  name: "1yr Fixed Deposit", type: "Savings", rate: "4.50%", keyTerms: "Min \u00a31,000 \u2014 Max \u00a3500,000", eligibility: "All", status: "Active" },
-  { id: 10, name: "2yr Fixed Deposit", type: "Savings", rate: "4.85%", keyTerms: "Min \u00a31,000 \u2014 Max \u00a3500,000", eligibility: "All", status: "Active" },
-  { id: 11, name: "3yr Fixed Deposit", type: "Savings", rate: "5.10%", keyTerms: "Min \u00a35,000 \u2014 Max \u00a3500,000", eligibility: "All", status: "Active" },
-  { id: 12, name: "90-Day Notice", type: "Savings", rate: "3.20%", keyTerms: "Min \u00a31,000 \u2014 No Max", eligibility: "All", status: "Active" },
+  { id: 9,  name: "1yr Fixed Deposit", type: "Savings", rate: "4.50%", keyTerms: "Min £1,000 — Max £500,000", eligibility: "All", status: "Active" },
+  { id: 10, name: "2yr Fixed Deposit", type: "Savings", rate: "4.85%", keyTerms: "Min £1,000 — Max £500,000", eligibility: "All", status: "Active" },
+  { id: 11, name: "3yr Fixed Deposit", type: "Savings", rate: "5.10%", keyTerms: "Min £5,000 — Max £500,000", eligibility: "All", status: "Active" },
+  { id: 12, name: "90-Day Notice", type: "Savings", rate: "3.20%", keyTerms: "Min £1,000 — No Max", eligibility: "All", status: "Active" },
 ];
 
 const INSURANCE = [
@@ -54,8 +54,8 @@ function ProductCatalogue() {
   const archivedCount = ALL_PRODUCTS.length - activeCount;
 
   const keyTermsFor = (p) => {
-    if (p.type === "Lending") return `LTV ${p.maxLTV}, ${p.minTerm}\u2013${p.maxTerm}, ERC ${p.erc}`;
-    return p.keyTerms || "\u2014";
+    if (p.type === "Lending") return `LTV ${p.maxLTV}, ${p.minTerm}–${p.maxTerm}, ERC ${p.erc}`;
+    return p.keyTerms || "—";
   };
 
   return (
@@ -141,7 +141,7 @@ function ProductCatalogue() {
                             </div>
                             <div>
                               <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>Term Range</div>
-                              <div style={{ fontSize: 14, color: T.text }}>{p.minTerm} \u2013 {p.maxTerm}</div>
+                              <div style={{ fontSize: 14, color: T.text }}>{p.minTerm} – {p.maxTerm}</div>
                             </div>
                             <div>
                               <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>ERC Schedule</div>
@@ -158,7 +158,7 @@ function ProductCatalogue() {
                           </div>
                           <div>
                             <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>Fee Schedule</div>
-                            <div style={{ fontSize: 14, color: T.text }}>{p.type === "Lending" ? "\u00a3999 arrangement, \u00a3250 valuation" : "No fees"}</div>
+                            <div style={{ fontSize: 14, color: T.text }}>{p.type === "Lending" ? "£999 arrangement, £250 valuation" : "No fees"}</div>
                           </div>
                         </div>
                         <Btn primary>Save Changes</Btn>
@@ -179,7 +179,7 @@ function ProductCatalogue() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4 }}>AI Product Gap Analysis</div>
             <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.5 }}>
-              No 10yr fixed rate product. 3 competitor lenders now offer 10yr fixes at 4.6\u20134.8%. Consider adding to retain rate-security-seeking borrowers.
+              No 10yr fixed rate product. 3 competitor lenders now offer 10yr fixes at 4.6–4.8%. Consider adding to retain rate-security-seeking borrowers.
             </div>
           </div>
         </div>

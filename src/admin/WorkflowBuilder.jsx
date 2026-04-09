@@ -3,18 +3,18 @@ import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 
 const CHAINS = [
-  { id: 1, name: "Standard Residential <\u00a3500k", nodes: [
-    { label: "L1 Underwriter", threshold: "\u00a3500k max" },
+  { id: 1, name: "Standard Residential <£500k", nodes: [
+    { label: "L1 Underwriter", threshold: "£500k max" },
     { label: "Auto-approve", threshold: "Auto" },
   ]},
-  { id: 2, name: "Residential \u00a3500k\u2013\u00a31M", nodes: [
-    { label: "L1 Underwriter", threshold: "\u00a3500k\u2013\u00a31M" },
-    { label: "L2 Senior UW", threshold: "\u00a31M max" },
+  { id: 2, name: "Residential £500k–£1M", nodes: [
+    { label: "L1 Underwriter", threshold: "£500k–£1M" },
+    { label: "L2 Senior UW", threshold: "£1M max" },
     { label: "Approve", threshold: "Final" },
   ]},
-  { id: 3, name: "Residential >\u00a31M", nodes: [
-    { label: "L1 UW", threshold: "\u00a31M+" },
-    { label: "L2 Senior UW", threshold: "\u00a32M max" },
+  { id: 3, name: "Residential >£1M", nodes: [
+    { label: "L1 UW", threshold: "£1M+" },
+    { label: "L2 Senior UW", threshold: "£2M max" },
     { label: "Credit Committee", threshold: "Unlimited" },
     { label: "Approve", threshold: "Final" },
   ]},
@@ -27,7 +27,7 @@ const CHAINS = [
 
 const RULES = [
   { id: 1, name: "Auto-assign BTL", condition: "Product type = BTL", action: "Route to Specialist UW Team", priority: 1, active: true },
-  { id: 2, name: "High Value Escalation", condition: "Amount > \u00a3750,000", action: "Flag for senior review", priority: 2, active: true },
+  { id: 2, name: "High Value Escalation", condition: "Amount > £750,000", action: "Flag for senior review", priority: 2, active: true },
   { id: 3, name: "Broker Quality Gate", condition: "Broker score < 70", action: "Add manual doc review step", priority: 3, active: true },
   { id: 4, name: "First-Time Buyer Flag", condition: "Applicant type = FTB", action: "Add affordability deep-check", priority: 4, active: true },
   { id: 5, name: "Overseas Income", condition: "Income source = Overseas", action: "Route to specialist team", priority: 5, active: true },
@@ -46,9 +46,9 @@ const AUTOMATIONS = [
 ];
 
 const ESCALATIONS = [
-  { id: "HX-2741", customer: "James Thornton", reason: "SLA breach \u2014 underwriting > 48hrs", escalatedBy: "System", time: "2 hours ago", assignedTo: "Sarah Mitchell", status: "Open" },
-  { id: "HX-2738", customer: "Priya Sharma", reason: "Adverse credit \u2014 requires Credit Committee", escalatedBy: "Tom Davies (L1 UW)", time: "4 hours ago", assignedTo: "Credit Committee", status: "In Progress" },
-  { id: "HX-2735", customer: "Robert Chen", reason: "Valuation dispute \u2014 customer challenge", escalatedBy: "Ops Team", time: "6 hours ago", assignedTo: "David Park", status: "Open" },
+  { id: "HX-2741", customer: "James Thornton", reason: "SLA breach — underwriting > 48hrs", escalatedBy: "System", time: "2 hours ago", assignedTo: "Sarah Mitchell", status: "Open" },
+  { id: "HX-2738", customer: "Priya Sharma", reason: "Adverse credit — requires Credit Committee", escalatedBy: "Tom Davies (L1 UW)", time: "4 hours ago", assignedTo: "Credit Committee", status: "In Progress" },
+  { id: "HX-2735", customer: "Robert Chen", reason: "Valuation dispute — customer challenge", escalatedBy: "Ops Team", time: "6 hours ago", assignedTo: "David Park", status: "Open" },
 ];
 
 const tabStyle = (active) => ({
@@ -114,7 +114,7 @@ function ApprovalChainsTab() {
               {chain.nodes.map((node, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center" }}>
                   <div style={{ width: 40, height: 2, background: T.accent }} />
-                  <div style={{ color: T.accent, marginRight: -4, fontSize: 12 }}>{"\u25B6"}</div>
+                  <div style={{ color: T.accent, marginRight: -4, fontSize: 12 }}>{"▶"}</div>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 90 }}>
                     <div style={{
                       width: 42, height: 42, borderRadius: "50%",

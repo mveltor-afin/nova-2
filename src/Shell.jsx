@@ -384,7 +384,7 @@ export default function Shell({ userType }) {
             <div style={{ fontWeight:700, fontSize:16, letterSpacing:-0.3 }}>Nova <span style={{ fontSize:12, fontWeight:500, color:"rgba(255,255,255,0.4)" }}>2.0</span></div>
             <div style={{ fontSize:10, color:"#64748B", letterSpacing:0.5, textTransform:"uppercase" }}>Afin Bank</div>
           </div>
-          {isMobile && <span onClick={() => setSidebarOpen(false)} style={{ marginLeft:"auto", cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:20 }}>\u00d7</span>}
+          {isMobile && <span onClick={() => setSidebarOpen(false)} style={{ marginLeft:"auto", cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:20 }}>×</span>}
         </div>
       </div>
 
@@ -492,7 +492,7 @@ export default function Shell({ userType }) {
             onClick={() => setShowCommandPalette(true)}>
             <span style={{ color:T.textMuted, display:"flex" }}>{Ico.search(14)}</span>
             {!isMobile && <span style={{ fontSize:12, color:T.textMuted }}>Search...</span>}
-            {!isMobile && <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"1px 6px", borderRadius:4, fontWeight:600, marginLeft:8, fontFamily:"monospace" }}>\u2318K</span>}
+            {!isMobile && <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"1px 6px", borderRadius:4, fontWeight:600, marginLeft:8, fontFamily:"monospace" }}>⌘K</span>}
           </div>
           <div onClick={() => setShowWhatsNew(true)} style={{ cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }} title="What's New">
             {Ico.sparkle(16)}

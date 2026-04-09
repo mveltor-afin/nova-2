@@ -56,13 +56,13 @@ function CriteriaQuickCheck() {
         {Ico.sparkle(24)}
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Criteria Quick Check</h1>
       </div>
-      <p style={{ fontSize: 14, color: T.textMuted, margin: "0 0 28px 34px" }}>Instantly check if a scenario fits our lending criteria \u2014 no enquiry created</p>
+      <p style={{ fontSize: 14, color: T.textMuted, margin: "0 0 28px 34px" }}>Instantly check if a scenario fits our lending criteria — no enquiry created</p>
 
       {/* Form */}
       <Card style={{ marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 16 }}>
-          <Input label="Property Value" value={propValue} onChange={setPropValue} prefix="\u00a3" type="number" required />
-          <Input label="Deposit" value={deposit} onChange={setDeposit} prefix="\u00a3" type="number" required />
+          <Input label="Property Value" value={propValue} onChange={setPropValue} prefix="£" type="number" required />
+          <Input label="Deposit" value={deposit} onChange={setDeposit} prefix="£" type="number" required />
           <Select label="Employment Type" value={employment} onChange={setEmployment} options={employmentOptions} required />
         </div>
 
@@ -72,7 +72,7 @@ function CriteriaQuickCheck() {
             <div style={{ fontSize: 28, fontWeight: 700, color: ltvColor }}>{ltv}%</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, color: ltvColor }}>Loan to Value</div>
-              <div style={{ fontSize: 12, color: T.textMuted }}>Loan amount: \u00a3{(pv - dep).toLocaleString()}</div>
+              <div style={{ fontSize: 12, color: T.textMuted }}>Loan amount: £{(pv - dep).toLocaleString()}</div>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ height: 8, borderRadius: 4, background: T.borderLight, overflow: "hidden" }}>
@@ -153,12 +153,12 @@ function CriteriaQuickCheck() {
             {Ico.bot(18)}
             <div style={{ fontSize: 13, lineHeight: 1.5, color: T.text }}>
               At {ltv}% LTV with {employment.toLowerCase()} income, {allProducts.filter(p => ltv <= p.maxLtv && (p.employReq === "any" || (p.employReq === "employed" && employment === "Employed"))).length} of {allProducts.length} products are available.
-              {ltv <= 75 ? " All standard residential products are available." : ltv <= 85 ? " Higher LTV products apply \u2014 consider increasing deposit for better rates." : ltv <= 90 ? " Limited to high-LTV products. Rates will be higher." : " LTV exceeds maximum \u2014 no products available at this level."}
+              {ltv <= 75 ? " All standard residential products are available." : ltv <= 85 ? " Higher LTV products apply — consider increasing deposit for better rates." : ltv <= 90 ? " Limited to high-LTV products. Rates will be higher." : " LTV exceeds maximum — no products available at this level."}
             </div>
           </div>
 
           {/* Create Full Enquiry button */}
-          <Btn primary icon="arrow">Create Full Enquiry \u2192</Btn>
+          <Btn primary icon="arrow">Create Full Enquiry →</Btn>
         </Card>
       )}
 

@@ -13,7 +13,7 @@ export default function BrokerLoansScreen({ onOpenCase, onNewLoan }) {
         <div style={{ display:"flex", gap:8 }}>
           <Btn primary iconNode={Ico.plus(16)} onClick={onNewLoan}>Create Loan</Btn>
           <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", background:T.card, borderRadius:9, border:`1px solid ${T.border}` }}>
-            {Ico.search(15)}<input placeholder="Search\u2026" style={{ border:"none", background:"transparent", outline:"none", fontSize:13, width:160, fontFamily:T.font }} />
+            {Ico.search(15)}<input placeholder="Search…" style={{ border:"none", background:"transparent", outline:"none", fontSize:13, width:160, fontFamily:T.font }} />
           </div>
         </div>
       </div>

@@ -62,7 +62,7 @@ const StatusLabel = ({ text, color }) => (
 const GateDot = ({ label, status, color }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
     <span style={{ width: 18, height: 18, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, background: color === "green" ? T.successBg : T.warningBg, color: color === "green" ? T.success : "#92400E", border: `2px solid ${color === "green" ? T.success : T.warning}` }}>
-      {color === "green" ? "\u2713" : "\u26A0"}
+      {color === "green" ? "✓" : "⚠"}
     </span>
     <div>
       <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{label}</div>
@@ -107,7 +107,7 @@ function CaseWorkbench({ loan: loanProp }) {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 24, fontSize: 12, color: T.textMuted }}>
           <span><strong>Broker:</strong> {loan.broker}</span>
-          <span><strong>Amount:</strong> {"\u00a3"}{loan.amount.toLocaleString()}</span>
+          <span><strong>Amount:</strong> {"£"}{loan.amount.toLocaleString()}</span>
           <span><strong>LTV:</strong> {loan.ltv}%</span>
           <span><strong>Submitted:</strong> {loan.submitted}</span>
           <span><strong>Assigned:</strong> {loan.assignedTo}</span>
@@ -141,7 +141,7 @@ function CaseWorkbench({ loan: loanProp }) {
             <CheckItem done={kycItems[3]} label="Employer Verification" detail="Awaiting employer letter. Auto-chase sent 2h ago." />
           </div>
           <div onClick={() => toggleKyc(4)} style={{ cursor: "pointer" }}>
-            <CheckItem done={kycItems[4]} label="Bank Statements" detail="3 months verified. Income \u00a35,833/mo confirmed." auto />
+            <CheckItem done={kycItems[4]} label="Bank Statements" detail="3 months verified. Income £5,833/mo confirmed." auto />
           </div>
           <div onClick={() => toggleKyc(5)} style={{ cursor: "pointer" }}>
             <CheckItem done={kycItems[5]} label="Document Completeness" detail="6/6 documents received. 2 AI flags raised." auto />
@@ -151,7 +151,7 @@ function CaseWorkbench({ loan: loanProp }) {
           <div style={{ background: T.warningBg, border: `1px solid ${T.warningBorder}`, borderRadius: 8, padding: "10px 12px", marginTop: 4, marginBottom: 12, display: "flex", alignItems: "flex-start", gap: 8 }}>
             <span style={{ color: "#92400E", flexShrink: 0, marginTop: 1 }}>{Ico.alert(14)}</span>
             <div style={{ fontSize: 11, color: "#92400E", lineHeight: 1.5 }}>
-              <strong>AI Flag:</strong> P60 shows {"\u00a3"}2,500 less than declared &mdash; verify with employer letter.
+              <strong>AI Flag:</strong> P60 shows {"£"}2,500 less than declared &mdash; verify with employer letter.
             </div>
           </div>
 
@@ -173,9 +173,9 @@ function CaseWorkbench({ loan: loanProp }) {
             <div style={{ marginLeft: "auto" }}><StatusLabel text="Awaiting Report" color="amber" /></div>
           </div>
 
-          <CheckItem done label="AVM Executed" detail={`\u00a3495,000 (87% confidence). Range \u00a3470k\u2013\u00a3520k.`} auto />
-          <CheckItem done label="Zoopla Cross-Check" detail={`\u00a3488,000. Within 2% of AVM. Consistent.`} auto />
-          <CheckItem done label="Rightmove Comparables" detail="6 sales in BS1. Avg \u00a3479,000. Subject +3% justified." auto />
+          <CheckItem done label="AVM Executed" detail={`£495,000 (87% confidence). Range £470k–£520k.`} auto />
+          <CheckItem done label="Zoopla Cross-Check" detail={`£488,000. Within 2% of AVM. Consistent.`} auto />
+          <CheckItem done label="Rightmove Comparables" detail="6 sales in BS1. Avg £479,000. Subject +3% justified." auto />
           <CheckItem label="Surveyor Instructed" detail="Countrywide Surveying. Instructed 25 Mar. SLA: 3 days." />
           <CheckItem label="Report Received" detail="Expected 28 Mar." />
           <CheckItem locked label="Valuation Approved" detail="Locked until report received." />
@@ -186,13 +186,13 @@ function CaseWorkbench({ loan: loanProp }) {
             <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.7 }}>
               <div><strong>Address:</strong> {loan.property}</div>
               <div><strong>Type:</strong> {loan.propertyType}</div>
-              <div><strong>AVM Value:</strong> {"\u00a3"}{loan.avmValue.toLocaleString()}</div>
+              <div><strong>AVM Value:</strong> {"£"}{loan.avmValue.toLocaleString()}</div>
               <div><strong>Confidence:</strong> {loan.avmConfidence}%</div>
             </div>
           </div>
 
           <div style={{ marginTop: "auto" }}>
-            <Btn small style={{ width: "100%" }}>Chase Surveyor {"\u2192"}</Btn>
+            <Btn small style={{ width: "100%" }}>Chase Surveyor {"→"}</Btn>
           </div>
         </Card>
 
@@ -255,7 +255,7 @@ function CaseWorkbench({ loan: loanProp }) {
             <span style={{ color: T.primary, marginLeft: 4 }}>{Ico.arrow(16)}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#F3F4F6", border: `2px dashed ${T.border}`, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: T.textMuted }}>{"\u2192"}</span>
+            <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#F3F4F6", border: `2px dashed ${T.border}`, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: T.textMuted }}>{"→"}</span>
             <div>
               <div style={{ fontSize: 12, fontWeight: 600, color: T.textMuted }}>Issue Offer</div>
               <div style={{ fontSize: 11, color: T.textMuted }}>Pending</div>

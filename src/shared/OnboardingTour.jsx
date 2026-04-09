@@ -18,7 +18,7 @@ const TOUR_STEPS = {
     { title: "Welcome to Nova 2.0", desc: "Your AI-powered operations hub. Let's get you up to speed.", icon: "sparkle" },
     { title: "Needs Attention", desc: "Your home screen shows customers and cases that need action, ranked by AI priority.", icon: "alert" },
     { title: "Intake Queue", desc: "New applications arrive pre-processed by AI. 67% of checks are done before you touch the case.", icon: "loans" },
-    { title: "Customer 360", desc: "See everything about a customer in one place \u2014 all products, all history, all risk.", icon: "customers" },
+    { title: "Customer 360", desc: "See everything about a customer in one place — all products, all history, all risk.", icon: "customers" },
     { title: "Servicing", desc: "Search any mortgage account. AI recommends actions. Modals for every operation.", icon: "dollar" },
   ],
   Admin: [

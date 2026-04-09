@@ -59,7 +59,7 @@ const SLA_COMPLIANCE = [
 
 const qualityColor = (score) => score >= 85 ? T.success : score >= 70 ? T.warning : T.danger;
 const qualityBg = (score) => score >= 85 ? T.successBg : score >= 70 ? T.warningBg : T.dangerBg;
-const trendArrow = (t) => t === "up" ? "\u2191" : t === "down" ? "\u2193" : "\u2192";
+const trendArrow = (t) => t === "up" ? "↑" : t === "down" ? "↓" : "→";
 const trendColor = (t) => t === "up" ? T.success : t === "down" ? T.danger : T.textMuted;
 const fmtVol = (v) => v >= 1000000 ? `£${(v / 1000000).toFixed(1)}M` : `£${(v / 1000).toFixed(0)}k`;
 

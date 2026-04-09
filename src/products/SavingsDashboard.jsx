@@ -167,7 +167,7 @@ function SavingsDashboard() {
                         ? badge("Fixed Term", "#EDE9FE", "#5B21B6")
                         : badge("Notice", "#DBEAFE", "#1E40AF")}
                     </td>
-                    <td style={{ padding: "10px 10px", fontWeight: 600 }}>{"\u00A3"}{a.principal.toLocaleString()}</td>
+                    <td style={{ padding: "10px 10px", fontWeight: 600 }}>{"£"}{a.principal.toLocaleString()}</td>
                     <td style={{ padding: "10px 10px" }}>{a.rate}%</td>
                     <td style={{ padding: "10px 10px" }}>{a.type === "Fixed Term" ? a.term : a.noticePeriod}</td>
                     <td style={{ padding: "10px 10px" }}>
@@ -187,7 +187,7 @@ function SavingsDashboard() {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: "10px 10px", fontWeight: 600 }}>{"\u00A3"}{a.interestEarned.toLocaleString()}</td>
+                    <td style={{ padding: "10px 10px", fontWeight: 600 }}>{"£"}{a.interestEarned.toLocaleString()}</td>
                     <td style={{ padding: "10px 10px" }}>
                       {a.aiRisk === "Low" && badge("Low", T.successBg, T.success)}
                       {a.aiRisk === "Medium" && badge("Medium", T.warningBg, T.warning)}
@@ -235,7 +235,7 @@ function SavingsDashboard() {
                               whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                             }}>
                               <div style={{ fontWeight: 700 }}>{item.customer}</div>
-                              <div>{"\u00A3"}{item.amount.toLocaleString()} — {item.date}</div>
+                              <div>{"£"}{item.amount.toLocaleString()} — {item.date}</div>
                               <div style={{ color: "rgba(255,255,255,0.7)" }}>{item.id}</div>
                             </div>
                           )}
@@ -295,17 +295,17 @@ function SavingsDashboard() {
             <div style={{ background: T.bg, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>Maturing This Month</div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>{maturingCount}</div>
-              <div style={{ fontSize: 11, color: T.textMuted }}>{"\u00A3"}{(maturingTotal / 1000000).toFixed(1)}M</div>
+              <div style={{ fontSize: 11, color: T.textMuted }}>{"£"}{(maturingTotal / 1000000).toFixed(1)}M</div>
             </div>
             <div style={{ background: T.bg, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>Auto-Renew Set</div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>{renewalAutoRenew.length}</div>
-              <div style={{ fontSize: 11, color: T.textMuted }}>{"\u00A3"}{(renewalAutoRenew.reduce((s, a) => s + a.principal, 0) / 1000).toFixed(0)}k</div>
+              <div style={{ fontSize: 11, color: T.textMuted }}>{"£"}{(renewalAutoRenew.reduce((s, a) => s + a.principal, 0) / 1000).toFixed(0)}k</div>
             </div>
             <div style={{ background: T.dangerBg, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>At Risk of Withdrawal</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: T.danger }}>{renewalAtRisk.length}</div>
-              <div style={{ fontSize: 11, color: T.textMuted }}>{"\u00A3"}{(renewalAtRisk.reduce((s, a) => s + a.principal, 0) / 1000).toFixed(0)}k</div>
+              <div style={{ fontSize: 11, color: T.textMuted }}>{"£"}{(renewalAtRisk.reduce((s, a) => s + a.principal, 0) / 1000).toFixed(0)}k</div>
             </div>
             <div style={{ background: T.bg, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>Retention Offers Sent</div>
@@ -323,7 +323,7 @@ function SavingsDashboard() {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: T.primary }}>AI Savings Insight</div>
             <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6 }}>
-              {"\u00A3"}1.8M in deposits maturing within 30 days. 2 customers have not set auto-renewal and have been
+              {"£"}1.8M in deposits maturing within 30 days. 2 customers have not set auto-renewal and have been
               browsing competitor rates on comparison sites (Open Banking signal). Recommend proactive retention
               calls with competitive rate-match offers to prevent outflow.
             </div>

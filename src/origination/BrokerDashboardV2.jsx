@@ -22,12 +22,12 @@ const STATUS_TO_STEP = {
 
 /* ── SLA config ── */
 const SLA_MAP = {
-  KYC_In_Progress: { label: "KYC \u2014 18h remaining", color: T.success },
-  Underwriting: { label: "UW Decision \u2014 6h remaining", color: T.warning },
-  Referred: { label: "Senior Review \u2014 2d remaining", color: T.success },
+  KYC_In_Progress: { label: "KYC — 18h remaining", color: T.success },
+  Underwriting: { label: "UW Decision — 6h remaining", color: T.warning },
+  Referred: { label: "Senior Review — 2d remaining", color: T.success },
   Offer_Issued: { label: "Awaiting acceptance", color: null },
   DIP_Approved: { label: "Submit application", color: null },
-  Disbursed: { label: "Complete \u2713", color: null },
+  Disbursed: { label: "Complete ✓", color: null },
 };
 
 const SLA_URGENCY = {
@@ -44,9 +44,9 @@ const SLA_URGENCY = {
 
 /* ── notifications ── */
 const NOTIFICATIONS = [
-  { icon: "file", color: "#1D4ED8", bg: "#DBEAFE", title: "Offer issued", detail: "AFN-2026-00139 \u2014 Priya Sharma", time: "1d ago" },
-  { icon: "check", color: T.success, bg: T.successBg, title: "DIP approved", detail: "AFN-2026-00115 \u2014 Sophie & Jack Brown", time: "6d ago" },
-  { icon: "alert", color: T.danger, bg: T.dangerBg, title: "Document flagged", detail: "P60 variance \u2014 James Mitchell", time: "2h ago" },
+  { icon: "file", color: "#1D4ED8", bg: "#DBEAFE", title: "Offer issued", detail: "AFN-2026-00139 — Priya Sharma", time: "1d ago" },
+  { icon: "check", color: T.success, bg: T.successBg, title: "DIP approved", detail: "AFN-2026-00115 — Sophie & Jack Brown", time: "6d ago" },
+  { icon: "alert", color: T.danger, bg: T.dangerBg, title: "Document flagged", detail: "P60 variance — James Mitchell", time: "2h ago" },
   { icon: "messages", color: "#8B5CF6", bg: "#EDE9FE", title: "New message", detail: "Ops team responded re: ERC query", time: "4h ago" },
 ];
 
@@ -117,10 +117,10 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
       {/* KPIs */}
       <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
         <KPICard label="Active Cases" value={MOCK_LOANS.length} color={T.primary} />
-        <KPICard label="Total Pipeline" value={`\u00a3${(totalPipeline / 1000).toFixed(0)}K`} sub={`\u00a3${(totalPipeline / 1000000).toFixed(2)}M`} color={T.accent} />
+        <KPICard label="Total Pipeline" value={`£${(totalPipeline / 1000).toFixed(0)}K`} sub={`£${(totalPipeline / 1000000).toFixed(2)}M`} color={T.accent} />
         <KPICard label="Avg DIP Time" value="4.2 min" color={T.success} />
-        <KPICard label="This Month" value="\u00a3890K" color={T.warning} />
-        <KPICard label="Commission Pending" value="\u00a34,820" color="#8B5CF6" />
+        <KPICard label="This Month" value="£890K" color={T.warning} />
+        <KPICard label="Commission Pending" value="£4,820" color="#8B5CF6" />
       </div>
 
       {/* Main layout: pipeline + sidebar */}

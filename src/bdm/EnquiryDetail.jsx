@@ -10,12 +10,12 @@ const squadMembers = [
 
 const timelineEvents = [
   { time: "4 Apr, 09:15", text: "Enquiry submitted by Sarah Thompson (BDM)", icon: "plus" },
-  { time: "4 Apr, 09:16", text: "Nova AI criteria check: Eligible \u2014 4 products matched", icon: "sparkle" },
+  { time: "4 Apr, 09:16", text: "Nova AI criteria check: Eligible — 4 products matched", icon: "sparkle" },
   { time: "4 Apr, 09:18", text: "Squad assigned: ST (BDM), TW (Ops), JM (UW)", icon: "users" },
   { time: "4 Apr, 10:00", text: "Criteria pack sent to Watson & Partners", icon: "send" },
   { time: "4 Apr, 14:30", text: "Broker confirmed client interest", icon: "check" },
   { time: "5 Apr, 09:00", text: "DIP submitted via Smart Apply", icon: "file" },
-  { time: "5 Apr, 09:45", text: "DIP Result: Approved \u2014 Afin Fix 2yr 75%", icon: "check" },
+  { time: "5 Apr, 09:45", text: "DIP Result: Approved — Afin Fix 2yr 75%", icon: "check" },
   { time: "5 Apr, 11:00", text: "Full application submitted", icon: "upload" },
   { time: "5 Apr, 14:00", text: "KYC initiated by Tom Walker", icon: "shield" },
   { time: "6 Apr, 09:30", text: "Documents uploaded by broker", icon: "file" },
@@ -25,13 +25,13 @@ const documents = [
   { name: "Criteria pack", status: "Sent", icon: "file", date: "4 Apr 2026" },
   { name: "DIP letter", status: "Generated", icon: "file", date: "5 Apr 2026" },
   { name: "Broker notes", status: "Uploaded", icon: "upload", date: "5 Apr 2026" },
-  { name: "Income evidence", status: "Pending", icon: "clock", date: "\u2014" },
+  { name: "Income evidence", status: "Pending", icon: "clock", date: "—" },
 ];
 
 const messages = [
-  { from: "Sarah Thompson", role: "BDM", time: "4 Apr, 10:05", text: "Hi team, new enquiry from Watson & Partners. Client looks strong \u2014 employed, \u00a370k income, 72% LTV. Let\u2019s prioritise this one." },
-  { from: "Tom Walker", role: "Ops", time: "4 Apr, 10:20", text: "Noted, Sarah. I\u2019ll start the KYC process. Can you ask the broker for the latest 3 months\u2019 bank statements?" },
-  { from: "Sarah Thompson", role: "BDM", time: "4 Apr, 10:35", text: "Already requested. Watson\u2019s are usually quick \u2014 expect them within 24hrs." },
+  { from: "Sarah Thompson", role: "BDM", time: "4 Apr, 10:05", text: "Hi team, new enquiry from Watson & Partners. Client looks strong — employed, £70k income, 72% LTV. Let's prioritise this one." },
+  { from: "Tom Walker", role: "Ops", time: "4 Apr, 10:20", text: "Noted, Sarah. I'll start the KYC process. Can you ask the broker for the latest 3 months' bank statements?" },
+  { from: "Sarah Thompson", role: "BDM", time: "4 Apr, 10:35", text: "Already requested. Watson's are usually quick — expect them within 24hrs." },
   { from: "James Mitchell", role: "UW", time: "5 Apr, 09:50", text: "DIP approved. Clean case, no concerns. Moving to full application review." },
   { from: "Tom Walker", role: "Ops", time: "5 Apr, 14:15", text: "KYC initiated. ID verification passed. Waiting on address verification docs." },
   { from: "Watson & Partners", role: "Broker", time: "6 Apr, 09:30", text: "Documents uploaded: payslips, bank statements, and ID. Client keen to move quickly." },
@@ -44,12 +44,12 @@ function EnquiryDetail({ enquiry, onBack }) {
   const tabs = ["Overview", "Timeline", "Documents", "Communications"];
 
   const e = enquiry || {
-    id: "ENQ-001", broker: "Watson & Partners", scenario: "3-bed semi, employed, \u00a370k income",
+    id: "ENQ-001", broker: "Watson & Partners", scenario: "3-bed semi, employed, £70k income",
     amount: 350000, ltv: 72, aiResult: "Eligible", status: "DIP Submitted", squad: "ST/TW/JM",
   };
 
   const currentStep = 2; // Application stage
-  const hasSquad = e.squad && e.squad !== "\u2014" && e.squad !== "Pending";
+  const hasSquad = e.squad && e.squad !== "—" && e.squad !== "Pending";
 
   const aiResultStyle = {
     Eligible: { bg: T.successBg, color: T.success, border: T.successBorder },
@@ -91,7 +91,7 @@ function EnquiryDetail({ enquiry, onBack }) {
 
         {!hasSquad ? (
           <div style={{ padding: "16px 20px", borderRadius: 10, background: T.warningBg, border: `1px solid ${T.warningBorder}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#92400E" }}>Squad Pending \u2014 Assign Now</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#92400E" }}>Squad Pending — Assign Now</span>
             <Btn small primary icon="assign">Assign Squad</Btn>
           </div>
         ) : (
@@ -149,9 +149,9 @@ function EnquiryDetail({ enquiry, onBack }) {
                 ["Customer Type", "Residential"],
                 ["Property Type", "3-bed semi-detached"],
                 ["Location", "SW1A 1AA"],
-                ["Income", "\u00a370,000"],
-                ["Property Value", `\u00a3${e.amount.toLocaleString()}`],
-                ["Deposit", "\u00a398,000"],
+                ["Income", "£70,000"],
+                ["Property Value", `£${e.amount.toLocaleString()}`],
+                ["Deposit", "£98,000"],
                 ["LTV", `${e.ltv}%`],
                 ["Employment", "Employed"],
                 ["Flags", "None"],

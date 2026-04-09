@@ -139,8 +139,8 @@ export default function PricingEngine() {
             {[
               { label: "Rate Change", value: `${rateChange >= 0 ? "+" : ""}${rateChange.toFixed(2)}%`, color: rateChange < 0 ? T.success : rateChange > 0 ? T.danger : T.text },
               { label: "Projected Volume Impact", value: `${volumeImpact >= 0 ? "+" : ""}${volumeImpact}%`, color: volumeImpact > 0 ? T.success : T.danger },
-              { label: "Monthly Payment Change", value: `${monthlyPaymentChange >= 0 ? "+" : ""}\u00a3${Math.abs(monthlyPaymentChange)} per \u00a3350k loan`, color: monthlyPaymentChange < 0 ? T.success : T.danger },
-              { label: "Margin Impact", value: `${marginImpact >= 0 ? "+" : ""}\u00a3${Math.abs(marginImpact).toLocaleString()}/year per \u00a3100M book`, color: marginImpact > 0 ? T.success : T.danger },
+              { label: "Monthly Payment Change", value: `${monthlyPaymentChange >= 0 ? "+" : ""}£${Math.abs(monthlyPaymentChange)} per £350k loan`, color: monthlyPaymentChange < 0 ? T.success : T.danger },
+              { label: "Margin Impact", value: `${marginImpact >= 0 ? "+" : ""}£${Math.abs(marginImpact).toLocaleString()}/year per £100M book`, color: marginImpact > 0 ? T.success : T.danger },
               { label: "Projected New Applications", value: `${newApps} per month`, color: newApps.startsWith("+") ? T.success : T.danger },
               { label: "Market Position", value: newPosition, color: getPositionColor(newPosition) },
             ].map((item, i) => (
@@ -184,7 +184,7 @@ export default function PricingEngine() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.primary, marginBottom: 4 }}>AI Pricing Insight</div>
             <div style={{ fontSize: 13, color: T.text, lineHeight: 1.6 }}>
-              Reducing Fix 2yr to 4.29% would make Afin the 2nd cheapest in market. Based on broker behaviour data, this is projected to increase DIP volume by 15% and completions by 8%. The margin reduction of \u00a312,000 per \u00a3100M is offset by projected volume gains within 6 weeks.
+              Reducing Fix 2yr to 4.29% would make Afin the 2nd cheapest in market. Based on broker behaviour data, this is projected to increase DIP volume by 15% and completions by 8%. The margin reduction of £12,000 per £100M is offset by projected volume gains within 6 weeks.
             </div>
           </div>
         </div>
