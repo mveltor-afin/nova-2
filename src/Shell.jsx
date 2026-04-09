@@ -57,6 +57,19 @@ import ConsumerDutyScreen from "./admin/ConsumerDutyScreen";
 import RegulatoryReportingScreen from "./admin/RegulatoryReportingScreen";
 import IntegrationsScreen from "./admin/IntegrationsScreen";
 import SettingsScreen from "./admin/SettingsScreen";
+import WorkflowBuilder from "./admin/WorkflowBuilder";
+import ProductCatalogue from "./admin/ProductCatalogue";
+import DocumentTemplates from "./admin/DocumentTemplates";
+import APIHealthDashboard from "./admin/APIHealthDashboard";
+import ReportBuilder from "./admin/ReportBuilder";
+import CaseJourney from "./admin/CaseJourney";
+// Operations
+import CommsCentre from "./operations/CommsCentre";
+// Shared — new
+import OnboardingTour from "./shared/OnboardingTour";
+import UniversalSearch from "./shared/UniversalSearch";
+import PresenceIndicator from "./shared/PresenceIndicator";
+import WhatsNew from "./shared/WhatsNew";
 
 // ─────────────────────────────────────────────
 // NOVA 2.0 — MAIN SHELL
@@ -134,6 +147,8 @@ export default function Shell({ userType }) {
   const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(`nova_onboarding_done`));
 
   // Responsive: detect mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -231,16 +246,27 @@ export default function Shell({ userType }) {
           ] : []),
           { id:"messages",          label:"Messages",        icon:"messages", badge:5 },
         ]},
+        ...((persona === "Ops" || persona === "Admin") ? [{
+          group:"OPERATIONS", items:[
+            { id:"commscentre",    label:"Comms Centre",     icon:"send" },
+            { id:"doctemplates",   label:"Doc Templates",    icon:"file" },
+            { id:"casejourney",    label:"Case Journey",     icon:"clock" },
+          ],
+        }] : []),
         ...(persona === "Admin" ? [{
           group:"ADMIN", items:[
-            { id:"usersroles",    label:"Users & Roles",  icon:"users" },
-            { id:"permissions",   label:"Permissions",     icon:"shield" },
-            { id:"team",          label:"Team Hierarchy",  icon:"assign" },
-            { id:"mandates",      label:"Mandates",        icon:"shield" },
-            { id:"sessions",      label:"Sessions",        icon:"lock" },
-            { id:"flags",         label:"Feature Flags",   icon:"zap" },
-            { id:"audit",         label:"Audit Trail",     icon:"clock" },
-            { id:"anomalies",     label:"AI Anomalies",    icon:"alert" },
+            { id:"usersroles",    label:"Users & Roles",    icon:"users" },
+            { id:"permissions",   label:"Permissions",       icon:"shield" },
+            { id:"team",          label:"Team Hierarchy",    icon:"assign" },
+            { id:"mandates",      label:"Mandates",          icon:"shield" },
+            { id:"sessions",      label:"Sessions",          icon:"lock" },
+            { id:"flags",         label:"Feature Flags",     icon:"zap" },
+            { id:"audit",         label:"Audit Trail",       icon:"clock" },
+            { id:"anomalies",     label:"AI Anomalies",      icon:"alert" },
+            { id:"workflows",     label:"Workflow Builder",  icon:"zap" },
+            { id:"products",      label:"Product Catalogue", icon:"products" },
+            { id:"reportbuilder", label:"Report Builder",    icon:"chart" },
+            { id:"apihealth",     label:"API Health",        icon:"zap" },
           ],
         }] : []),
         ...((persona === "Risk Analyst" || persona === "Ops") ? [{
@@ -404,6 +430,10 @@ export default function Shell({ userType }) {
             <span style={{ color:T.textMuted, display:"flex" }}>{Ico.search(14)}</span>
             {!isMobile && <span style={{ fontSize:12, color:T.textMuted }}>Search...</span>}
             {!isMobile && <span style={{ fontSize:10, color:T.textMuted, background:T.bg, padding:"1px 6px", borderRadius:4, fontWeight:600, marginLeft:8, fontFamily:"monospace" }}>⌘K</span>}
+          </div>
+          {/* What's New */}
+          <div onClick={() => setShowWhatsNew(true)} style={{ cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }} title="What's New">
+            {Ico.sparkle(16)}
           </div>
           {/* Notifications */}
           <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", color:T.textMuted, display:"flex", padding:4 }}>
@@ -805,6 +835,13 @@ export default function Shell({ userType }) {
         </div>
       );
       case "settings":        return <SettingsScreen />;
+      case "workflows":       return <WorkflowBuilder />;
+      case "products":        return <ProductCatalogue />;
+      case "doctemplates":    return <DocumentTemplates />;
+      case "commscentre":     return <CommsCentre />;
+      case "apihealth":       return <APIHealthDashboard />;
+      case "reportbuilder":   return <ReportBuilder />;
+      case "casejourney":     return <CaseJourney />;
       // Compliance
       case "complaints":      return <ComplaintsScreen />;
       case "consumerduty":    return <ConsumerDutyScreen />;
@@ -852,6 +889,7 @@ export default function Shell({ userType }) {
         <ContextBar />
         {/* Main content */}
         <div style={{ flex:1, padding: isMobile ? "16px 12px" : "24px 30px", overflowY:"auto", background:T.bg }}>
+          <PresenceIndicator screenId={screen} currentUser={isBroker ? "John Watson" : `${persona} User`} />
           {renderScreen()}
         </div>
       </div>
@@ -917,8 +955,10 @@ export default function Shell({ userType }) {
 
       {/* Overlays */}
       <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} persona={persona} />
-      <CommandPalette open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
-        onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); }} />
+      <UniversalSearch open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
+        onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
+      <WhatsNew open={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
+      {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
     </div>
   );
 }
