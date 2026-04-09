@@ -70,6 +70,17 @@ import OnboardingTour from "./shared/OnboardingTour";
 import UniversalSearch from "./shared/UniversalSearch";
 import PresenceIndicator from "./shared/PresenceIndicator";
 import WhatsNew from "./shared/WhatsNew";
+// Round 3 enhancements
+import CommissionTracker from "./origination/CommissionTracker";
+import BrokerDashboardV2 from "./origination/BrokerDashboardV2";
+import NewCustomerWizard from "./customers/NewCustomerWizard";
+import ComplianceCalendar from "./admin/ComplianceCalendar";
+import SegmentationEngine from "./admin/SegmentationEngine";
+import BrokerOnboarding from "./admin/BrokerOnboarding";
+import DataExportCentre from "./admin/DataExportCentre";
+import PricingEngine from "./intelligence/PricingEngine";
+import StressTestDashboard from "./intelligence/StressTestDashboard";
+import BoardPackGenerator from "./intelligence/BoardPackGenerator";
 
 // ─────────────────────────────────────────────
 // NOVA 2.0 — MAIN SHELL
@@ -186,8 +197,9 @@ export default function Shell({ userType }) {
           { id:"customerportal",  label:"Portal Preview", icon:"eye" },
         ]},
         { group:"INSIGHTS", items:[
-          { id:"brokermi",       label:"My MI",      icon:"chart" },
-          { id:"messages",       label:"Messages",    icon:"messages", badge:3 },
+          { id:"brokermi",       label:"My MI",        icon:"chart" },
+          { id:"commission",     label:"Commission",   icon:"dollar" },
+          { id:"messages",       label:"Messages",     icon:"messages", badge:3 },
         ]},
         { group:null, items:[
           { id:"settings", label:"Settings", icon:"settings" },
@@ -267,6 +279,17 @@ export default function Shell({ userType }) {
             { id:"products",      label:"Product Catalogue", icon:"products" },
             { id:"reportbuilder", label:"Report Builder",    icon:"chart" },
             { id:"apihealth",     label:"API Health",        icon:"zap" },
+            { id:"brokeronboard", label:"Broker Onboarding", icon:"assign" },
+            { id:"segmentation",  label:"Segmentation",      icon:"customers" },
+            { id:"dataexport",    label:"Data Export",        icon:"download" },
+          ],
+        }] : []),
+        ...((persona === "Admin" || persona === "Finance") ? [{
+          group:"FINANCE & RISK", items:[
+            { id:"pricing",       label:"Pricing Engine",    icon:"dollar" },
+            { id:"stresstest",    label:"Stress Testing",    icon:"alert" },
+            { id:"boardpack",     label:"Board Pack",        icon:"file" },
+            { id:"compliance_cal",label:"Compliance Calendar",icon:"clock" },
           ],
         }] : []),
         ...((persona === "Risk Analyst" || persona === "Ops") ? [{
@@ -775,7 +798,7 @@ export default function Shell({ userType }) {
     switch (screen) {
       case "needsattention":  return <NeedsAttentionScreen />;
       case "allcustomers":    return <AllCustomersScreen />;
-      case "brokerdashboard": return <BrokerDashboard />;
+      case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       // Broker aliases
       case "brokermi":        return <MIScreen persona="Broker" />;
       case "myapplications":  return <BrokerLoansScreen />;
@@ -842,6 +865,15 @@ export default function Shell({ userType }) {
       case "apihealth":       return <APIHealthDashboard />;
       case "reportbuilder":   return <ReportBuilder />;
       case "casejourney":     return <CaseJourney />;
+      case "commission":      return <CommissionTracker />;
+      case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
+      case "brokeronboard":   return <BrokerOnboarding />;
+      case "segmentation":    return <SegmentationEngine />;
+      case "dataexport":      return <DataExportCentre />;
+      case "pricing":         return <PricingEngine />;
+      case "stresstest":      return <StressTestDashboard />;
+      case "boardpack":       return <BoardPackGenerator />;
+      case "compliance_cal":  return <ComplianceCalendar />;
       // Compliance
       case "complaints":      return <ComplaintsScreen />;
       case "consumerduty":    return <ConsumerDutyScreen />;
