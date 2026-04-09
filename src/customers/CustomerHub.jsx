@@ -277,7 +277,7 @@ export default function CustomerHub({ customerId, onBack }) {
         {/* Gamification strip */}
         <div style={{ padding: "0 32px 20px", display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🔥</span>
+            <span style={{ color: T.danger, display:"flex" }}>{Ico.zap(20)}</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: T.primary }}>{customer.gamification?.streak || 0} month streak</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1076,7 +1076,7 @@ export default function CustomerHub({ customerId, onBack }) {
             {/* Payment Streak */}
             <Card style={{ marginBottom: 24 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: 28 }}>🔥</span>
+                <span style={{ color: T.danger, display:"flex" }}>{Ico.zap(28)}</span>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{customer.gamification?.streak || 0} Consecutive Months</div>
                   <div style={{ fontSize: 12, color: T.textMuted }}>On-time payment streak</div>
@@ -1104,7 +1104,7 @@ export default function CustomerHub({ customerId, onBack }) {
                       padding: "12px 16px", borderRadius: 12, background: T.successBg, border: `1px solid ${T.successBorder}`,
                       display: "flex", alignItems: "center", gap: 10, minWidth: 150,
                     }}>
-                      <span style={{ fontSize: 24 }}>{b.icon}</span>
+                      <span style={{ color: T.success, display:"flex" }}>{Ico[b.icoKey]?.(22)}</span>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: T.success }}>{b.name}</div>
                         <div style={{ fontSize: 11, color: T.textMuted }}>{b.desc}</div>
@@ -1124,7 +1124,7 @@ export default function CustomerHub({ customerId, onBack }) {
                       padding: "12px 16px", borderRadius: 12, background: T.bg, border: `1px solid ${T.border}`,
                       display: "flex", alignItems: "center", gap: 10, minWidth: 150, opacity: 0.7,
                     }}>
-                      <span style={{ fontSize: 24, filter: "grayscale(1)" }}>{b.icon}</span>
+                      <span style={{ color: T.textMuted, display:"flex" }}>{Ico[b.icoKey]?.(22)}</span>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: T.textMuted }}>{b.name}</div>
                         <div style={{ fontSize: 11, color: T.textMuted }}>{b.desc}</div>

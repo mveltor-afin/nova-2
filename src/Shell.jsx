@@ -725,7 +725,7 @@ export default function Shell({ userType }) {
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
         <div>
-          <h1 style={{ fontSize:22, fontWeight:700, margin:0 }}>Good morning 👋</h1>
+          <h1 style={{ fontSize:22, fontWeight:700, margin:0 }}>Good morning</h1>
           <p style={{ margin:"4px 0 0", fontSize:13, color:T.textSecondary }}>Here's your pipeline overview</p>
         </div>
         <div style={{ display:"flex", gap:8 }}>

@@ -81,15 +81,15 @@ export const TIERS = [
 ];
 
 export const BADGES = [
-  { id:"first-home", name:"First Home", icon:"\u{1F3E0}", desc:"Completed first mortgage" },
-  { id:"saver", name:"Saver", icon:"\u{1F4B0}", desc:"Opened a savings account" },
-  { id:"streak-1yr", name:"1yr Streak", icon:"\u{2B50}", desc:"12 consecutive on-time payments" },
-  { id:"streak-2yr", name:"2yr Streak", icon:"\u{1F31F}", desc:"24 consecutive on-time payments" },
-  { id:"streak-3yr", name:"3yr Streak", icon:"\u{2728}", desc:"36 consecutive on-time payments" },
-  { id:"streak-4yr", name:"4yr Streak", icon:"\u{1F4AB}", desc:"48 consecutive on-time payments" },
-  { id:"referrer", name:"Referrer", icon:"\u{1F91D}", desc:"Referred a friend who completed" },
-  { id:"multi-product", name:"Multi-Product", icon:"\u{1F4E6}", desc:"Holds 3+ products" },
-  { id:"insured", name:"Insured", icon:"\u{1F6E1}\u{FE0F}", desc:"Has active insurance cover" },
+  { id:"first-home", name:"First Home", icoKey:"loans", desc:"Completed first mortgage" },
+  { id:"saver", name:"Saver", icoKey:"dollar", desc:"Opened a savings account" },
+  { id:"streak-1yr", name:"1yr Streak", icoKey:"check", desc:"12 consecutive on-time payments" },
+  { id:"streak-2yr", name:"2yr Streak", icoKey:"check", desc:"24 consecutive on-time payments" },
+  { id:"streak-3yr", name:"3yr Streak", icoKey:"sparkle", desc:"36 consecutive on-time payments" },
+  { id:"streak-4yr", name:"4yr Streak", icoKey:"sparkle", desc:"48 consecutive on-time payments" },
+  { id:"referrer", name:"Referrer", icoKey:"users", desc:"Referred a friend who completed" },
+  { id:"multi-product", name:"Multi-Product", icoKey:"products", desc:"Holds 3+ products" },
+  { id:"insured", name:"Insured", icoKey:"shield", desc:"Has active insurance cover" },
 ];
 
 // Product type colours and icons
