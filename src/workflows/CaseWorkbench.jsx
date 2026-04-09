@@ -34,7 +34,7 @@ const ProgressRing = ({ done, total, size = 36 }) => {
 
 /* ── helper: checklist item ─────────────────────────────── */
 const CheckItem = ({ done, locked, label, detail, auto }) => {
-  const icon = locked ? "\uD83D\uDD12" : done ? "\u2713" : "\u25FB";
+  const icon = locked ? Ico.lock(14) : done ? Ico.check(14) : null;
   const bg = locked ? "#F3F4F6" : done ? T.successBg : "#fff";
   const borderColor = locked ? T.borderLight : done ? T.successBorder : T.border;
   return (
@@ -275,7 +275,7 @@ function CaseWorkbench({ loan: loanProp }) {
           </span>
           <div style={{ marginLeft: "auto" }}>
             <Btn primary disabled={!allTracksComplete} style={allTracksComplete ? { background: `linear-gradient(135deg, ${T.success}, #28A080)`, boxShadow: `0 4px 16px rgba(49,184,151,0.4)` } : {}}>
-              {allTracksComplete ? "\uD83C\uDF89" : ""} Issue Offer {"\u2192"}
+              {allTracksComplete && Ico.check(16)} Issue Offer {Ico.arrow(14)}
             </Btn>
           </div>
         </div>

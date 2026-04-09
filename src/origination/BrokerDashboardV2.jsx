@@ -108,7 +108,7 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>Good morning \ud83d\udc4b</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>Good morning</div>
           <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>Here's your pipeline overview</div>
         </div>
         <Btn primary icon="plus" onClick={onNewLoan}>New Loan</Btn>

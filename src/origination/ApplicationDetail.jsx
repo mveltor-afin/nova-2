@@ -526,7 +526,7 @@ function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicin
         </div>
       );
     }
-    return <Card style={{ padding: 60, textAlign: "center", color: T.textMuted }}>Screen under construction 🚧</Card>;
+    return <Card style={{ padding: 60, textAlign: "center", color: T.textMuted }}>This section is under development.</Card>;
   };
 
   return (
