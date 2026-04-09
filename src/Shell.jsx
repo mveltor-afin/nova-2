@@ -75,6 +75,12 @@ import BDMDashboard from "./bdm/BDMDashboard";
 import EnquiryForm from "./bdm/EnquiryForm";
 import EnquiryDetail from "./bdm/EnquiryDetail";
 import CriteriaQuickCheck from "./bdm/CriteriaQuickCheck";
+// Underwriting Engine
+import SmartQueue from "./underwriting/SmartQueue";
+import UWWorkstation from "./underwriting/UWWorkstation";
+import ComparisonEngine from "./underwriting/ComparisonEngine";
+import PolicyChecker from "./underwriting/PolicyChecker";
+import UWPerformance from "./underwriting/UWPerformance";
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -179,18 +185,22 @@ export default function Shell({ userType }) {
       ]
     : persona === "Underwriter"
     ? [
-        { group:"MY WORK", items:[
-          { id:"intake",          label:"Intake Queue",       icon:"zap", badge:3 },
+        // Underwriter: AI-powered credit decision engine
+        { group:"UNDERWRITING", items:[
+          { id:"uwqueue",         label:"Smart Queue",        icon:"shield", badge:5 },
           { id:"approvals",       label:"Approvals",          icon:"check" },
+          { id:"comparison",      label:"Case Comparison",    icon:"search" },
+          { id:"policychecker",   label:"Policy Checker",     icon:"lock" },
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
           { id:"allcustomers",    label:"All Customers",      icon:"customers" },
         ]},
         { group:"INTELLIGENCE", items:[
-          { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
+          { id:"uwperformance",   label:"My Performance",     icon:"chart" },
           { id:"mymi",            label:"My MI",              icon:"chart" },
-          { id:"myreports",      label:"My Reports",         icon:"file" },
+          { id:"myreports",       label:"My Reports",         icon:"file" },
+          { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
           { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
         ]},
         { group:"SERVICING", items:[
@@ -393,7 +403,7 @@ export default function Shell({ userType }) {
             {PERSONAS.map(p => (
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
-                setScreen(p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "intake" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
+                setScreen(p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -612,6 +622,12 @@ export default function Shell({ userType }) {
       case "newenquiry":     return <EnquiryForm onBack={() => setScreen("bdmdashboard")} />;
       case "enquirydetail":  return <EnquiryDetail enquiry={null} onBack={() => setScreen("bdmdashboard")} />;
       case "criteriacheck":  return <CriteriaQuickCheck />;
+      // Underwriting Engine
+      case "uwqueue":        return <SmartQueue onOpenCase={(loan) => { setSelectedLoan(loan); setScreen("uwworkstation"); }} />;
+      case "uwworkstation":  return <UWWorkstation loan={selectedLoan || MOCK_LOANS[0]} onBack={() => setScreen("uwqueue")} onDecisionMade={() => setScreen("uwqueue")} />;
+      case "comparison":     return <ComparisonEngine />;
+      case "policychecker":  return <PolicyChecker />;
+      case "uwperformance":  return <UWPerformance />;
       case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
       case "brokeronboard":   return <BrokerOnboarding />;
