@@ -159,6 +159,9 @@ export default function Shell({ userType }) {
   const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarPinned, setSidebarPinned] = useState(() => localStorage.getItem("nova_sidebar_pinned") === "1");
+  const [sidebarHover, setSidebarHover] = useState(false);
+  const sidebarExpanded = isMobile ? sidebarOpen : (sidebarPinned || sidebarHover);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(`nova_onboarding_done`));
 
@@ -386,48 +389,73 @@ export default function Shell({ userType }) {
   };
 
   // ── Sidebar ──
+  const togglePin = () => { const next = !sidebarPinned; setSidebarPinned(next); localStorage.setItem("nova_sidebar_pinned", next ? "1" : "0"); };
+  const W_COLLAPSED = 60;
+  const W_EXPANDED = 252;
+  const sW = sidebarExpanded ? W_EXPANDED : W_COLLAPSED;
+
   const Sidebar = () => (
     <>
     {/* Mobile backdrop */}
     {isMobile && sidebarOpen && (
       <div onClick={() => setSidebarOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:199 }} />
     )}
-    <div style={{
-      width:252, background:`linear-gradient(180deg,${T.navy},#0C1829)`, color:"#fff", display:"flex", flexDirection:"column", flexShrink:0, height:"100vh",
-      ...(isMobile ? { position:"fixed", left:0, top:0, zIndex:200, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition:"transform 0.25s ease" } : { position:"sticky", top:0 }),
-    }}>
+    <div
+      onMouseEnter={() => { if (!isMobile) setSidebarHover(true); }}
+      onMouseLeave={() => { if (!isMobile) setSidebarHover(false); setPersonaOpen(false); }}
+      style={{
+        width: sW, background:`linear-gradient(180deg,${T.navy},#0C1829)`, color:"#fff",
+        display:"flex", flexDirection:"column", flexShrink:0, height:"100vh",
+        transition:"width 0.2s ease", overflow:"hidden", zIndex:isMobile?200:50,
+        ...(isMobile ? { position:"fixed", left:0, top:0, width:W_EXPANDED, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition:"transform 0.25s ease" } : { position:"sticky", top:0 }),
+        boxShadow: (!isMobile && sidebarHover && !sidebarPinned) ? "4px 0 24px rgba(0,0,0,0.2)" : "none",
+      }}>
+
       {/* Logo */}
-      <div style={{ padding:"20px 16px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${T.primary},${T.accent})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, color:"#fff" }}>N</div>
-          <div>
-            <div style={{ fontWeight:700, fontSize:16, letterSpacing:-0.3 }}>Nova <span style={{ fontSize:12, fontWeight:500, color:"rgba(255,255,255,0.4)" }}>2.0</span></div>
+      <div style={{ padding: sidebarExpanded ? "20px 16px 14px" : "20px 0 14px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent: sidebarExpanded ? "flex-start" : "center", gap:10, minHeight:60 }}>
+        <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${T.primary},${T.accent})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, color:"#fff", flexShrink:0 }}>N</div>
+        {sidebarExpanded && (
+          <div style={{ flex:1, overflow:"hidden" }}>
+            <div style={{ fontWeight:700, fontSize:16, letterSpacing:-0.3, whiteSpace:"nowrap" }}>Nova <span style={{ fontSize:12, fontWeight:500, color:"rgba(255,255,255,0.4)" }}>2.0</span></div>
             <div style={{ fontSize:10, color:"#64748B", letterSpacing:0.5, textTransform:"uppercase" }}>Afin Bank</div>
           </div>
-          {isMobile && <span onClick={() => setSidebarOpen(false)} style={{ marginLeft:"auto", cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:20 }}>×</span>}
-        </div>
+        )}
+        {sidebarExpanded && !isMobile && (
+          <div onClick={togglePin} title={sidebarPinned ? "Unpin sidebar" : "Pin sidebar"} style={{ cursor:"pointer", color: sidebarPinned ? T.accent : "#4A5568", display:"flex", padding:4, borderRadius:6, transition:"color 0.15s" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={sidebarPinned?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path d="M12 2L12 22M17 7L12 2 7 7"/>{sidebarPinned && <circle cx="12" cy="12" r="3"/>}</svg>
+          </div>
+        )}
+        {isMobile && sidebarExpanded && <span onClick={() => setSidebarOpen(false)} style={{ cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:20 }}>{Ico.x(18)}</span>}
       </div>
 
       {/* Persona switcher */}
-      <div style={{ padding:"10px 10px 4px" }}>
-        <div onClick={() => setPersonaOpen(!personaOpen)}
-          style={{ padding:"8px 12px", borderRadius:8, background:"rgba(255,255,255,0.05)", cursor:"pointer",
-            display:"flex", justifyContent:"space-between", alignItems:"center",
-            border:"1px solid rgba(255,255,255,0.08)", transition:"all 0.15s" }}>
-          <div>
-            <div style={{ fontSize:10, color:"#64748B", textTransform:"uppercase", letterSpacing:0.5 }}>Viewing as</div>
-            <div style={{ fontSize:13, fontWeight:600, color:"#CBD5E1" }}>{persona}</div>
-          </div>
-          <span style={{ color:"#64748B", fontSize:10, transition:"transform 0.2s", transform:personaOpen?"rotate(180deg)":"rotate(0)" }}>&#x25BC;</span>
+      <div style={{ padding: sidebarExpanded ? "10px 10px 4px" : "10px 6px 4px" }}>
+        <div onClick={() => sidebarExpanded && setPersonaOpen(!personaOpen)}
+          style={{ padding: sidebarExpanded ? "8px 12px" : "8px 0", borderRadius:8,
+            background: sidebarExpanded ? "rgba(255,255,255,0.05)" : "transparent",
+            cursor:"pointer", display:"flex", justifyContent: sidebarExpanded ? "space-between" : "center", alignItems:"center",
+            border: sidebarExpanded ? "1px solid rgba(255,255,255,0.08)" : "none", transition:"all 0.15s" }}>
+          {sidebarExpanded ? (
+            <>
+              <div>
+                <div style={{ fontSize:10, color:"#64748B", textTransform:"uppercase", letterSpacing:0.5 }}>Viewing as</div>
+                <div style={{ fontSize:13, fontWeight:600, color:"#CBD5E1" }}>{persona}</div>
+              </div>
+              <span style={{ color:"#64748B", fontSize:10 }}>&#x25BC;</span>
+            </>
+          ) : (
+            <div style={{ width:30, height:30, borderRadius:8, background:"rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#CBD5E1" }}>
+              {persona[0]}
+            </div>
+          )}
         </div>
-        {personaOpen && (
+        {personaOpen && sidebarExpanded && (
           <div style={{ marginTop:4, background:"#1E293B", borderRadius:8, overflow:"hidden", border:"1px solid rgba(255,255,255,0.08)" }}>
             {PERSONAS.map(p => (
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
                 setScreen(p === "Broker" ? "brokerdashboard" : p === "Underwriter" ? "intake" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
-                setCollapsedGroups({});
-                setContextCustomer(null);
+                setCollapsedGroups({}); setContextCustomer(null);
               }}
                 style={{ padding:"8px 12px", cursor:"pointer", fontSize:13,
                   fontWeight:p===persona?600:400, color:p===persona?T.accent:"#94A3B8",
@@ -443,30 +471,37 @@ export default function Shell({ userType }) {
       </div>
 
       {/* Nav groups */}
-      <nav style={{ flex:1, padding:"6px 8px", display:"flex", flexDirection:"column", gap:0, overflowY:"auto" }}>
+      <nav style={{ flex:1, padding: sidebarExpanded ? "6px 8px" : "6px 4px", display:"flex", flexDirection:"column", gap:0, overflowY:"auto" }}>
         {navGroups.filter(g => g.visible !== false).map((group, gi) => (
           <div key={gi}>
-            {group.group && (
+            {group.group && sidebarExpanded && (
               <div onClick={() => toggleGroup(group.group)}
                 style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px 4px",
                   cursor:"pointer", userSelect:"none" }}>
-                <span style={{ fontSize:10, fontWeight:700, color:"#4A5568", textTransform:"uppercase", letterSpacing:1 }}>{group.group}</span>
+                <span style={{ fontSize:10, fontWeight:700, color:"#4A5568", textTransform:"uppercase", letterSpacing:1, whiteSpace:"nowrap", overflow:"hidden" }}>{group.group}</span>
                 <span style={{ fontSize:9, color:"#4A5568", transition:"transform 0.2s",
                   transform:(collapsedGroups[group.group] ?? group.collapsed)?"rotate(-90deg)":"rotate(0)" }}>&#x25BC;</span>
               </div>
             )}
+            {!sidebarExpanded && group.group && gi > 0 && (
+              <div style={{ height:1, background:"rgba(255,255,255,0.06)", margin:"6px 8px" }} />
+            )}
             {!(collapsedGroups[group.group] ?? group.collapsed) && group.items.map(item => (
               <div key={item.id} onClick={() => { setScreen(item.id); if (isMobile) setSidebarOpen(false); }}
-                style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
-                  cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
+                title={!sidebarExpanded ? item.label : undefined}
+                style={{ display:"flex", alignItems:"center", gap:9,
+                  padding: sidebarExpanded ? "8px 12px" : "8px 0",
+                  justifyContent: sidebarExpanded ? "flex-start" : "center",
+                  borderRadius:8, cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
                   color: screen===item.id ? "#fff" : "#7B8BA3",
                   background: screen===item.id ? "rgba(255,255,255,0.08)" : "transparent",
-                  marginBottom:1 }}
+                  marginBottom:1, position:"relative" }}
                 onMouseEnter={e => { if (screen !== item.id) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                 onMouseLeave={e => { if (screen !== item.id) e.currentTarget.style.background = "transparent"; }}>
-                {item.icon && Ico[item.icon]?.(15)}
-                <span style={{ flex:1 }}>{item.label}</span>
-                {item.badge && <span style={{ background:"#EF4444", color:"#fff", fontSize:10, fontWeight:700, padding:"2px 6px", borderRadius:10, minWidth:16, textAlign:"center" }}>{item.badge}</span>}
+                {item.icon && <span style={{ flexShrink:0, display:"flex" }}>{Ico[item.icon]?.(15)}</span>}
+                {sidebarExpanded && <span style={{ flex:1, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.label}</span>}
+                {sidebarExpanded && item.badge && <span style={{ background:"#EF4444", color:"#fff", fontSize:10, fontWeight:700, padding:"2px 6px", borderRadius:10, minWidth:16, textAlign:"center" }}>{item.badge}</span>}
+                {!sidebarExpanded && item.badge && <div style={{ position:"absolute", top:4, right:4, width:7, height:7, borderRadius:4, background:"#EF4444" }} />}
               </div>
             ))}
           </div>
@@ -474,14 +509,16 @@ export default function Shell({ userType }) {
       </nav>
 
       {/* User footer */}
-      <div style={{ padding:"12px 16px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:8 }}>
-        <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#6366F1,#8B5CF6)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff" }}>
+      <div style={{ padding: sidebarExpanded ? "12px 16px" : "12px 0", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent: sidebarExpanded ? "flex-start" : "center", gap:8 }}>
+        <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#6366F1,#8B5CF6)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
           {isBroker ? "JW" : persona[0]}
         </div>
-        <div>
-          <div style={{ fontSize:12, fontWeight:500, color:"#E2E8F0" }}>{isBroker ? "John Watson" : `${persona} User`}</div>
-          <div style={{ fontSize:10, color:"#64748B" }}>{isBroker ? "FCA: 123456" : "Afin Bank"}</div>
-        </div>
+        {sidebarExpanded && (
+          <div style={{ overflow:"hidden" }}>
+            <div style={{ fontSize:12, fontWeight:500, color:"#E2E8F0", whiteSpace:"nowrap" }}>{isBroker ? "John Watson" : `${persona} User`}</div>
+            <div style={{ fontSize:10, color:"#64748B", whiteSpace:"nowrap" }}>{isBroker ? "FCA: 123456" : "Afin Bank"}</div>
+          </div>
+        )}
       </div>
     </div>
     </>
