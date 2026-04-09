@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
-import { MOCK_LOANS } from "../data/loans";
+import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
+import SquadPanel from "../shared/SquadPanel";
 
 /* ── pipeline step definitions ── */
 const STEPS = ["DIP", "Submitted", "KYC", "UW", "Offer", "Complete", "Disbursed"];
@@ -149,8 +150,15 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
                 {/* Progress stepper */}
                 <ProgressStepper currentStep={stepIdx} />
 
+                {/* Squad */}
+                {loan.squad && (
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:12, padding:"8px 0", borderTop:`1px solid ${T.borderLight}` }}>
+                    <span style={{ fontSize:11, color:T.textMuted, fontWeight:600 }}>Squad:</span>
+                    <SquadPanel squad={loan.squad} compact />
+                  </div>
+                )}
                 {/* Bottom row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <StatusBadge status={loan.status} />
                     {sla && (

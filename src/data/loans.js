@@ -1,11 +1,37 @@
+// ── Team Members ──
+export const TEAM_MEMBERS = {
+  advisors: [
+    { id:"ADV-01", name:"Sarah Thompson", role:"Mortgage Adviser", initials:"ST", active:4, capacity:8, specialism:["Residential","BTL"], phone:"+44 7700 100001", email:"s.thompson@afinbank.com" },
+    { id:"ADV-02", name:"Mike Chen",      role:"Mortgage Adviser", initials:"MC", active:6, capacity:8, specialism:["Residential","Shared Ownership"], phone:"+44 7700 100002", email:"m.chen@afinbank.com" },
+    { id:"ADV-03", name:"Rachel Adams",   role:"Senior Adviser",   initials:"RA", active:3, capacity:6, specialism:["HNW","Complex"], phone:"+44 7700 100003", email:"r.adams@afinbank.com" },
+  ],
+  underwriters: [
+    { id:"UW-01", name:"James Mitchell",  role:"Underwriter",        initials:"JM", active:6, capacity:10, mandate:"L1", specialism:["Standard","First Time"], phone:"+44 7700 200001", email:"j.mitchell@afinbank.com" },
+    { id:"UW-02", name:"Amir Hassan",     role:"Senior Underwriter", initials:"AH", active:4, capacity:8,  mandate:"L2", specialism:["Self-employed","Complex","BTL"], phone:"+44 7700 200002", email:"a.hassan@afinbank.com" },
+    { id:"UW-03", name:"Rebecca Lewis",   role:"Underwriter",        initials:"RL", active:5, capacity:10, mandate:"L1", specialism:["Standard","Remortgage"], phone:"+44 7700 200003", email:"r.lewis@afinbank.com" },
+  ],
+  ops: [
+    { id:"OPS-01", name:"Tom Walker",      role:"Customer Care",    initials:"TW", active:5, capacity:12, specialism:["KYC","Documents"], phone:"+44 7700 300001", email:"t.walker@afinbank.com" },
+    { id:"OPS-02", name:"Lucy Fernandez",  role:"Customer Care",    initials:"LF", active:3, capacity:12, specialism:["KYC","Valuations"], phone:"+44 7700 300002", email:"l.fernandez@afinbank.com" },
+    { id:"OPS-03", name:"Emma Chen",       role:"Senior Ops",       initials:"EC", active:7, capacity:10, specialism:["Complex","Complaints"], phone:"+44 7700 300003", email:"e.chen@afinbank.com" },
+  ],
+};
+
 export const MOCK_LOANS = [
-  { id: "AFN-2026-00142", names: "James & Sarah Mitchell", product: "Afin Fix 2yr 75%", amount: "£350,000", term: "25 yrs", rate: "4.49%", type: "C&I", status: "Underwriting", updated: "2h ago" },
-  { id: "AFN-2026-00139", names: "Priya Sharma", product: "Afin Track SVR", amount: "£275,000", term: "30 yrs", rate: "5.14%", type: "C&I", status: "Offer_Issued", updated: "1d ago" },
-  { id: "AFN-2026-00135", names: "David Chen", product: "Afin Fix 5yr 90%", amount: "£425,000", term: "25 yrs", rate: "5.29%", type: "Interest Only", status: "KYC_In_Progress", updated: "3d ago" },
-  { id: "AFN-2026-00128", names: "Emma & Tom Wilson", product: "Afin Fix 2yr 75%", amount: "£290,000", term: "20 yrs", rate: "4.49%", type: "C&I", status: "Disbursed", updated: "1w ago", servicingId: "M-002891" },
-  { id: "AFN-2026-00125", names: "Aisha Patel", product: "Afin Fix 5yr 75%", amount: "£510,000", term: "25 yrs", rate: "4.89%", type: "C&I", status: "Approved", updated: "4d ago" },
-  { id: "AFN-2026-00119", names: "Robert Hughes", product: "—", amount: "£180,000", term: "15 yrs", rate: "—", type: "C&I", status: "Referred", updated: "5d ago" },
-  { id: "AFN-2026-00115", names: "Sophie & Jack Brown", product: "Afin Fix 2yr 90%", amount: "£320,000", term: "30 yrs", rate: "5.29%", type: "C&I", status: "DIP_Approved", updated: "6d ago" },
+  { id: "AFN-2026-00142", names: "James & Sarah Mitchell", product: "Afin Fix 2yr 75%", amount: "£350,000", term: "25 yrs", rate: "4.49%", type: "C&I", status: "Underwriting", updated: "2h ago",
+    squad: { adviser:"ADV-01", underwriter:"UW-01", ops:"OPS-01" } },
+  { id: "AFN-2026-00139", names: "Priya Sharma", product: "Afin Track SVR", amount: "£275,000", term: "30 yrs", rate: "5.14%", type: "C&I", status: "Offer_Issued", updated: "1d ago",
+    squad: { adviser:"ADV-02", underwriter:"UW-03", ops:"OPS-02" } },
+  { id: "AFN-2026-00135", names: "David Chen", product: "Afin Fix 5yr 90%", amount: "£425,000", term: "25 yrs", rate: "5.29%", type: "Interest Only", status: "KYC_In_Progress", updated: "3d ago",
+    squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-02" } },
+  { id: "AFN-2026-00128", names: "Emma & Tom Wilson", product: "Afin Fix 2yr 75%", amount: "£290,000", term: "20 yrs", rate: "4.49%", type: "C&I", status: "Disbursed", updated: "1w ago", servicingId: "M-002891",
+    squad: { adviser:"ADV-01", underwriter:"UW-01", ops:"OPS-01" } },
+  { id: "AFN-2026-00125", names: "Aisha Patel", product: "Afin Fix 5yr 75%", amount: "£510,000", term: "25 yrs", rate: "4.89%", type: "C&I", status: "Approved", updated: "4d ago",
+    squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-03" } },
+  { id: "AFN-2026-00119", names: "Robert Hughes", product: "—", amount: "£180,000", term: "15 yrs", rate: "—", type: "C&I", status: "Referred", updated: "5d ago",
+    squad: { adviser:"ADV-02", underwriter:"UW-02", ops:"OPS-01" } },
+  { id: "AFN-2026-00115", names: "Sophie & Jack Brown", product: "Afin Fix 2yr 90%", amount: "£320,000", term: "30 yrs", rate: "5.29%", type: "C&I", status: "DIP_Approved", updated: "6d ago",
+    squad: { adviser:"ADV-01", underwriter:"UW-03", ops:"OPS-03" } },
 ];
 
 export const MOCK_DOCS = [
