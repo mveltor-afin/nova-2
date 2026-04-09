@@ -116,7 +116,10 @@ export default function Shell({ userType }) {
   const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [showWhatsNew, setShowWhatsNew] = useState(() => {
+    const seen = localStorage.getItem("nova_whats_new_seen");
+    return seen !== "2.5.0";
+  });
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(`nova_onboarding_done`));
 
   // Responsive: detect mobile
@@ -173,7 +176,8 @@ export default function Shell({ userType }) {
           { id:"criteriacheck",   label:"Criteria Check",    icon:"zap" },
         ]},
         { group:"BROKERS", items:[
-          { id:"allcustomers",    label:"My Brokers",        icon:"customers" },
+          { id:"brokerscorecard", label:"My Brokers",        icon:"customers" },
+          { id:"allcustomers",    label:"Customers",         icon:"users" },
           { id:"messages",        label:"Messages",          icon:"messages", badge:2 },
         ]},
         { group:"INSIGHTS", items:[
@@ -225,6 +229,7 @@ export default function Shell({ userType }) {
         { group:"PRODUCTS", items:[
           { id:"mortgages",       label:"Mortgages",           icon:"loans" },
           { id:"savings",         label:"Savings",             icon:"dollar" },
+          { id:"savingsdashboard", label:"Savings Operations",  icon:"dollar" },
           { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
         ]},
         { group:"RISK & ANALYTICS", items:[
@@ -294,6 +299,8 @@ export default function Shell({ userType }) {
         ]},
         { group:"SERVICING", items:[
           { id:"servicing",       label:"Mortgage Servicing",   icon:"wallet" },
+          { id:"collections",    label:"Collections",          icon:"alert" },
+          { id:"rateswitch",     label:"Rate Switches",        icon:"arrow" },
           ...(persona === "Ops" ? [
             { id:"complaints",    label:"Complaints",           icon:"alert" },
           ] : []),
@@ -758,7 +765,7 @@ export default function Shell({ userType }) {
       <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} persona={persona} />
       <UniversalSearch open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
-      <WhatsNew open={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
+      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.5.0"); }} />
       {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
     </div>
   );
