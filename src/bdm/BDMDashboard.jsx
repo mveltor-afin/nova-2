@@ -77,7 +77,7 @@ function BDMDashboard({ onNewEnquiry, onOpenEnquiry }) {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                 <thead>
                   <tr style={{ background: T.bg }}>
-                    {["Enquiry ID", "Broker", "Customer Scenario", "Amount", "LTV", "AI Result", "Status", "Squad"].map(h => (
+                    {["Enquiry ID", "Broker", "Customer Scenario", "Amount", "LTV", "AI Result", "Status", "Application", "Squad"].map(h => (
                       <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 600, color: T.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
@@ -96,6 +96,11 @@ function BDMDashboard({ onNewEnquiry, onOpenEnquiry }) {
                         <span style={{ ...aiResultStyle(e.aiResult), padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{e.aiResult}</span>
                       </td>
                       <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{e.status}</td>
+                      <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                        {e.id === "ENQ-001" ? <span style={{ fontWeight:600, color:T.primary, cursor:"pointer" }}>AFN-2026-00142</span>
+                         : e.id === "ENQ-006" ? <span style={{ fontWeight:600, color:T.primary, cursor:"pointer" }}>AFN-2026-00201</span>
+                         : <span style={{ color:T.textMuted }}>—</span>}
+                      </td>
                       <td style={{ padding: "10px 14px", fontFamily: "monospace", fontSize: 11, color: T.textMuted }}>{e.squad}</td>
                     </tr>
                   ))}

@@ -5,6 +5,8 @@ import {
   MOCK_SVC_ACCOUNTS, MOCK_SVC_PAYMENTS, MOCK_SVC_TIMELINE,
   MOCK_VULN_ALERTS, MOCK_RATE_SWITCH_PRODUCTS, ACCOUNT_STATES
 } from "../data/servicing";
+import SquadPanel from "../shared/SquadPanel";
+import { TEAM_MEMBERS } from "../data/loans";
 
 // ─────────────────────────────────────────────
 // HELPER UTILITIES
@@ -1073,7 +1075,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-                    {["Account", "Customer", "Product", "Balance", "Rate", "LTV", "State", "Next Payment", "AI Risk"].map(h => (
+                    {["Account", "Customer", "Product", "Balance", "Rate", "LTV", "State", "Next Payment", "Squad", "AI Risk"].map(h => (
                       <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
@@ -1097,6 +1099,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
                       <td style={{ padding: "12px 16px", color: acc.nextPayment === "OVERDUE" ? T.danger : acc.nextPayment === "SUSPENDED" ? T.warning : T.text, fontWeight: acc.nextPayment === "OVERDUE" || acc.nextPayment === "SUSPENDED" ? 700 : 400 }}>
                         {acc.nextPayment}
                       </td>
+                      <td style={{ padding: "12px 16px" }}>{acc.squad && <SquadPanel squad={acc.squad} compact />}</td>
                       <td style={{ padding: "12px 16px" }}><RiskBadge risk={acc.aiRisk} /></td>
                     </tr>
                   ))}
@@ -1172,6 +1175,13 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
               </div>
             </Card>
           </div>
+
+          {/* Squad Panel */}
+          {selectedAccount.squad && (
+            <div style={{ marginBottom:20 }}>
+              <SquadPanel squad={selectedAccount.squad} />
+            </div>
+          )}
 
           {/* AI Actions Panel */}
           <Card style={{

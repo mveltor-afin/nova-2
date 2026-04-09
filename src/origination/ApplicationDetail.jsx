@@ -526,6 +526,63 @@ function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicin
         </div>
       );
     }
+    if (appTab === "parties") return (
+      <div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+          <Card>
+            <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>Applicant 1 — James Mitchell</div>
+            {[["Full Name","James Robert Mitchell"],["Date of Birth","15 Mar 1984"],["National Insurance","QQ 12 34 56 C"],
+              ["Email","j.mitchell@outlook.com"],["Phone","+44 7700 900456"],["Nationality","British"],
+              ["Employment","Employed — TechCorp Ltd (7 years)"],["Income","£70,000 basic + £8,000 bonus"]].map(([k,v],i) => (
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom:`1px solid ${T.borderLight}`, fontSize:13 }}>
+                <span style={{ color:T.textSecondary }}>{k}</span><span style={{ fontWeight:500 }}>{v}</span>
+              </div>
+            ))}
+          </Card>
+          <Card>
+            <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>Applicant 2 — Sarah Mitchell</div>
+            {[["Full Name","Sarah Jane Mitchell"],["Date of Birth","22 Jul 1986"],["National Insurance","AB 98 76 54 D"],
+              ["Email","s.mitchell@outlook.com"],["Phone","+44 7700 900457"],["Nationality","British"],
+              ["Employment","Employed — NHS Bristol (5 years)"],["Income","£52,000"]].map(([k,v],i) => (
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom:`1px solid ${T.borderLight}`, fontSize:13 }}>
+                <span style={{ color:T.textSecondary }}>{k}</span><span style={{ fontWeight:500 }}>{v}</span>
+              </div>
+            ))}
+          </Card>
+        </div>
+        <Card style={{ marginTop:16 }}>
+          <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>Solicitor</div>
+          {[["Firm","Harrison Cole Solicitors"],["Contact","David Harrison"],["Email","d.harrison@harrisoncole.co.uk"],
+            ["Phone","+44 117 945 2200"],["Reference","HC/MIT/2026/0142"],["SRA Number","SRA 612847"],
+            ["Status","Instructed — acting for borrower"]].map(([k,v],i) => (
+            <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom:`1px solid ${T.borderLight}`, fontSize:13 }}>
+              <span style={{ color:T.textSecondary }}>{k}</span><span style={{ fontWeight:500 }}>{v}</span>
+            </div>
+          ))}
+        </Card>
+        <Card style={{ marginTop:16 }}>
+          <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>Connected Parties</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:14 }}>
+            {[
+              { type:"Guarantor", name:"Robert Mitchell", relation:"Father of Applicant 1", status:"Not required" },
+              { type:"Employer", name:"TechCorp Ltd", relation:"Employer — Applicant 1", status:"Verified" },
+              { type:"Employer", name:"NHS Bristol", relation:"Employer — Applicant 2", status:"Verified" },
+              { type:"Estate Agent", name:"Savills Bristol", relation:"Selling agent", status:"Active" },
+              { type:"Insurance", name:"Afin Protect", relation:"Buildings insurance provider", status:"Policy pending" },
+            ].map((p,i) => (
+              <div key={i} style={{ padding:14, borderRadius:10, border:`1px solid ${T.border}`, background:T.bg }}>
+                <div style={{ fontSize:10, fontWeight:700, color:T.primary, textTransform:"uppercase", letterSpacing:0.4, marginBottom:6 }}>{p.type}</div>
+                <div style={{ fontSize:13, fontWeight:600, color:T.text, marginBottom:2 }}>{p.name}</div>
+                <div style={{ fontSize:11, color:T.textMuted, marginBottom:6 }}>{p.relation}</div>
+                <span style={{ fontSize:10, fontWeight:600, padding:"2px 7px", borderRadius:4,
+                  background: p.status==="Verified"||p.status==="Active"?T.successBg:p.status==="Not required"?T.bg:T.warningBg,
+                  color: p.status==="Verified"||p.status==="Active"?T.success:p.status==="Not required"?T.textMuted:T.warning }}>{p.status}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
     return <Card style={{ padding: 60, textAlign: "center", color: T.textMuted }}>This section is under development.</Card>;
   };
 
