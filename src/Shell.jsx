@@ -81,6 +81,7 @@ import UWWorkstation from "./underwriting/UWWorkstation";
 import ComparisonEngine from "./underwriting/ComparisonEngine";
 import PolicyChecker from "./underwriting/PolicyChecker";
 import UWPerformance from "./underwriting/UWPerformance";
+import IncomeAnalysis from "./underwriting/IncomeAnalysis";
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -191,6 +192,7 @@ export default function Shell({ userType }) {
           { id:"approvals",       label:"Approvals",          icon:"check" },
           { id:"comparison",      label:"Case Comparison",    icon:"search" },
           { id:"policychecker",   label:"Policy Checker",     icon:"lock" },
+          { id:"incomeanalysis",  label:"Income Analysis",    icon:"chart" },
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
@@ -628,6 +630,7 @@ export default function Shell({ userType }) {
       case "comparison":     return <ComparisonEngine />;
       case "policychecker":  return <PolicyChecker />;
       case "uwperformance":  return <UWPerformance />;
+      case "incomeanalysis": return <IncomeAnalysis />;
       case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
       case "brokeronboard":   return <BrokerOnboarding />;
