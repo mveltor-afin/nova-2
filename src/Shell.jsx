@@ -163,7 +163,7 @@ export default function Shell({ userType }) {
   const [sidebarHover, setSidebarHover] = useState(false);
   const sidebarExpanded = isMobile ? sidebarOpen : (sidebarPinned || sidebarHover);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(`nova_onboarding_done`));
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Responsive: detect mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
