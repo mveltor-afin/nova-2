@@ -391,6 +391,10 @@ const FAQS = [
 // ─────────────────────────────────────────────
 const TABS = ["Quick Guide", "How-To", "Shortcuts", "FAQ"];
 
+const BROKER_HELP_SCREENS = ["brokerdashboard","smartapply","eligibility","allcustomers","mymi","myreports","commission","messages","settings","releases"];
+const BROKER_HOWTO_WHITELIST = ["Submit your first application", "Use the AI Copilot", "Generate a report"];
+const BROKER_FAQ_BLACKLIST = ["What is the mandate level system?", "How does AI fast-track work?"];
+
 // ─────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────
@@ -403,13 +407,23 @@ export default function HelpCentre({ open, onClose, screenId, persona }) {
   if (!open) return null;
 
   const q = search.toLowerCase().trim();
-  const help = SCREEN_HELP[(screenId || "").toLowerCase().replace(/[\s-]/g, "")] || GENERIC_HELP;
+  const isBrokerPersona = persona === "Broker";
+  const screenKey = (screenId || "").toLowerCase().replace(/[\s-]/g, "");
+  const help = (isBrokerPersona && !BROKER_HELP_SCREENS.includes(screenKey))
+    ? GENERIC_HELP
+    : (SCREEN_HELP[screenKey] || GENERIC_HELP);
 
   // ── filter helpers ──
-  const filteredHowTos = HOW_TOS.filter(h =>
+  const personaFilteredHowTos = isBrokerPersona
+    ? HOW_TOS.filter(h => BROKER_HOWTO_WHITELIST.includes(h.title))
+    : HOW_TOS;
+  const filteredHowTos = personaFilteredHowTos.filter(h =>
     !q || h.title.toLowerCase().includes(q) || h.steps.some(s => s.toLowerCase().includes(q))
   );
-  const filteredFaqs = FAQS.filter(f =>
+  const personaFilteredFaqs = isBrokerPersona
+    ? FAQS.filter(f => !BROKER_FAQ_BLACKLIST.includes(f.q))
+    : FAQS;
+  const filteredFaqs = personaFilteredFaqs.filter(f =>
     !q || f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q)
   );
   const filteredShortcuts = SHORTCUTS.filter(s =>

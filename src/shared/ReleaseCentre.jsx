@@ -104,7 +104,14 @@ const typeForFilter = { "New Features": "New", "Improvements": "Improved", "Bug 
 // ─────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────
-export default function ReleaseCentre() {
+const BROKER_KEYWORDS = ["smart apply","eligibility","commission","dashboard","pipeline","portal","mobile","squad","dip","broker","application"];
+
+const filterForPersona = (items, persona) => {
+  if (persona !== "Broker") return items;
+  return items.filter(item => BROKER_KEYWORDS.some(kw => item.text.toLowerCase().includes(kw)));
+};
+
+export default function ReleaseCentre({ persona }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [expanded, setExpanded] = useState(RELEASES[0]?.version || null);
@@ -114,7 +121,7 @@ export default function ReleaseCentre() {
   const activeType = typeForFilter[filter] || null;
 
   const filteredReleases = RELEASES.map(r => {
-    const items = r.items.filter(item => {
+    const items = filterForPersona(r.items, persona).filter(item => {
       const matchesType = !activeType || item.type === activeType;
       const matchesSearch = !q || item.text.toLowerCase().includes(q) || r.title.toLowerCase().includes(q) || r.version.includes(q);
       return matchesType && matchesSearch;
