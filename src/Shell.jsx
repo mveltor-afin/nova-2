@@ -8,7 +8,7 @@ import NotificationsPanel from "./shared/NotificationsPanel";
 import MessagesScreen from "./shared/MessagesScreen";
 import ErrorBoundary from "./shared/ErrorBoundary";
 // Customers
-import CustomerWorkspace from "./customers/CustomerWorkspace";
+import CustomerHub from "./customers/CustomerHub";
 import CustomerPortal from "./customers/CustomerPortal";
 import NeedsAttentionScreen from "./customers/NeedsAttentionScreen";
 import AllCustomersScreen from "./customers/AllCustomersScreen";
@@ -612,7 +612,7 @@ export default function Shell({ userType }) {
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
-      case "customerhub":     return contextCustomer ? <CustomerWorkspace customerId={contextCustomer.id} onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }} /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
+      case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id} onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }} /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "customerportal":  return <CustomerPortal />;
       // Products
       case "mortgages":       return <MortgagesScreen />;
