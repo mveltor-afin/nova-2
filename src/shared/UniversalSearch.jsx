@@ -9,6 +9,20 @@ import { MOCK_SVC_ACCOUNTS } from "../data/servicing";
 // UNIVERSAL SEARCH — Full search overlay
 // ─────────────────────────────────────────────
 
+// Orphaned / context-dependent routes that should NOT appear in universal search.
+// They remain navigable via direct routing inside the shell.
+const HIDDEN_SCREEN_IDS = new Set([
+  "caseworkbench",
+  "customerhub",
+  "customerportal",
+  "enquirydetail",
+  "integrations",
+  "myapplications",
+  "property",
+  "sessions",
+  "uwworkstation",
+]);
+
 const SCREENS = [
   { id: "dashboard", name: "Dashboard", icon: "dashboard" },
   { id: "pipeline", name: "Pipeline", icon: "loans" },
@@ -23,7 +37,7 @@ const SCREENS = [
   { id: "mi", name: "MI & Analytics", icon: "chart" },
   { id: "notifications", name: "Notifications", icon: "bell" },
   { id: "ai-copilot", name: "Nova AI Copilot", icon: "sparkle" },
-];
+].filter(s => !HIDDEN_SCREEN_IDS.has(s.id));
 
 const ACTIONS = [
   { id: "create-loan", name: "Create loan", icon: "plus", shortcut: "Ctrl+N" },
@@ -120,9 +134,9 @@ function UniversalSearch({ open, onClose, onAction }) {
       combinedAccounts.forEach(a => results.push(a));
     }
 
-    // Screens
+    // Screens — exclude hidden/orphaned routes even if something manages to reference them
     const screenHits = SCREENS.filter(s =>
-      matchText(s.name, q) || matchText(s.id, q)
+      !HIDDEN_SCREEN_IDS.has(s.id) && (matchText(s.name, q) || matchText(s.id, q))
     ).slice(0, 4);
     if (screenHits.length) {
       results.push({ type: "header", label: "Screens" });

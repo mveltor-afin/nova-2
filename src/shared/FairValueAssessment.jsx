@@ -6,7 +6,7 @@ import { Btn, Card } from "./primitives";
 // FAIR VALUE ASSESSMENT — Consumer Duty embeddable component
 // ─────────────────────────────────────────────
 
-function FairValueAssessment({ product = "Afin Fix 2yr 75%", rate = "4.49%", amount = "\u00a3350,000" }) {
+function FairValueAssessment({ product = "Afin Fix 2yr 75%", rate = "4.49%", amount = "£350,000" }) {
   const [saved, setSaved] = useState(false);
 
   // Parse numeric rate for comparisons
@@ -20,7 +20,7 @@ function FairValueAssessment({ product = "Afin Fix 2yr 75%", rate = "4.49%", amo
   // Determine market position
   const diff = numRate - marketAvg;
   const position = diff <= -0.1
-    ? { label: "Below market \u2014 favourable", color: T.success, bg: T.successBg }
+    ? { label: "Below market — favourable", color: T.success, bg: T.successBg }
     : diff <= 0.15
       ? { label: "At market", color: T.success, bg: T.successBg }
       : { label: "Above market", color: T.warning, bg: T.warningBg };
@@ -100,13 +100,13 @@ function FairValueAssessment({ product = "Afin Fix 2yr 75%", rate = "4.49%", amo
         Total Cost of Product
       </div>
       <div style={{ background: T.bg, borderRadius: 10, padding: "4px 14px", marginBottom: 18 }}>
-        {row("Monthly payment", `\u00a3${monthly.toLocaleString()}`)}
-        {row("Total over term", `\u00a3${totalOverTerm.toLocaleString()}`)}
-        {row("Total interest", `\u00a3${totalInterest.toLocaleString()}`)}
+        {row("Monthly payment", `£${monthly.toLocaleString()}`)}
+        {row("Total over term", `£${totalOverTerm.toLocaleString()}`)}
+        {row("Total interest", `£${totalInterest.toLocaleString()}`)}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0" }}>
           <span style={{ fontSize: 13, color: T.textMuted }}>Compared to cheapest alternative</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>+\u00a3{cheapestDiff.toLocaleString()} over term</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>+£{cheapestDiff.toLocaleString()} over term</span>
             {badge("Significant", T.warning, T.warningBg)}
           </div>
         </div>

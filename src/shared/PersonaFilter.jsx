@@ -5,35 +5,35 @@
 export const PERSONA_CONTENT = {
   releases: {
     Broker: [
-      { version: "2.6.0", items: ["Smart Apply improvements \u2014 faster eligibility check", "Commission tracker now shows Gold tier progress", "Help Centre with product guides and FAQ"] },
+      { version: "2.6.0", items: ["Smart Apply improvements — faster eligibility check", "Commission tracker now shows Gold tier progress", "Help Centre with product guides and FAQ"] },
       { version: "2.5.0", items: ["Your assigned team (squad) now visible on every case card", "Pipeline progress steppers show exactly where each case is"] },
-      { version: "2.4.0", items: ["New Eligibility Check \u2014 instant product matching before you apply", "Smart Apply \u2014 submit applications in 5 minutes with AI assistance"] },
-      { version: "2.2.0", items: ["Mobile-friendly layout \u2014 use Nova on your phone or tablet"] },
-      { version: "2.0.0", items: ["Nova 2.0 launched \u2014 new dashboard with pipeline overview"] },
+      { version: "2.4.0", items: ["New Eligibility Check — instant product matching before you apply", "Smart Apply — submit applications in 5 minutes with AI assistance"] },
+      { version: "2.2.0", items: ["Mobile-friendly layout — use Nova on your phone or tablet"] },
+      { version: "2.0.0", items: ["Nova 2.0 launched — new dashboard with pipeline overview"] },
     ],
     BDM: [
       { version: "2.6.0", items: ["Help Centre with BDM-specific guides", "Release notes filtered to your role"] },
-      { version: "2.5.0", items: ["Squad allocation \u2014 every enquiry gets a named Adviser, Underwriter, and Customer Care member"] },
+      { version: "2.5.0", items: ["Squad allocation — every enquiry gets a named Adviser, Underwriter, and Customer Care member"] },
       { version: "2.4.0", items: ["New: BDM Dashboard with enquiry pipeline and broker portfolio", "Criteria Quick Check for instant broker answers", "Enquiry form with AI criteria assessment and squad allocation"] },
     ],
     Underwriter: [
       { version: "2.6.0", items: ["Consumer Duty outcome recording embedded in decision workflow", "Fair Value assessment on every case", "Help Centre with UW-specific guides"] },
-      { version: "2.5.0", items: ["Income Analysis \u2014 complex income visualisation for self-employed and joint applications", "Policy Checker and Case Comparison now work across all cases with dropdown selector", "Squad panel shows your team on every case"] },
-      { version: "2.4.0", items: ["AI-powered Underwriter Engine: Smart Queue, Workstation, Comparison Engine, Policy Checker, Performance Dashboard", "Fast-track approval for low-risk cases \u2014 one click from the queue"] },
+      { version: "2.5.0", items: ["Income Analysis — complex income visualisation for self-employed and joint applications", "Policy Checker and Case Comparison now work across all cases with dropdown selector", "Squad panel shows your team on every case"] },
+      { version: "2.4.0", items: ["AI-powered Underwriter Engine: Smart Queue, Workstation, Comparison Engine, Policy Checker, Performance Dashboard", "Fast-track approval for low-risk cases — one click from the queue"] },
     ],
     Ops: [
       { version: "2.6.0", items: ["Customer journey tracking with Consumer Duty scores per stage", "Vulnerability banner with enhanced support protocols", "Help Centre with Ops-specific guides"] },
-      { version: "2.5.0", items: ["Squad panel visible in Servicing \u2014 see who originated each account", "Collections and Rate Switches restored to your sidebar"] },
-      { version: "2.4.0", items: ["Servicing redesigned \u2014 search-first navigation, AI-driven action modals", "Intake Queue with AI pre-processing \u2014 67% of checks done before you see the case"] },
+      { version: "2.5.0", items: ["Squad panel visible in Servicing — see who originated each account", "Collections and Rate Switches restored to your sidebar"] },
+      { version: "2.4.0", items: ["Servicing redesigned — search-first navigation, AI-driven action modals", "Intake Queue with AI pre-processing — 67% of checks done before you see the case"] },
     ],
     Finance: [
       { version: "2.6.0", items: ["Fair Value assessment embedded in product selection", "Journey Analytics dashboard for board reporting", "Help Centre with Finance-specific guides"] },
       { version: "2.5.0", items: ["Savings Operations added to your sidebar"] },
-      { version: "2.4.0", items: ["Stress Testing dashboard with 6 adverse scenarios", "Pricing Engine with rate modelling and market comparison", "Board Pack Generator \u2014 one-click 24-page report"] },
+      { version: "2.4.0", items: ["Stress Testing dashboard with 6 adverse scenarios", "Pricing Engine with rate modelling and market comparison", "Board Pack Generator — one-click 24-page report"] },
     ],
     Admin: [
       { version: "2.6.0", items: ["Consumer Duty outcome tracking across all stages", "Journey Analytics dashboard", "Help Centre, Release Centre, AI Tips for all users", "Toast notifications for all actions"] },
-      { version: "2.5.0", items: ["Squad allocation system \u2014 Adviser + Underwriter + Customer Care per case", "Platform cleanup \u2014 error boundary, route consolidation, Shell.jsx reduced 32%"] },
+      { version: "2.5.0", items: ["Squad allocation system — Adviser + Underwriter + Customer Care per case", "Platform cleanup — error boundary, route consolidation, Shell.jsx reduced 32%"] },
       { version: "2.4.0", items: ["11 platform enhancements: Workflow Builder, Product Catalogue, Document Templates, Comms Centre, API Health, Report Builder, Case Journey, Compliance Calendar, Segmentation Engine, Data Export, Broker Onboarding"] },
     ],
     "Risk Analyst": [

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { T, Ico, PERSONAS, StatusBadge } from "./shared/tokens";
-import { Btn, Card, KPICard } from "./shared/primitives";
-import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES } from "./data/customers";
+import { T, Ico, PERSONAS } from "./shared/tokens";
+import { Btn, Card } from "./shared/primitives";
+import { PRODUCTS, AI_ACTIONS } from "./data/customers";
 import { MOCK_LOANS } from "./data/loans";
 // Shared overlays
 import NotificationsPanel from "./shared/NotificationsPanel";
@@ -76,8 +76,8 @@ import AISummary from "./shared/AISummary";
 import RecentActivity from "./shared/RecentActivity";
 import AITips from "./shared/AITips";
 import VulnerabilityBanner from "./shared/VulnerabilityBanner";
+import StatusBar from "./shared/StatusBar";
 // Customer Journey
-import JourneyMap from "./customers/JourneyMap";
 import JourneyAnalytics from "./intelligence/JourneyAnalytics";
 // BDM
 import BDMDashboard from "./bdm/BDMDashboard";
@@ -113,9 +113,22 @@ import { getNeedsAttention, PRIORITY_COLORS } from "./customers/NeedsAttentionSc
 
 const getCustomerProducts = (cust) => PRODUCTS.filter(p => cust.products.includes(p.id));
 
+// Inline "Live" indicator for KPI labels and similar
+export const LiveBadge = ({ updated }) => (
+  <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:T.textMuted, marginLeft:6 }}>
+    <span style={{ width:6, height:6, borderRadius:3, background:T.success, animation:"pulse 2s infinite" }} />
+    Live · {updated}
+  </span>
+);
+
 export default function Shell({ userType }) {
   const [persona, setPersona] = useState(userType === "external" ? "Broker" : "Ops");
-  const [screen, setScreen] = useState(userType === "external" ? "brokerdashboard" : "needsattention");
+  const [screen, setScreen] = useState(() => {
+    const initialPersona = userType === "external" ? "Broker" : "Ops";
+    const saved = localStorage.getItem(`nova_last_screen_${initialPersona}`);
+    if (saved) return saved;
+    return userType === "external" ? "brokerdashboard" : "needsattention";
+  });
   const [personaOpen, setPersonaOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [contextCustomer, setContextCustomer] = useState(null);
@@ -140,6 +153,11 @@ export default function Shell({ userType }) {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  // Persist last screen per persona
+  useEffect(() => {
+    if (screen) localStorage.setItem(`nova_last_screen_${persona}`, screen);
+  }, [screen, persona]);
 
   const toggleGroup = (g) => setCollapsedGroups(p => ({ ...p, [g]: !p[g] }));
 
@@ -429,7 +447,8 @@ export default function Shell({ userType }) {
             {PERSONAS.map(p => (
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
-                setScreen(p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention");
+                const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
+                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -711,6 +730,7 @@ export default function Shell({ userType }) {
       <style>{`
         @keyframes celebrate { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
       `}</style>
       <Sidebar />
       <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
@@ -796,6 +816,7 @@ export default function Shell({ userType }) {
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
       <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.6.0"); }} />
       <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
+      <StatusBar persona={persona} />
 
       {/* ─── Loan Wizard Modal ─── */}
       {mode === "wizard" && (

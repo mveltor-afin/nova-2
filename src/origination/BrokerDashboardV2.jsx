@@ -4,6 +4,14 @@ import { Btn, Card, KPICard } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
 
+/* ── time-based greeting ── */
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+};
+
 /* ── pipeline step definitions ── */
 const STEPS = ["DIP", "Submitted", "KYC", "UW", "Offer", "Complete", "Disbursed"];
 
@@ -109,8 +117,10 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>Good morning</div>
-          <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>Here's your pipeline overview</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>{getGreeting()}, John.</div>
+          <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
+            You have <b style={{ color: T.text }}>4 cases</b> needing attention this week — 1 fewer than last week. Nice work.
+          </div>
         </div>
         <Btn primary icon="plus" onClick={onNewLoan}>New Loan</Btn>
       </div>
