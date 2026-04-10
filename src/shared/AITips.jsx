@@ -21,11 +21,17 @@ const TIPS = {
 
 const STORAGE_PREFIX = "nova_tip_dismissed_";
 
-function AITips({ screenId }) {
+const BROKER_TIPS_ONLY = ["brokerdashboard","smartapply","eligibility","commission","myreports"];
+
+function AITips({ screenId, persona }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!screenId || !TIPS[screenId]) {
+      setVisible(false);
+      return;
+    }
+    if (persona === "Broker" && !BROKER_TIPS_ONLY.includes(screenId)) {
       setVisible(false);
       return;
     }

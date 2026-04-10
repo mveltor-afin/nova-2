@@ -28,10 +28,21 @@ const SUMMARIES = {
   consumerduty: "Overall Consumer Duty score: 87%. Consumer Support (79%) is the lowest pillar — review recommended.",
 };
 
+const BROKER_SCREENS = ["brokerdashboard","smartapply","eligibility","allcustomers","mymi","commission","myreports","messages"];
+const BDM_SCREENS = ["bdmdashboard","criteriacheck","allcustomers","mymi","myreports"];
+
+const BROKER_SUMMARIES = {
+  allcustomers: "Your linked customers and their application status.",
+  brokerdashboard: "7 active cases in your pipeline. 2 need documents. Commission pending: £4,820.",
+};
+
 function AISummary({ screenId, persona }) {
   const [dismissed, setDismissed] = useState(false);
 
-  const summary = SUMMARIES[screenId];
+  if (persona === "Broker" && !BROKER_SCREENS.includes(screenId)) return null;
+  if (persona === "BDM" && !BDM_SCREENS.includes(screenId)) return null;
+
+  const summary = (persona === "Broker" && BROKER_SUMMARIES[screenId]) ? BROKER_SUMMARIES[screenId] : SUMMARIES[screenId];
   if (!summary || dismissed) return null;
 
   return (

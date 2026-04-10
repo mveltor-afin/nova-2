@@ -75,6 +75,10 @@ import ReleaseCentre from "./shared/ReleaseCentre";
 import AISummary from "./shared/AISummary";
 import RecentActivity from "./shared/RecentActivity";
 import AITips from "./shared/AITips";
+import VulnerabilityBanner from "./shared/VulnerabilityBanner";
+// Customer Journey
+import JourneyMap from "./customers/JourneyMap";
+import JourneyAnalytics from "./intelligence/JourneyAnalytics";
 // BDM
 import BDMDashboard from "./bdm/BDMDashboard";
 import EnquiryForm from "./bdm/EnquiryForm";
@@ -319,6 +323,7 @@ export default function Shell({ userType }) {
         ]},
         { group:"INTELLIGENCE", items:[
           { id:"aidashboard",     label:"AI Dashboard",         icon:"sparkle" },
+          { id:"journeyanalytics",label:"Journey Analytics",    icon:"eye" },
           { id:"mymi",            label:"My MI",                icon:"chart" },
           { id:"myreports",      label:"My Reports",           icon:"file" },
           ...(persona === "Admin" ? [
@@ -633,7 +638,8 @@ export default function Shell({ userType }) {
         </div>
       );
       case "settings":        return <SettingsScreen />;
-      case "releases":        return <ReleaseCentre />;
+      case "releases":        return <ReleaseCentre persona={persona} />;
+      case "journeyanalytics": return <JourneyAnalytics />;
       case "workflows":       return <WorkflowBuilder />;
       case "products":        return <ProductCatalogue />;
       case "doctemplates":    return <DocumentTemplates />;
@@ -705,6 +711,10 @@ export default function Shell({ userType }) {
 
   return (
     <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
+      <style>{`
+        @keyframes celebrate { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
       <Sidebar />
       <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
         <TopBar />
@@ -712,11 +722,14 @@ export default function Shell({ userType }) {
         {/* Main content */}
         <div style={{ flex:1, padding: isMobile ? "16px 12px" : "24px 30px", overflowY:"auto", background:T.bg }}>
           <RecentActivity history={screenHistory} onNavigate={(id) => setScreen(id)} />
+          {contextCustomer && <VulnerabilityBanner customer={contextCustomer} />}
           <AISummary screenId={screen} persona={persona} />
-          <AITips screenId={screen} />
+          <AITips screenId={screen} persona={persona} />
           <PresenceIndicator screenId={screen} currentUser={isBroker ? "John Watson" : `${persona} User`} />
           <ErrorBoundary onReset={() => setScreen(errorResetScreen)}>
-            {renderScreen()}
+            <div key={screen} style={{ animation:"fadeIn 0.2s ease-out" }}>
+              {renderScreen()}
+            </div>
           </ErrorBoundary>
         </div>
       </div>
