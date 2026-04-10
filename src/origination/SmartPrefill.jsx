@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
+import AutoSaveIndicator from "../shared/AutoSaveIndicator";
 
 /* ─── Product Data ──────────────────────────── */
 const PRODUCTS = [
@@ -275,6 +276,11 @@ function SmartApply({ onStartApplication }) {
             <Card style={{ marginBottom: 24, position: "relative", overflow: "hidden" }}>
               {/* Decorative gradient strip */}
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${T.primary}, ${T.accent})` }} />
+
+              {/* Auto-save badge (top-right of form) */}
+              <div style={{ position: "absolute", top: 14, right: 14, zIndex: 2 }}>
+                <AutoSaveIndicator value={`${applicantName}|${income}|${propertyValue}|${deposit}`} />
+              </div>
 
               <div style={{ textAlign: "center", marginBottom: 24, paddingTop: 8 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 8 }}>

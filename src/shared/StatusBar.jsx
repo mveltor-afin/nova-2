@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { T, Ico } from "./tokens";
+import SessionIndicator from "./SessionIndicator";
 
 function StatusBar({ persona }) {
   const [lastSyncSeconds, setLastSyncSeconds] = useState(2);
@@ -102,6 +103,7 @@ function StatusBar({ persona }) {
           <span style={{ color: T.success, display: "inline-flex" }}>{Ico.check(11)}</span>
           <span>API Health: All systems operational</span>
         </div>
+        <SessionIndicator persona={persona} />
         <span
           style={{
             padding: "2px 8px",

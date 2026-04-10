@@ -3,6 +3,8 @@ import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
+import QuickActions from "../shared/QuickActions";
+import GoalTracker from "../shared/GoalTracker";
 
 /* ── time-based greeting ── */
 const getGreeting = () => {
@@ -125,6 +127,13 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
         <Btn primary icon="plus" onClick={onNewLoan}>New Loan</Btn>
       </div>
 
+      {/* Goals row */}
+      <div style={{ display:"flex", gap:24, marginBottom:24, padding:"20px 24px", background:T.card, borderRadius:14, border:`1px solid ${T.border}` }}>
+        <GoalTracker current={4} target={10} label="Cases this month" sub="6 to target" />
+        <GoalTracker current={2350} target={5000} label="Pipeline value (£k)" sub="£2.65M to target" />
+        <GoalTracker current={4820} target={10000} label="Commission YTD" sub="£5.18k to Gold tier" />
+      </div>
+
       {/* KPIs */}
       <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
         <KPICard label="Active Cases" value={MOCK_LOANS.length} color={T.primary} />
@@ -144,9 +153,20 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
             const stepIdx = STATUS_TO_STEP[loan.status] ?? 0;
             const sla = SLA_MAP[loan.status];
             return (
-              <Card key={loan.id} style={{ padding: 20 }}>
+              <Card key={loan.id} style={{ padding: 20, position: "relative" }}>
+                <div style={{ position: "absolute", top: 12, right: 12 }}>
+                  <QuickActions
+                    actions={[
+                      { id: "view", label: "View Details", icon: "eye" },
+                      { id: "contact", label: "Contact Customer", icon: "messages" },
+                      { id: "docs", label: "View Documents", icon: "file" },
+                      { id: "note", label: "Add Note", icon: "plus" },
+                    ]}
+                    onAction={(id) => console.log(id)}
+                  />
+                </div>
                 {/* Top row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, paddingRight: 36 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <span onClick={() => onOpenCase?.(loan)} style={{ fontSize: 13, fontWeight: 700, color: T.primary, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>{loan.id}</span>
                     <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{loan.names}</span>

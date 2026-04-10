@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
+import FairValueAssessment from "../shared/FairValueAssessment";
+import InlineHelp from "../shared/InlineHelp";
 
 const fmt = (n) => n != null ? "£" + Number(n).toLocaleString("en-GB", { maximumFractionDigits: 0 }) : "—";
 const pct = (n) => n != null ? n.toFixed(1) + "%" : "—";
@@ -125,14 +127,26 @@ function EligibilityCalculator() {
             options={["Employed", "Self-Employed", "Contract", "Retired"]} />
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
-            <Input label="Gross Annual Income" value={income} onChange={setIncome} prefix="£" required placeholder="0" />
-            <Input label="Partner Income (optional)" value={partnerIncome} onChange={setPartnerIncome} prefix="£" placeholder="0" />
+            <Input
+              label={<>Gross Annual Income<InlineHelp text="Combined annual gross income from all employment sources, before tax. Include salary, bonuses, and regular commission." /></>}
+              value={income} onChange={setIncome} prefix="£" required placeholder="0" />
+            <Input
+              label={<>Partner Income (optional)<InlineHelp text="A second applicant's gross annual income. Adding a partner can increase affordability but both incomes will be assessed." /></>}
+              value={partnerIncome} onChange={setPartnerIncome} prefix="£" placeholder="0" />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
-            <Input label="Property Value" value={propertyValue} onChange={setPropertyValue} prefix="£" required placeholder="0" />
-            <Input label="Deposit Amount" value={deposit} onChange={setDeposit} prefix="£" required placeholder="0"
+            <Input
+              label={<>Property Value<InlineHelp text="The purchase price, or for remortgages the current market value. A surveyor's valuation may adjust this figure." /></>}
+              value={propertyValue} onChange={setPropertyValue} prefix="£" required placeholder="0" />
+            <Input
+              label={<>Deposit Amount<InlineHelp text="The cash contribution toward the property. A larger deposit lowers the LTV and typically unlocks better rates." /></>}
+              value={deposit} onChange={setDeposit} prefix="£" required placeholder="0"
               suffix={propertyValue && deposit ? `LTV: ${pct(ltv)}` : undefined} />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: T.textMuted, marginBottom: 12, marginTop: -4 }}>
+            About LTV<InlineHelp text="Loan to Value: the percentage of the property value being borrowed. Lower LTV means lower risk and usually better rates." />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
@@ -215,6 +229,15 @@ function EligibilityCalculator() {
                   })}
                 </div>
               </Card>
+
+              {/* Fair Value Assessment */}
+              {bestEligible && (
+                <FairValueAssessment
+                  product={bestEligible.name}
+                  rate={`${bestEligible.rate.toFixed(2)}%`}
+                  amount={fmt(loanAmount)}
+                />
+              )}
 
               {/* AI Insight */}
               <Card style={{ background: "linear-gradient(135deg, rgba(26,74,84,0.04), rgba(49,184,151,0.06))", border: `1px solid ${T.primaryGlow}` }}>

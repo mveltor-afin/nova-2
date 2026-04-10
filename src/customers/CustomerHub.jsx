@@ -2,6 +2,7 @@ import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES, TIERS, BADGES } from "../data/customers";
+import JourneyMap from "./JourneyMap";
 
 // ─── Tier colours ───
 const TIER_COLORS = { Bronze: "#CD7F32", Silver: "#C0C0C0", Gold: "#FFD700", Platinum: "#E5E4E2" };
@@ -300,6 +301,13 @@ export default function CustomerHub({ customerId, onBack }) {
           <Btn small danger={customer.vuln} icon="alert">Flag Vulnerability</Btn>
           <Btn small icon="clock">View Timeline</Btn>
         </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════
+          1b. JOURNEY MAP
+      ═══════════════════════════════════════════ */}
+      <div style={{ margin: "24px 32px 0" }}>
+        <JourneyMap customerId={customer.id} />
       </div>
 
       {/* ═══════════════════════════════════════════

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AuthScreen from "./auth/AuthScreen";
 import Shell from "./Shell";
+import ToastProvider from "./shared/ToastProvider";
 
 const GATE_KEY = "cqy.GHJ!bge_bth7zwr";
 
@@ -41,7 +42,15 @@ function GateScreen({ onUnlock }) {
 export default function App() {
   const [gateOpen, setGateOpen] = useState(() => sessionStorage.getItem("nova_gate") === "1");
   const [auth, setAuth] = useState(null);
-  if (!gateOpen) return <GateScreen onUnlock={() => setGateOpen(true)} />;
-  if (!auth) return <AuthScreen onAuth={type => setAuth(type)} />;
-  return <Shell userType={auth} />;
+  return (
+    <ToastProvider>
+      {!gateOpen ? (
+        <GateScreen onUnlock={() => setGateOpen(true)} />
+      ) : !auth ? (
+        <AuthScreen onAuth={type => setAuth(type)} />
+      ) : (
+        <Shell userType={auth} />
+      )}
+    </ToastProvider>
+  );
 }

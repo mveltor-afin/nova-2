@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
+import FairValueAssessment from "../shared/FairValueAssessment";
 
 /* ── Mock Data ─────────────────────────────────── */
 const PRODUCTS = [
@@ -200,6 +201,19 @@ export default function RateSwitchPortal() {
               </tbody>
             </table>
           </div>
+
+          {chosenProduct && (() => {
+            const prod = PRODUCTS.find(p => p.id === chosenProduct);
+            return (
+              <div style={{ marginBottom: 24 }}>
+                <FairValueAssessment
+                  product={prod.name}
+                  rate={`${prod.rate.toFixed(2)}%`}
+                  amount={`£${sel.balance.toLocaleString()}`}
+                />
+              </div>
+            );
+          })()}
 
           {chosenProduct && (
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
