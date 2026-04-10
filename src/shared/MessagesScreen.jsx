@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { T, Ico } from "./tokens";
 import { Btn, Card } from "./primitives";
+import EmptyState from "./EmptyState";
 
 const MOCK_THREADS = [
   { id:"TH001", with:"John Watson",       role:"Broker",      avatar:"JW", case:"AFN-2026-00142", unread:2, lastMsg:"Can you confirm the ERC on the 5yr fixed?", lastTime:"10:32 AM", online:true },
@@ -99,6 +100,11 @@ export default function MessagesScreen() {
           </div>
           {/* Threads */}
           <div style={{ flex:1, overflowY:"auto" }}>
+            {filtered.length === 0 && (
+              <div style={{ padding: 16 }}>
+                <EmptyState type={search ? "search" : "messages"} />
+              </div>
+            )}
             {filtered.map(t => (
               <div key={t.id} onClick={() => { setActiveThread(t.id); setThreads(prev => prev.map(x => x.id===t.id ? {...x, unread:0} : x)); }}
                 style={{ display:"flex", gap:10, padding:"12px 14px", cursor:"pointer",

@@ -3,6 +3,7 @@ import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
+import OutcomeTracker from "../shared/OutcomeTracker";
 
 /* ─── Scorecard dimensions ─── */
 const SCORE_DIMS = [
@@ -461,6 +462,10 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
                 fontSize: 13, fontFamily: T.font, color: T.text, outline: "none", resize: "vertical", boxSizing: "border-box",
               }}
             />
+
+            <div style={{ marginTop: 14 }}>
+              <OutcomeTracker stage="Decision" customerId={activeLoan.id} action="Approve" />
+            </div>
 
             <div style={{ marginTop: 14 }}>
               <Btn primary disabled={!canSubmit} onClick={handleSubmit} style={{

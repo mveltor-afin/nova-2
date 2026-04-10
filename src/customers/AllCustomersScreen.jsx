@@ -2,6 +2,8 @@ import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES } from "../data/customers";
+import QuickActions from "../shared/QuickActions";
+import EmptyState from "../shared/EmptyState";
 
 // ── Colour maps ──
 const SEGMENT_COLORS = {
@@ -41,6 +43,16 @@ const getProductTypes = (cust) => {
 };
 
 export default function AllCustomersScreen({ onSelectCustomer }) {
+  const [search, setSearch] = useState("");
+  const q = search.trim().toLowerCase();
+  const filteredCustomers = q
+    ? CUSTOMERS.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.id.toLowerCase().includes(q) ||
+        (c.segment || "").toLowerCase().includes(q)
+      )
+    : CUSTOMERS;
+
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
@@ -48,19 +60,33 @@ export default function AllCustomersScreen({ onSelectCustomer }) {
           <h1 style={{ fontSize:22, fontWeight:700, margin:"0 0 4px", color:T.text }}>All Customers</h1>
           <p style={{ margin:0, fontSize:13, color:T.textMuted }}>{CUSTOMERS.length} customers across all segments</p>
         </div>
-        <Btn primary icon="plus">New Customer</Btn>
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search customers..."
+            style={{
+              padding:"9px 14px", borderRadius:8, border:`1px solid ${T.border}`,
+              fontSize:13, fontFamily:T.font, outline:"none", minWidth:240, background:T.card, color:T.text,
+            }}
+          />
+          <Btn primary icon="plus">New Customer</Btn>
+        </div>
       </div>
+      {filteredCustomers.length === 0 ? (
+        <EmptyState type="search" />
+      ) : (
       <Card noPad>
         <table style={{ width:"100%", borderCollapse:"collapse" }}>
           <thead>
             <tr style={{ background:"#F8FAFC" }}>
-              {["Name","Segment","Products","Risk","KYC","NPS","Rel. Value","Tier"].map(h => (
+              {["Name","Segment","Products","Risk","KYC","NPS","Rel. Value","Tier",""].map(h => (
                 <th key={h} style={{ textAlign:"left", padding:"10px 16px", fontSize:11, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:0.4 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {CUSTOMERS.map((c, i) => {
+            {filteredCustomers.map((c, i) => {
               const prods = getCustomerProducts(c);
               const types = getProductTypes(c);
               return (
@@ -117,12 +143,24 @@ export default function AllCustomersScreen({ onSelectCustomer }) {
                       {c.gamification.tier}
                     </span>
                   </td>
+                  <td style={{ padding:"14px 16px", textAlign:"right" }} onClick={(e) => e.stopPropagation()}>
+                    <QuickActions
+                      actions={[
+                        { id: "view", label: "View", icon: "eye" },
+                        { id: "message", label: "Send Message", icon: "send" },
+                        { id: "products", label: "View Products", icon: "wallet" },
+                        { id: "flag", label: "Flag", icon: "alert" },
+                      ]}
+                      onAction={(id) => console.log(id, c.id)}
+                    />
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </Card>
+      )}
     </div>
   );
 }

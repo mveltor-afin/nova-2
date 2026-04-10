@@ -77,6 +77,7 @@ import RecentActivity from "./shared/RecentActivity";
 import AITips from "./shared/AITips";
 import VulnerabilityBanner from "./shared/VulnerabilityBanner";
 import StatusBar from "./shared/StatusBar";
+import SkeletonLoader from "./shared/SkeletonLoader";
 // Customer Journey
 import JourneyAnalytics from "./intelligence/JourneyAnalytics";
 // BDM
@@ -148,6 +149,13 @@ export default function Shell({ userType }) {
 
   // Responsive: detect mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [screenLoading, setScreenLoading] = useState(false);
+
+  useEffect(() => {
+    setScreenLoading(true);
+    const t = setTimeout(() => setScreenLoading(false), 150);
+    return () => clearTimeout(t);
+  }, [screen]);
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", onResize);
@@ -745,7 +753,7 @@ export default function Shell({ userType }) {
           <PresenceIndicator screenId={screen} currentUser={isBroker ? "John Watson" : `${persona} User`} />
           <ErrorBoundary onReset={() => setScreen(errorResetScreen)}>
             <div key={screen} style={{ animation:"fadeIn 0.2s ease-out" }}>
-              {renderScreen()}
+              {screenLoading ? <SkeletonLoader type="card" count={3} /> : renderScreen()}
             </div>
           </ErrorBoundary>
         </div>

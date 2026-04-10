@@ -3,6 +3,9 @@ import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
+import QuickActions from "../shared/QuickActions";
+import GoalTracker from "../shared/GoalTracker";
+import EmptyState from "../shared/EmptyState";
 
 /* ─── Queue case data ─── */
 const QUEUE_CASES = [
@@ -136,6 +139,13 @@ function SmartQueue({ onOpenCase }) {
         <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0 32px" }}>AI-triaged and risk-sorted</p>
       </div>
 
+      {/* ── Goals Strip ── */}
+      <div style={{ display:"flex", gap:24, marginBottom:24, padding:"20px 24px", background:T.card, borderRadius:14, border:`1px solid ${T.border}` }}>
+        <GoalTracker current={7} target={12} label="Decisions today" sub="5 to target" />
+        <GoalTracker current={2.1} target={3} label="Avg time (hrs)" sub="Under SLA" />
+        <GoalTracker current={96} target={100} label="Quality score" sub="4 pts to perfect" />
+      </div>
+
       {/* ── KPI Strip ── */}
       <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
         <KPICard label="My Queue" value="5" color={T.primary} />
@@ -180,18 +190,30 @@ function SmartQueue({ onOpenCase }) {
       </div>
 
       {/* ── Queue Cards ── */}
+      {filtered.length === 0 && <EmptyState type="queue" />}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {filtered.map((c) => (
-          <Card key={c.id} style={{ padding: 0, overflow: "hidden" }}>
+          <Card key={c.id} style={{ padding: 0, overflow: "hidden", position: "relative" }}>
             {/* Priority bar */}
             <div style={{
               height: 4,
               background: c.priority === "HIGH" ? T.danger : c.priority === "MEDIUM" ? T.warning : T.success,
             }} />
 
+            <div style={{ position: "absolute", top: 14, right: 14, zIndex: 2 }}>
+              <QuickActions
+                actions={[
+                  { id: "view", label: "View", icon: "eye" },
+                  { id: "fasttrack", label: "Fast-Track Approve", icon: "check" },
+                  { id: "refer", label: "Refer", icon: "alert" },
+                  { id: "reassign", label: "Reassign", icon: "users" },
+                ]}
+                onAction={(id) => console.log(id, c.id)}
+              />
+            </div>
             <div style={{ padding: "20px 24px" }}>
               {/* Top row */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, paddingRight: 36 }}>
                 <span style={{
                   fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, letterSpacing: 0.4,
                   background: c.priority === "HIGH" ? T.dangerBg : c.priority === "MEDIUM" ? T.warningBg : T.successBg,
