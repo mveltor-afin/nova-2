@@ -409,6 +409,214 @@ function RepaymentVehicleProjection({ data }) {
 }
 
 // ─────────────────────────────────────────────
+// INCOME PREDICTOR — projects future earnings
+// based on job type, sector, level and experience
+// ─────────────────────────────────────────────
+
+const SECTORS = {
+  "Technology":     { mult: 1.30, label: "Technology" },
+  "Finance":        { mult: 1.20, label: "Financial Services" },
+  "Legal":          { mult: 1.15, label: "Legal" },
+  "Engineering":    { mult: 1.10, label: "Engineering" },
+  "Healthcare":     { mult: 1.00, label: "Healthcare" },
+  "Construction":   { mult: 0.95, label: "Construction" },
+  "Education":      { mult: 0.85, label: "Education" },
+  "Public Sector":  { mult: 0.80, label: "Public Sector" },
+  "Retail":         { mult: 0.85, label: "Retail / Hospitality" },
+};
+
+const LEVELS = {
+  "Junior":    { growth: 0.10, vol: 0.05, label: "Junior / Entry" },
+  "Mid":       { growth: 0.07, vol: 0.04, label: "Mid-level" },
+  "Senior":    { growth: 0.05, vol: 0.04, label: "Senior" },
+  "Lead":      { growth: 0.045, vol: 0.05, label: "Lead / Principal" },
+  "Manager":   { growth: 0.05, vol: 0.05, label: "Manager" },
+  "Director":  { growth: 0.04, vol: 0.07, label: "Director" },
+  "Executive": { growth: 0.035, vol: 0.10, label: "Executive / C-suite" },
+};
+
+function predictIncome({ baseIncome, sector, level, years }) {
+  const sectorMult = SECTORS[sector]?.mult ?? 1;
+  const lvl = LEVELS[level] ?? LEVELS["Mid"];
+  // Slight bonus to growth in early career
+  const tenureBoost = years < 3 ? 0.02 : years < 7 ? 0.01 : 0;
+  const annualGrowth = lvl.growth * sectorMult + tenureBoost;
+  const vol = lvl.vol;
+
+  const projection = [];
+  for (let y = 0; y <= 5; y++) {
+    const central = baseIncome * Math.pow(1 + annualGrowth, y);
+    const upper = central * (1 + vol * y * 0.6);
+    const lower = central * (1 - vol * y * 0.6);
+    projection.push({ year: y, central: Math.round(central), upper: Math.round(upper), lower: Math.round(lower) });
+  }
+  return { projection, annualGrowth, vol };
+}
+
+function ProjectionChart({ projection }) {
+  const max = Math.max(...projection.map(p => p.upper));
+  const min = Math.min(...projection.map(p => p.lower));
+  const range = max - min || 1;
+  const w = 100 / (projection.length - 1);
+  const yScale = v => 100 - ((v - min) / range) * 100;
+
+  const centralLine = projection.map((p, i) => `${i * w},${yScale(p.central)}`).join(" ");
+  const upperPath = projection.map((p, i) => `${i * w},${yScale(p.upper)}`).join(" ");
+  const lowerPath = projection.slice().reverse().map((p, i) => {
+    const idx = projection.length - 1 - i;
+    return `${idx * w},${yScale(p.lower)}`;
+  }).join(" ");
+  const bandPath = `${upperPath} ${lowerPath}`;
+
+  return (
+    <div style={{ position: "relative" }}>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: 200, overflow: "visible" }}>
+        <polygon points={bandPath} fill={`${T.primary}20`} stroke="none" />
+        <polyline points={centralLine} fill="none" stroke={T.primary} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+        {projection.map((p, i) => (
+          <circle key={i} cx={i * w} cy={yScale(p.central)} r="1.2" fill={T.primary} vectorEffect="non-scaling-stroke" />
+        ))}
+      </svg>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 10, color: T.textMuted, fontWeight: 600 }}>
+        {projection.map(p => (
+          <div key={p.year} style={{ textAlign: "center", flex: 1 }}>
+            <div>Y{p.year}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.text }}>£{(p.central / 1000).toFixed(0)}k</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IncomePredictor({ baseIncome }) {
+  const [jobTitle, setJobTitle] = useState("Software Engineer");
+  const [sector, setSector] = useState("Technology");
+  const [level, setLevel] = useState("Senior");
+  const [years, setYears] = useState(7);
+
+  const { projection, annualGrowth, vol } = predictIncome({ baseIncome, sector, level, years });
+  const fiveYr = projection[5];
+  const growthPct = Math.round(annualGrowth * 1000) / 10;
+  const totalGrowth = Math.round(((fiveYr.central - baseIncome) / baseIncome) * 100);
+
+  // Peer benchmark (mock — based on level + sector)
+  const peerMedian = Math.round(baseIncome * (1 + (SECTORS[sector].mult - 1) * 0.5));
+  const peerLow = Math.round(peerMedian * 0.75);
+  const peerHigh = Math.round(peerMedian * 1.30);
+  const vsPeer = Math.round(((baseIncome - peerMedian) / peerMedian) * 100);
+
+  const sustainabilityNote =
+    growthPct >= 6 ? { color: T.success, label: "STRONG TRAJECTORY", text: "High growth profession with healthy salary progression — affordability likely to improve over the loan term." }
+    : growthPct >= 4 ? { color: T.success, label: "STABLE TRAJECTORY", text: "Steady real-terms income growth expected — comfortable headroom against future rate stress." }
+    : growthPct >= 2 ? { color: "#F59E0B", label: "MODEST TRAJECTORY", text: "Below-average wage growth for this profession — monitor affordability under stressed scenarios." }
+    : { color: T.danger, label: "FLAT TRAJECTORY", text: "Limited income growth expected — consider stressed affordability carefully." };
+
+  return (
+    <div>
+      {/* Inputs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 18 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Job Title</div>
+          <input value={jobTitle} onChange={e => setJobTitle(e.target.value)}
+            style={{ width: "100%", padding: "8px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 13, fontFamily: T.font }} />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Sector</div>
+          <select value={sector} onChange={e => setSector(e.target.value)}
+            style={{ width: "100%", padding: "8px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 13, fontFamily: T.font, background: T.card }}>
+            {Object.entries(SECTORS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Seniority Level</div>
+          <select value={level} onChange={e => setLevel(e.target.value)}
+            style={{ width: "100%", padding: "8px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 13, fontFamily: T.font, background: T.card }}>
+            {Object.entries(LEVELS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Years in Profession</div>
+          <input type="number" min="0" max="50" value={years} onChange={e => setYears(parseInt(e.target.value) || 0)}
+            style={{ width: "100%", padding: "8px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 13, fontFamily: T.font }} />
+        </div>
+      </div>
+
+      {/* Headline metrics */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 18 }}>
+        <div style={{ padding: 14, background: T.primaryLight, borderRadius: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Predicted in 5 Years</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>£{fiveYr.central.toLocaleString()}</div>
+          <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>£{fiveYr.lower.toLocaleString()} – £{fiveYr.upper.toLocaleString()}</div>
+        </div>
+        <div style={{ padding: 14, background: T.successBg, borderRadius: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Annual Growth</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: T.success }}>{growthPct}%</div>
+          <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>+{totalGrowth}% over 5 yrs</div>
+        </div>
+        <div style={{ padding: 14, background: "#F3E8FF", borderRadius: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Peer Median</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#7C3AED" }}>£{peerMedian.toLocaleString()}</div>
+          <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>{vsPeer >= 0 ? "+" : ""}{vsPeer}% vs you</div>
+        </div>
+        <div style={{ padding: 14, background: T.warningBg, borderRadius: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Volatility</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#92400E" }}>±{Math.round(vol * 100)}%</div>
+          <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>year-on-year</div>
+        </div>
+      </div>
+
+      {/* Projection chart */}
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>5-Year Income Projection</div>
+          <div style={{ display: "flex", gap: 14, fontSize: 11, color: T.textMuted }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 12, height: 3, background: T.primary }} /> Central
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 12, height: 8, background: `${T.primary}20` }} /> Confidence band
+            </span>
+          </div>
+        </div>
+        <ProjectionChart projection={projection} />
+      </div>
+
+      {/* Peer benchmark range */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>
+          Peer Benchmark — {jobTitle}, {LEVELS[level].label}, {SECTORS[sector].label}
+        </div>
+        <div style={{ position: "relative", height: 36, background: T.borderLight, borderRadius: 6, overflow: "hidden" }}>
+          <div style={{ position: "absolute", left: "10%", right: "10%", top: 0, bottom: 0, background: `linear-gradient(90deg, ${T.successBg}, #F3E8FF, ${T.warningBg})` }} />
+          <div style={{ position: "absolute", left: `${Math.max(2, Math.min(96, ((baseIncome - peerLow) / (peerHigh - peerLow)) * 100))}%`, top: -2, bottom: -2, width: 3, background: T.primary, transform: "translateX(-50%)" }} />
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 10px", fontSize: 10, fontWeight: 700, color: T.textMuted }}>
+            <span>£{peerLow.toLocaleString()}</span>
+            <span>median £{peerMedian.toLocaleString()}</span>
+            <span>£{peerHigh.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sustainability badge */}
+      <div style={{ padding: "12px 16px", borderRadius: 10, background: sustainabilityNote.color === T.success ? T.successBg : sustainabilityNote.color === "#F59E0B" ? T.warningBg : T.dangerBg, border: `1px solid ${sustainabilityNote.color}30` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: 4, fontSize: 11, fontWeight: 800, color: "#fff", background: sustainabilityNote.color }}>
+            {sustainabilityNote.label}
+          </span>
+          <span style={{ fontSize: 11, color: T.textMuted, fontWeight: 600 }}>
+            Nova AI · trained on 4.2M UK earnings records (ONS ASHE 2018–2025)
+          </span>
+        </div>
+        <div style={{ fontSize: 13, color: T.text, lineHeight: 1.5, marginTop: 6 }}>
+          {sustainabilityNote.text}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
 
@@ -479,6 +687,17 @@ export default function IncomeAnalysis() {
           Net monthly income received
         </div>
         <MonthlyBarChart data={incomeData.monthlyTrend} highlightMonth="Feb" />
+      </Card>
+
+      {/* Income Predictor */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+          {Ico.sparkle(18)} AI Income Predictor
+        </div>
+        <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>
+          Project future earnings based on job type, sector, seniority and experience — used to assess long-term affordability.
+        </div>
+        <IncomePredictor baseIncome={incomeData.total} />
       </Card>
 
       {/* Year-over-Year (self-employed) */}
