@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 
@@ -11,20 +10,6 @@ const enquiries = [
   { id: "ENQ-006", broker: "Apex Mortgages", scenario: "Shared ownership, 40% share", amount: 128000, ltv: 90, aiResult: "Eligible", status: "Application", squad: "ST/TW/JM" },
   { id: "ENQ-007", broker: "Prime Financial", scenario: "Non-standard construction", amount: 290000, ltv: 78, aiResult: "Conditional", status: "Awaiting UW", squad: "ST/LC/AH" },
   { id: "ENQ-008", broker: "Direct Broker Ltd", scenario: "Interest only, retirement plan", amount: 340000, ltv: 70, aiResult: "Conditional", status: "New", squad: "Pending" },
-];
-
-const brokers = [
-  { name: "Watson & Partners", cases: 12, quality: 92, lastContact: "2 Apr 2026", trend: "+15%" },
-  { name: "Apex Mortgages", cases: 8, quality: 84, lastContact: "31 Mar 2026", trend: "+8%" },
-  { name: "Prime Financial", cases: 5, quality: 71, lastContact: "28 Mar 2026", trend: "-4%" },
-  { name: "Direct Broker Ltd", cases: 3, quality: 88, lastContact: "4 Apr 2026", trend: "+22%" },
-];
-
-const leaderboard = [
-  { name: "Rachel Adams", pipeline: "£4.1M", enquiries: 14, current: false },
-  { name: "Sarah Thompson", pipeline: "£3.8M", enquiries: 12, current: true },
-  { name: "Mike Chen", pipeline: "£2.9M", enquiries: 9, current: false },
-  { name: "David Park", pipeline: "£1.6M", enquiries: 5, current: false },
 ];
 
 const meetings = [
@@ -41,14 +26,6 @@ const aiResultStyle = (result) => {
 };
 
 function BDMDashboard({ onNewEnquiry, onOpenEnquiry }) {
-  const [activeTab, setActiveTab] = useState("brokers");
-
-  const TABS = [
-    { id: "brokers", label: "My Brokers", icon: "users" },
-    { id: "leaderboard", label: "Leaderboard", icon: "chart" },
-    { id: "pipeline", label: "Pipeline Health", icon: "loans" },
-  ];
-
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
       {/* ── Header ── */}
@@ -121,162 +98,50 @@ function BDMDashboard({ onNewEnquiry, onOpenEnquiry }) {
         <KPICard label="Active Squads" value="6" sub="3 awaiting decision" color="#7C3AED" />
       </div>
 
-      {/* ── Two-column layout ── */}
-      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-        {/* Left: Recent Enquiries */}
-        <div style={{ flex: 2, minWidth: 0 }}>
-          <Card noPad>
-            <div style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${T.borderLight}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {Ico.file(18)}
-                <span style={{ fontSize: 16, fontWeight: 700 }}>Recent Enquiries</span>
-                <span style={{ fontSize: 11, color: T.textMuted, marginLeft: 4 }}>· {enquiries.length} total</span>
-              </div>
-              <span style={{ fontSize: 12, color: T.primary, cursor: "pointer", fontWeight: 600 }}>View all →</span>
-            </div>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                <thead>
-                  <tr style={{ background: T.bg }}>
-                    {["Enquiry ID", "Broker", "Customer Scenario", "Amount", "LTV", "AI Result", "Status", "Application"].map(h => (
-                      <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 600, color: T.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, whiteSpace: "nowrap" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {enquiries.map((e) => (
-                    <tr key={e.id} onClick={() => onOpenEnquiry?.(e)} style={{ cursor: "pointer", borderBottom: `1px solid ${T.borderLight}`, transition: "background 0.1s" }}
-                      onMouseEnter={ev => ev.currentTarget.style.background = T.primaryLight}
-                      onMouseLeave={ev => ev.currentTarget.style.background = "transparent"}>
-                      <td style={{ padding: "11px 14px", fontWeight: 600, color: T.primary }}>{e.id}</td>
-                      <td style={{ padding: "11px 14px", whiteSpace: "nowrap" }}>{e.broker}</td>
-                      <td style={{ padding: "11px 14px", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.scenario}</td>
-                      <td style={{ padding: "11px 14px", whiteSpace: "nowrap", fontWeight: 600 }}>£{(e.amount / 1000).toFixed(0)}k</td>
-                      <td style={{ padding: "11px 14px" }}>{e.ltv}%</td>
-                      <td style={{ padding: "11px 14px" }}>
-                        <span style={{ ...aiResultStyle(e.aiResult), padding: "3px 9px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{e.aiResult}</span>
-                      </td>
-                      <td style={{ padding: "11px 14px", whiteSpace: "nowrap" }}>{e.status}</td>
-                      <td style={{ padding: "11px 14px", whiteSpace: "nowrap" }}>
-                        {e.id === "ENQ-001" ? <span style={{ fontWeight:600, color:T.primary, cursor:"pointer" }}>AFN-2026-00142</span>
-                         : e.id === "ENQ-006" ? <span style={{ fontWeight:600, color:T.primary, cursor:"pointer" }}>AFN-2026-00201</span>
-                         : <span style={{ color:T.textMuted }}>—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+      {/* ── Recent Enquiries (full width) ── */}
+      <Card noPad>
+        <div style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${T.borderLight}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {Ico.file(18)}
+            <span style={{ fontSize: 16, fontWeight: 700 }}>Recent Enquiries</span>
+            <span style={{ fontSize: 11, color: T.textMuted, marginLeft: 4 }}>· {enquiries.length} total</span>
+          </div>
+          <span style={{ fontSize: 12, color: T.primary, cursor: "pointer", fontWeight: 600 }}>View all →</span>
         </div>
-
-        {/* Right: Tabbed widget (replaces 3 stacked cards) */}
-        <div style={{ flex: 1, minWidth: 320 }}>
-          <Card noPad>
-            {/* Tab bar */}
-            <div style={{ display: "flex", borderBottom: `1px solid ${T.border}` }}>
-              {TABS.map(tab => (
-                <div key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    flex: 1, padding: "14px 12px", cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                    fontSize: 12, fontWeight: 600,
-                    color: activeTab === tab.id ? T.primary : T.textMuted,
-                    borderBottom: `2.5px solid ${activeTab === tab.id ? T.primary : "transparent"}`,
-                    marginBottom: -1, transition: "all 0.15s",
-                    background: activeTab === tab.id ? T.primaryLight : "transparent",
-                  }}>
-                  {Ico[tab.icon]?.(14)}
-                  {tab.label}
-                </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: T.bg }}>
+                {["Enquiry ID", "Broker", "Customer Scenario", "Amount", "LTV", "AI Result", "Status", "Application"].map(h => (
+                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: T.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, whiteSpace: "nowrap" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {enquiries.map((e) => (
+                <tr key={e.id} onClick={() => onOpenEnquiry?.(e)} style={{ cursor: "pointer", borderBottom: `1px solid ${T.borderLight}`, transition: "background 0.1s" }}
+                  onMouseEnter={ev => ev.currentTarget.style.background = T.primaryLight}
+                  onMouseLeave={ev => ev.currentTarget.style.background = "transparent"}>
+                  <td style={{ padding: "13px 16px", fontWeight: 600, color: T.primary }}>{e.id}</td>
+                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>{e.broker}</td>
+                  <td style={{ padding: "13px 16px" }}>{e.scenario}</td>
+                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap", fontWeight: 600 }}>£{(e.amount / 1000).toFixed(0)}k</td>
+                  <td style={{ padding: "13px 16px" }}>{e.ltv}%</td>
+                  <td style={{ padding: "13px 16px" }}>
+                    <span style={{ ...aiResultStyle(e.aiResult), padding: "3px 9px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{e.aiResult}</span>
+                  </td>
+                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>{e.status}</td>
+                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
+                    {e.id === "ENQ-001" ? <span style={{ fontWeight:600, color:T.primary, cursor:"pointer" }}>AFN-2026-00142</span>
+                     : e.id === "ENQ-006" ? <span style={{ fontWeight:600, color:T.primary, cursor:"pointer" }}>AFN-2026-00201</span>
+                     : <span style={{ color:T.textMuted }}>—</span>}
+                  </td>
+                </tr>
               ))}
-            </div>
-
-            {/* Tab content */}
-            <div style={{ padding: 18 }}>
-              {activeTab === "brokers" && (
-                <>
-                  {brokers.map((b, i) => (
-                    <div key={b.name} style={{ marginBottom: i < brokers.length - 1 ? 16 : 0, paddingBottom: i < brokers.length - 1 ? 16 : 0, borderBottom: i < brokers.length - 1 ? `1px solid ${T.borderLight}` : "none" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700 }}>{b.name}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4,
-                          background: b.trend.startsWith("+") ? T.successBg : T.dangerBg,
-                          color: b.trend.startsWith("+") ? T.success : T.danger }}>{b.trend}</span>
-                      </div>
-                      <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 8 }}>{b.cases} cases YTD · Last contact {b.lastContact}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                        <span style={{ fontSize: 10, color: T.textMuted, minWidth: 38 }}>Quality</span>
-                        <div style={{ flex: 1, height: 5, borderRadius: 3, background: T.borderLight, overflow: "hidden" }}>
-                          <div style={{ width: `${b.quality}%`, height: "100%", borderRadius: 3, background: b.quality >= 85 ? T.success : b.quality >= 75 ? T.warning : T.danger }} />
-                        </div>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: b.quality >= 85 ? T.success : b.quality >= 75 ? "#92400E" : T.danger, minWidth: 32, textAlign: "right" }}>{b.quality}%</span>
-                      </div>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <Btn small ghost icon="clock">Visit</Btn>
-                        <Btn small ghost icon="messages">Call</Btn>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              {activeTab === "leaderboard" && (
-                <>
-                  {leaderboard.map((m, i) => (
-                    <div key={m.name} style={{
-                      display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 8, marginBottom: 6,
-                      background: m.current ? T.primaryLight : "transparent",
-                      border: m.current ? `1.5px solid ${T.primary}` : "1px solid transparent",
-                    }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 14, background: i === 0 ? "#FFD700" : i === 1 ? "#C0C0C0" : i === 2 ? "#CD7F32" : T.borderLight,
-                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: i < 3 ? "#fff" : T.textMuted }}>{i + 1}</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: m.current ? T.primary : T.text }}>
-                          {m.name}
-                          {m.current && <span style={{ fontSize: 9, marginLeft: 6, padding: "1px 6px", borderRadius: 4, background: T.primary, color: "#fff", textTransform: "uppercase", letterSpacing: 0.5 }}>You</span>}
-                        </div>
-                        <div style={{ fontSize: 11, color: T.textMuted }}>{m.pipeline} · {m.enquiries} enquiries</div>
-                      </div>
-                    </div>
-                  ))}
-                  <div style={{ marginTop: 12, padding: 12, background: T.primaryLight, borderRadius: 8, fontSize: 11, color: T.primary, fontWeight: 600 }}>
-                    🎯 You're £300k away from #1 — close 1 more case to overtake Rachel
-                  </div>
-                </>
-              )}
-
-              {activeTab === "pipeline" && (
-                <>
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>Conversion Funnel</div>
-                    {[
-                      { stage: "New Enquiry", count: 12, pct: 100 },
-                      { stage: "Eligible", count: 8, pct: 67 },
-                      { stage: "DIP Run", count: 6, pct: 50 },
-                      { stage: "Application", count: 5, pct: 42 },
-                      { stage: "Disbursed", count: 3, pct: 25 },
-                    ].map((s, i) => (
-                      <div key={s.stage} style={{ marginBottom: 8 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 3 }}>
-                          <span>{s.stage}</span>
-                          <span style={{ fontWeight: 600 }}>{s.count} · {s.pct}%</span>
-                        </div>
-                        <div style={{ height: 6, background: T.borderLight, borderRadius: 3 }}>
-                          <div style={{ height: 6, borderRadius: 3, width: `${s.pct}%`, background: `linear-gradient(90deg, ${T.primary}, ${T.accent})` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ padding: 12, background: T.warningBg, borderRadius: 8, border: `1px solid ${T.warningBorder}`, fontSize: 11, color: "#92400E", fontWeight: 600 }}>
-                    ⚠ Drop-off at DIP → Application: 17%. Consider broker training session.
-                  </div>
-                </>
-              )}
-            </div>
-          </Card>
+            </tbody>
+          </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
