@@ -7,6 +7,64 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.12.0",
+    date: "10 Apr 2026",
+    title: "AI Income Predictor for Underwriters",
+    items: [
+      { type: "New", text: "AI Income Predictor in Income Analysis — projects 5-year income trajectory based on job title, sector, seniority and years of experience" },
+      { type: "New", text: "Sector-weighted growth model with confidence band and peer benchmark range" },
+      { type: "New", text: "Sustainability badge driven by predicted growth (Strong / Stable / Modest / Flat)" },
+    ]
+  },
+  {
+    version: "2.11.0",
+    date: "10 Apr 2026",
+    title: "BDM Dashboard Redesign + Pipeline Screen",
+    items: [
+      { type: "Improved", text: "BDM Dashboard restructured — Today's Focus AI card, This Week meetings strip, full-width Recent Enquiries" },
+      { type: "New", text: "Dedicated Pipeline screen for BDMs — conversion funnel, leaderboard, pipeline-by-stage breakdown" },
+      { type: "Improved", text: "Removed scrolling pain in BDM right column by splitting into focused screens" },
+    ]
+  },
+  {
+    version: "2.10.0",
+    date: "9 Apr 2026",
+    title: "Instant Navigation",
+    items: [
+      { type: "Improved", text: "Removed artificial loading delays — page transitions now feel instant (saved 350ms per click)" },
+    ]
+  },
+  {
+    version: "2.9.0",
+    date: "9 Apr 2026",
+    title: "Interactive Enhancements",
+    items: [
+      { type: "New", text: "6 interactive features added across the platform for smoother day-to-day workflows" },
+    ]
+  },
+  {
+    version: "2.8.0",
+    date: "9 Apr 2026",
+    title: "CTO Refinements — Permissions, Navigation & Modals",
+    items: [
+      { type: "Improved", text: "Journey Analytics restricted to Admin persona only" },
+      { type: "New", text: "Product selector on Journey Analytics — KPIs adapt per product" },
+      { type: "Improved", text: "Broker Scorecards moved to BDM-only view" },
+      { type: "Improved", text: "Broker view now shows the broker's own customers as prospects (not the bank's full base)" },
+      { type: "Improved", text: "BDM New Enquiry now opens as a modal popup" },
+    ]
+  },
+  {
+    version: "2.7.0",
+    date: "9 Apr 2026",
+    title: "Wired Components + Session, Autosave & Inline Help",
+    items: [
+      { type: "New", text: "Session timeout, autosave drafts, inline contextual help" },
+      { type: "Fixed", text: "Wired 8 orphaned components into appropriate screens" },
+      { type: "Improved", text: "Persona-filtered content across Release Centre, Help Centre, AI Tips and AI Summaries — brokers no longer see internal data" },
+    ]
+  },
+  {
     version: "2.6.0",
     date: "9 Apr 2026",
     title: "Help Centre, Release Centre & AI Enhancements",
