@@ -84,6 +84,7 @@ import SkeletonLoader from "./shared/SkeletonLoader";
 import JourneyAnalytics from "./intelligence/JourneyAnalytics";
 // BDM
 import BDMDashboard from "./bdm/BDMDashboard";
+import BDMPipeline from "./bdm/BDMPipeline";
 import EnquiryForm from "./bdm/EnquiryForm";
 import EnquiryDetail from "./bdm/EnquiryDetail";
 import CriteriaQuickCheck from "./bdm/CriteriaQuickCheck";
@@ -208,6 +209,7 @@ export default function Shell({ userType }) {
     ? [
         { group:"MY WORK", items:[
           { id:"bdmdashboard",    label:"Dashboard",         icon:"dashboard" },
+          { id:"bdmpipeline",     label:"Pipeline",          icon:"chart" },
           { id:"criteriacheck",   label:"Criteria Check",    icon:"zap" },
         ]},
         { group:"BROKERS", items:[
@@ -674,6 +676,7 @@ export default function Shell({ userType }) {
       case "commission":      return <CommissionTracker />;
       // BDM
       case "bdmdashboard":   return <BDMDashboard onNewEnquiry={() => setShowEnquiryModal(true)} onOpenEnquiry={(enq) => { setScreen("enquirydetail"); }} />;
+      case "bdmpipeline":    return <BDMPipeline />;
       case "enquirydetail":  return <EnquiryDetail enquiry={null} onBack={() => setScreen("bdmdashboard")} />;
       case "criteriacheck":  return <CriteriaQuickCheck />;
       // Underwriting Engine
