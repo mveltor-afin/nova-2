@@ -33,6 +33,7 @@ import PropertyScreen from "./origination/PropertyScreen";
 import ValuationScreen from "./origination/ValuationScreen";
 import BrokerLoansScreen from "./origination/BrokerLoansScreen";
 import BrokerProspects from "./origination/BrokerProspects";
+import BrokerCustomerHub from "./origination/BrokerCustomerHub";
 // Intelligence
 import AIDashboard from "./intelligence/AIDashboard";
 import RiskAnomalies from "./intelligence/RiskAnomalies";
@@ -147,6 +148,7 @@ export default function Shell({ userType }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
+  const [selectedProspect, setSelectedProspect] = useState(null);
   const [screenHistory, setScreenHistory] = useState([]);
 
   // Responsive: detect mobile
@@ -609,7 +611,8 @@ export default function Shell({ userType }) {
     switch (screen) {
       case "needsattention":  return <NeedsAttentionScreen onSelectCustomer={handleSelectCustomer} />;
       case "allcustomers":    return <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
-      case "brokerprospects": return <BrokerProspects />;
+      case "brokerprospects": return <BrokerProspects onSelectProspect={(p) => { setSelectedProspect(p); setScreen("brokerhub"); }} />;
+      case "brokerhub":       return <BrokerCustomerHub prospect={selectedProspect} onBack={() => setScreen("brokerprospects")} />;
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;

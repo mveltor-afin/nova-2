@@ -25,15 +25,15 @@ const MOCK_BROKER_PROSPECTS = [
     nextAction: "Schedule first meeting", source: "Referral" },
 ];
 
-const STAGE_COLORS = {
-  "Initial Enquiry":     { bg:"#E0E7FF", text:"#3730A3" },
-  "DIP Approved":        { bg:"#D1FAE5", text:"#065F46" },
-  "Application Submitted":{ bg:"#DBEAFE", text:"#1E40AF" },
-  "KYC In Progress":     { bg:"#FEF3C7", text:"#92400E" },
-  "Underwriting":        { bg:"#EDE9FE", text:"#5B21B6" },
-  "Offer Issued":        { bg:"#BFDBFE", text:"#1D4ED8" },
-  "Disbursed":           { bg:"#34D399", text:"#fff" },
-};
+const PIPELINE_STAGES = [
+  "Initial Enquiry",
+  "DIP Approved",
+  "Application Submitted",
+  "KYC In Progress",
+  "Underwriting",
+  "Offer Issued",
+  "Disbursed",
+];
 
 const SOURCE_COLORS = {
   "Referral":  T.success,
@@ -42,9 +42,152 @@ const SOURCE_COLORS = {
   "Website":   "#8B5CF6",
 };
 
-export default function BrokerProspects() {
+function MiniStepper({ currentStage }) {
+  const idx = Math.max(0, PIPELINE_STAGES.indexOf(currentStage));
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: 170 }}>
+      {PIPELINE_STAGES.map((stage, i) => {
+        const done = i < idx;
+        const active = i === idx;
+        const color = active ? T.primary : done ? T.accent : T.border;
+        return (
+          <div key={stage} style={{ display: "flex", alignItems: "center", flex: i === PIPELINE_STAGES.length - 1 ? "0 0 auto" : 1 }}>
+            <div title={stage} style={{
+              width: active ? 10 : 7, height: active ? 10 : 7, borderRadius: "50%",
+              background: color, flexShrink: 0,
+              boxShadow: active ? `0 0 0 3px ${T.primaryGlow}` : "none",
+            }} />
+            {i < PIPELINE_STAGES.length - 1 && (
+              <div style={{
+                flex: 1, height: 2,
+                background: i < idx ? T.accent : T.borderLight,
+                minWidth: 10,
+              }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function QuickDipModal({ prospect, onClose }) {
+  const [amount, setAmount] = useState("");
+  const [ltv, setLtv] = useState("");
+  const [term, setTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const runDip = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setResult({
+        decision: "Approved in Principle",
+        product: "Afin Residential 5yr Fixed 4.89%",
+        maxLoan: "£385,000",
+        monthlyPayment: "£1,842",
+      });
+    }, 1500);
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(12,45,59,0.55)",
+      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: T.card, borderRadius: 14, width: "100%", maxWidth: 460, padding: 26,
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 18 }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Quick DIP for {prospect.name}</div>
+            <div style={{ fontSize: 11, color: T.textMuted, marginTop: 3 }}>No credit footprint</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted }}>{Ico.x(18)}</button>
+        </div>
+
+        {!result && (
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, display: "block", marginBottom: 5 }}>Loan Amount</label>
+              <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="£350,000"
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font, boxSizing: "border-box" }} />
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, display: "block", marginBottom: 5 }}>LTV %</label>
+              <input value={ltv} onChange={e => setLtv(e.target.value)} placeholder="75"
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font, boxSizing: "border-box" }} />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, display: "block", marginBottom: 5 }}>Term (years)</label>
+              <input value={term} onChange={e => setTerm(e.target.value)} placeholder="25"
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font, boxSizing: "border-box" }} />
+            </div>
+            <Btn primary onClick={runDip} disabled={loading} style={{ width: "100%", justifyContent: "center" }}>
+              {loading ? "Running DIP..." : "Run DIP"}
+            </Btn>
+          </>
+        )}
+
+        {result && (
+          <div>
+            <div style={{
+              padding: 16, borderRadius: 10, background: T.successBg, border: `1px solid ${T.successBorder}`, marginBottom: 14,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.success, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>
+                {Ico.check(16)} {result.decision}
+              </div>
+              <div style={{ fontSize: 12, color: T.text, lineHeight: 1.6 }}>
+                <div><strong>Product:</strong> {result.product}</div>
+                <div><strong>Max Loan:</strong> {result.maxLoan}</div>
+                <div><strong>Monthly Payment:</strong> {result.monthlyPayment}</div>
+              </div>
+            </div>
+            <Btn primary onClick={onClose} style={{ width: "100%", justifyContent: "center" }}>Close</Btn>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmailDialog({ prospect, onClose }) {
+  const [subject, setSubject] = useState(`Your Afin Bank application`);
+  const [body, setBody] = useState(`Hi ${prospect.name.split(" ")[0]},\n\nJust checking in on your application...`);
+
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(12,45,59,0.55)",
+      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: T.card, borderRadius: 14, width: "100%", maxWidth: 520, padding: 26,
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 16 }}>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>Send Email to {prospect.name}</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted }}>{Ico.x(18)}</button>
+        </div>
+        <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 10 }}>To: {prospect.email}</div>
+        <input value={subject} onChange={e => setSubject(e.target.value)}
+          style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, marginBottom: 10, boxSizing: "border-box", fontFamily: T.font }} />
+        <textarea value={body} onChange={e => setBody(e.target.value)}
+          style={{ width: "100%", minHeight: 160, padding: 12, borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font, boxSizing: "border-box", resize: "vertical" }} />
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14 }}>
+          <Btn onClick={onClose}>Cancel</Btn>
+          <Btn primary icon="send" onClick={onClose}>Send</Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function BrokerProspects({ onSelectProspect }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
+  const [dipModal, setDipModal] = useState(null);
+  const [emailModal, setEmailModal] = useState(null);
 
   const stages = ["All", "Initial Enquiry", "DIP Approved", "Application Submitted", "KYC In Progress", "Disbursed"];
 
@@ -56,6 +199,12 @@ export default function BrokerProspects() {
 
   const totalValue = MOCK_BROKER_PROSPECTS.reduce((sum, p) => sum + parseInt(p.value.replace(/[£,()estim]/gi, "")), 0);
   const conversionRate = Math.round((MOCK_BROKER_PROSPECTS.filter(p => p.caseRef).length / MOCK_BROKER_PROSPECTS.length) * 100);
+
+  const iconBtnStyle = {
+    background: T.bg, border: `1px solid ${T.border}`, borderRadius: 7,
+    width: 30, height: 30, display: "inline-flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", color: T.primary,
+  };
 
   return (
     <div>
@@ -103,16 +252,16 @@ export default function BrokerProspects() {
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#F8FAFC" }}>
-                {["Name", "Contact", "Stage", "Case Ref", "Value", "Source", "Last Contact", "Next Action"].map(h => (
+                {["Name", "Contact", "Pipeline", "Case Ref", "Value", "Source", "Last Contact", "Next Action", "Quick Actions"].map(h => (
                   <th key={h} style={{ textAlign: "left", padding: "10px 14px", fontSize: 11, fontWeight: 600, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map((p, i) => {
-                const sc = STAGE_COLORS[p.stage] || { bg: "#E5E7EB", text: "#374151" };
                 return (
                   <tr key={i} style={{ borderTop: `1px solid ${T.borderLight}`, cursor: "pointer" }}
+                      onClick={() => onSelectProspect?.(p)}
                       onMouseEnter={e => e.currentTarget.style.background = "#FAFAF7"}
                       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <td style={{ padding: "12px 14px", fontSize: 13, fontWeight: 600 }}>{p.name}</td>
@@ -121,7 +270,8 @@ export default function BrokerProspects() {
                       <div style={{ fontSize: 11 }}>{p.phone}</div>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <span style={{ background: sc.bg, color: sc.text, padding: "3px 9px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{p.stage}</span>
+                      <MiniStepper currentStage={p.stage} />
+                      <div style={{ fontSize: 10, color: T.textMuted, marginTop: 4, fontWeight: 600 }}>{p.stage}</div>
                     </td>
                     <td style={{ padding: "12px 14px", fontSize: 12, fontWeight: 600, color: p.caseRef ? T.primary : T.textMuted }}>
                       {p.caseRef || "—"}
@@ -132,6 +282,13 @@ export default function BrokerProspects() {
                     </td>
                     <td style={{ padding: "12px 14px", fontSize: 12, color: T.textMuted }}>{p.lastContact}</td>
                     <td style={{ padding: "12px 14px", fontSize: 12 }}>{p.nextAction}</td>
+                    <td style={{ padding: "12px 14px" }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button title="Run DIP" onClick={() => setDipModal(p)} style={iconBtnStyle}>{Ico.zap(14)}</button>
+                        <button title="View Details" onClick={() => onSelectProspect?.(p)} style={iconBtnStyle}>{Ico.eye(14)}</button>
+                        <button title="Send Email" onClick={() => setEmailModal(p)} style={iconBtnStyle}>{Ico.send(14)}</button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -139,6 +296,9 @@ export default function BrokerProspects() {
           </table>
         )}
       </Card>
+
+      {dipModal && <QuickDipModal prospect={dipModal} onClose={() => setDipModal(null)} />}
+      {emailModal && <EmailDialog prospect={emailModal} onClose={() => setEmailModal(null)} />}
     </div>
   );
 }
