@@ -88,8 +88,23 @@ function ragBg(score) {
 // ─────────────────────────────────────────────
 // JOURNEY ANALYTICS COMPONENT
 // ─────────────────────────────────────────────
+// Product-specific journey data
+const PRODUCT_DATA = {
+  "All Products": { customers:8, journeyDays:18, dutyScore:87, dropout:4, vuln:2 },
+  "Mortgages":    { customers:8, journeyDays:18, dutyScore:87, dropout:4, vuln:2 },
+  "Savings":      { customers:9, journeyDays:3,  dutyScore:94, dropout:1, vuln:0 },
+  "Current Accounts":{ customers:2, journeyDays:1, dutyScore:96, dropout:0, vuln:0 },
+  "Insurance":    { customers:3, journeyDays:5,  dutyScore:91, dropout:2, vuln:0 },
+  "Shared Ownership":{ customers:2, journeyDays:24, dutyScore:84, dropout:6, vuln:0 },
+};
+
+const PRODUCT_OPTIONS = ["All Products","Mortgages","Savings","Current Accounts","Insurance","Shared Ownership"];
+
 export default function JourneyAnalytics() {
   const [exportMsg, setExportMsg] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState("All Products");
+
+  const data = PRODUCT_DATA[selectedProduct] || PRODUCT_DATA["All Products"];
 
   const handleExport = () => {
     setExportMsg(true);
@@ -99,23 +114,34 @@ export default function JourneyAnalytics() {
   return (
     <div style={{ fontFamily: T.font, maxWidth: 1200, margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ color: T.primary }}>{Ico.chart(22)}</span>
-          <span style={{ fontSize: 20, fontWeight: 700, color: T.text }}>Customer Journey Analytics</span>
+      <div style={{ marginBottom: 24, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:20, flexWrap:"wrap" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: T.primary }}>{Ico.chart(22)}</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: T.text }}>Customer Journey Analytics</span>
+          </div>
+          <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4, marginLeft: 32 }}>
+            End-to-end journey performance and Consumer Duty compliance — viewing: <strong style={{ color:T.primary }}>{selectedProduct}</strong>
+          </div>
         </div>
-        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4, marginLeft: 32 }}>
-          End-to-end journey performance and Consumer Duty compliance
+        {/* Product selector */}
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:12, color:T.textMuted, fontWeight:600 }}>Product:</span>
+          <select value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)}
+            style={{ padding:"8px 14px", borderRadius:9, border:`1.5px solid ${T.border}`,
+              fontSize:13, fontFamily:T.font, fontWeight:600, background:T.card, color:T.text, cursor:"pointer", minWidth:200 }}>
+            {PRODUCT_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
         </div>
       </div>
 
-      {/* KPIs */}
-      <div style={{ display: "flex", gap: 14, marginBottom: 24 }}>
-        <KPICard label="Total Customers" value="8" sub="All segments" color={T.primary} />
-        <KPICard label="Avg Journey Time" value="18 days" sub="Enquiry to completion" color={T.accent} />
-        <KPICard label="Consumer Duty Score" value="87/100" sub="Across all pillars" color={T.success} />
-        <KPICard label="Dropout Rate" value="4%" sub="Last 12 months" color={T.warning} />
-        <KPICard label="Vulnerability Cases" value="2" sub="Active monitoring" color={T.danger} />
+      {/* KPIs — adapt per product */}
+      <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap:"wrap" }}>
+        <KPICard label="Total Customers" value={String(data.customers)} sub={selectedProduct} color={T.primary} />
+        <KPICard label="Avg Journey Time" value={`${data.journeyDays} days`} sub="Enquiry to completion" color={T.accent} />
+        <KPICard label="Consumer Duty Score" value={`${data.dutyScore}/100`} sub="Across all pillars" color={data.dutyScore >= 85 ? T.success : T.warning} />
+        <KPICard label="Dropout Rate" value={`${data.dropout}%`} sub="Last 12 months" color={data.dropout > 5 ? T.danger : T.warning} />
+        <KPICard label="Vulnerability Cases" value={String(data.vuln)} sub="Active monitoring" color={T.danger} />
       </div>
 
       {/* Stage Distribution */}
