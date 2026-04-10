@@ -102,6 +102,83 @@ export const PRODUCT_TYPES = {
   "Shared Ownership":   { color:"#0EA5E9", icon:"assign",   label:"Shared Ownership" },
 };
 
+// ─────────────────────────────────────────────
+// CONNECTED PARTIES — people & organisations linked to a customer
+// (joint applicants, solicitors, brokers, employers, beneficiaries,
+// advocates, accountants, housing associations)
+// ─────────────────────────────────────────────
+export const PARTIES_BY_CUSTOMER = {
+  "CUS-001": [
+    { id:"P-001-1", name:"Watson & Partners",   type:"broker",     role:"Mortgage Broker",   status:"active",  contact:"hello@watsonpartners.co.uk", linkedProducts:["MTG-001"], since:"Mar 2020" },
+    { id:"P-001-2", name:"Greene & Co",         type:"solicitor",  role:"Conveyancer",       status:"active",  contact:"emma@greene.co.uk",          linkedProducts:["MTG-001"], since:"Mar 2020" },
+    { id:"P-001-3", name:"TechCo Ltd",          type:"employer",   role:"Employer (PAYE)",   status:"active",  contact:"hr@techco.co.uk",            linkedProducts:["MTG-001"], since:"Jan 2018" },
+    { id:"P-001-4", name:"Margaret Wilson",     type:"beneficiary",role:"Beneficiary (mother)",status:"active",contact:"—",                          linkedProducts:["MTG-001","SAV-001"], since:"Mar 2020" },
+  ],
+  "CUS-002": [
+    { id:"P-002-1", name:"Sarah Mitchell",      type:"joint_applicant", role:"Joint Applicant", status:"active", contact:"sarah.m@outlook.com", linkedProducts:["MTG-002","SAV-003","INS-001"], since:"Feb 2024" },
+    { id:"P-002-2", name:"Apex Mortgages",      type:"broker",     role:"Mortgage Broker",   status:"active",  contact:"deals@apexmtg.co.uk",        linkedProducts:["MTG-002"], since:"Feb 2024" },
+    { id:"P-002-3", name:"Brown LLP",           type:"solicitor",  role:"Conveyancer",       status:"active",  contact:"james@brown-llp.co.uk",      linkedProducts:["MTG-002"], since:"Feb 2024" },
+    { id:"P-002-4", name:"City Bank Ltd",       type:"employer",   role:"Employer (James)",  status:"active",  contact:"hr@citybank.co.uk",          linkedProducts:["MTG-002"], since:"Aug 2019" },
+    { id:"P-002-5", name:"NHS Bristol Trust",   type:"employer",   role:"Employer (Sarah)",  status:"active",  contact:"payroll@nhsbristol.uk",      linkedProducts:["MTG-002"], since:"Mar 2017" },
+  ],
+  "CUS-003": [
+    { id:"P-003-1", name:"Direct",              type:"broker",     role:"Direct (no broker)",status:"inactive",contact:"—",                          linkedProducts:["MTG-003"], since:"—" },
+    { id:"P-003-2", name:"Phillips Solicitors", type:"solicitor",  role:"Conveyancer",       status:"active",  contact:"info@phillipslaw.co.uk",     linkedProducts:["MTG-003"], since:"2020" },
+    { id:"P-003-3", name:"On long-term sick",   type:"employer",   role:"Last Employer (off sick)", status:"concern", contact:"—",                  linkedProducts:["MTG-003"], since:"2018" },
+    { id:"P-003-4", name:"Citizens Advice",     type:"advocate",   role:"Vulnerability Advocate",   status:"active", contact:"bristol@citizensadvice.org.uk", linkedProducts:["MTG-003"], since:"Feb 2026" },
+    { id:"P-003-5", name:"Anil Sharma",         type:"next_of_kin",role:"Next of Kin (brother)",   status:"active", contact:"anil.s@gmail.com",        linkedProducts:[],          since:"2020" },
+  ],
+  "CUS-004": [
+    { id:"P-004-1", name:"Watson & Partners",   type:"broker",     role:"Mortgage Broker",   status:"active",  contact:"hello@watsonpartners.co.uk", linkedProducts:["MTG-004","SO-001"], since:"Jan 2023" },
+    { id:"P-004-2", name:"Greene & Co",         type:"solicitor",  role:"Conveyancer",       status:"active",  contact:"david@greene.co.uk",         linkedProducts:["MTG-004","SO-001"], since:"Jan 2023" },
+    { id:"P-004-3", name:"Goldman Sachs Intl",  type:"employer",   role:"Employer (PAYE)",   status:"active",  contact:"benefits@gs.com",            linkedProducts:["MTG-004"], since:"Sep 2015" },
+    { id:"P-004-4", name:"PWC LLP",             type:"accountant", role:"Tax Accountant",    status:"active",  contact:"chen.team@pwc.co.uk",        linkedProducts:["MTG-004"], since:"2018" },
+    { id:"P-004-5", name:"Bristol Housing Assoc", type:"housing_assoc", role:"Housing Association", status:"pending", contact:"shared.ownership@bristolha.org.uk", linkedProducts:["SO-001"], since:"Mar 2026" },
+    { id:"P-004-6", name:"Mei Chen",            type:"beneficiary",role:"Beneficiary (daughter)", status:"active", contact:"—",                       linkedProducts:["MTG-004","SAV-004","SAV-005"], since:"Jan 2023" },
+  ],
+  "CUS-005": [
+    { id:"P-005-1", name:"Watson & Partners",   type:"broker",     role:"Mortgage Broker",   status:"active",  contact:"hello@watsonpartners.co.uk", linkedProducts:["MTG-005"], since:"Nov 2021" },
+    { id:"P-005-2", name:"Smith & Smith",       type:"solicitor",  role:"Conveyancer",       status:"active",  contact:"info@smithlaw.co.uk",        linkedProducts:["MTG-005"], since:"Nov 2021" },
+    { id:"P-005-3", name:"Birmingham City Council", type:"employer", role:"Employer (PAYE)", status:"active",  contact:"payroll@birmingham.gov.uk",  linkedProducts:["MTG-005"], since:"Jun 2014" },
+    { id:"P-005-4", name:"Afin Protect",        type:"insurer",    role:"Insurance Provider",status:"active",  contact:"claims@afinprotect.co.uk",   linkedProducts:["INS-002"], since:"Nov 2025" },
+  ],
+  "CUS-006": [
+    { id:"P-006-1", name:"Direct",              type:"broker",     role:"Direct (no broker)",status:"inactive",contact:"—",                          linkedProducts:["MTG-006"], since:"—" },
+    { id:"P-006-2", name:"Phillips Solicitors", type:"solicitor",  role:"Conveyancer",       status:"inactive",contact:"info@phillipslaw.co.uk",     linkedProducts:["MTG-006"], since:"2023" },
+    { id:"P-006-3", name:"Yorkshire Logistics", type:"employer",   role:"Last Employer (redundant)", status:"concern", contact:"—",                 linkedProducts:["MTG-006"], since:"2020" },
+    { id:"P-006-4", name:"Internal Collections",type:"advocate",   role:"Collections Team",  status:"active",  contact:"collections@afin.co.uk",     linkedProducts:["MTG-006"], since:"Aug 2025" },
+  ],
+  "CUS-007": [
+    { id:"P-007-1", name:"Lucy Brennan",        type:"joint_applicant", role:"Joint Applicant", status:"active", contact:"lucy.b@gmail.com",        linkedProducts:["MTG-007","SAV-007"], since:"Jan 2026" },
+    { id:"P-007-2", name:"Apex Mortgages",      type:"broker",     role:"Mortgage Broker",   status:"active",  contact:"deals@apexmtg.co.uk",        linkedProducts:["MTG-007"], since:"Jan 2026" },
+    { id:"P-007-3", name:"To be appointed",     type:"solicitor",  role:"Conveyancer (TBA)", status:"pending", contact:"—",                          linkedProducts:["MTG-007"], since:"—" },
+    { id:"P-007-4", name:"University of Oxford",type:"employer",   role:"Employer Tom (PAYE)", status:"active", contact:"hr@ox.ac.uk",              linkedProducts:["MTG-007"], since:"Sep 2021" },
+    { id:"P-007-5", name:"Self-Employed",       type:"employer",   role:"Self-Employed Lucy",status:"pending", contact:"—",                          linkedProducts:["MTG-007"], since:"Jan 2024" },
+  ],
+  "CUS-008": [
+    { id:"P-008-1", name:"Direct",              type:"broker",     role:"Direct VIP",        status:"active",  contact:"vip@afin.co.uk",             linkedProducts:["MTG-008","SO-002"], since:"Sep 2021" },
+    { id:"P-008-2", name:"Edinburgh Legal",     type:"solicitor",  role:"Conveyancer",       status:"active",  contact:"maria@edinburghlegal.co.uk", linkedProducts:["MTG-008","SO-002"], since:"Sep 2021" },
+    { id:"P-008-3", name:"Self-Employed (consulting)", type:"employer", role:"Self-Employed", status:"active",  contact:"—",                         linkedProducts:["MTG-008"], since:"2018" },
+    { id:"P-008-4", name:"KPMG Edinburgh",      type:"accountant", role:"Accountant",        status:"active",  contact:"santos@kpmg.co.uk",          linkedProducts:["MTG-008"], since:"2019" },
+    { id:"P-008-5", name:"Edinburgh Housing Assoc", type:"housing_assoc", role:"Housing Association", status:"pending", contact:"so@edinburghha.org.uk", linkedProducts:["SO-002"], since:"Mar 2026" },
+    { id:"P-008-6", name:"Carlos Santos",       type:"beneficiary",role:"Beneficiary (husband)", status:"active", contact:"—",                       linkedProducts:["INS-003","MTG-008"], since:"Sep 2021" },
+  ],
+};
+
+// Party type colours and icons
+export const PARTY_TYPES = {
+  joint_applicant: { color:"#7C3AED", icon:"users",    label:"Joint Applicant" },
+  broker:          { color:"#0EA5E9", icon:"customers",label:"Broker" },
+  solicitor:       { color:"#059669", icon:"file",     label:"Solicitor" },
+  employer:        { color:"#F59E0B", icon:"products", label:"Employer" },
+  beneficiary:     { color:"#EC4899", icon:"shield",   label:"Beneficiary" },
+  advocate:        { color:"#DC2626", icon:"alert",    label:"Advocate" },
+  accountant:      { color:"#0D9488", icon:"chart",    label:"Accountant" },
+  next_of_kin:     { color:"#8B5CF6", icon:"users",    label:"Next of Kin" },
+  housing_assoc:   { color:"#6366F1", icon:"loans",    label:"Housing Assoc" },
+  insurer:         { color:"#EF4444", icon:"shield",   label:"Insurer" },
+};
+
 // AI next-best-actions per customer
 export const AI_ACTIONS = {
   "CUS-001": [
