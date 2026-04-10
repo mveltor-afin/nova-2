@@ -1,9 +1,142 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
 import OutcomeTracker from "../shared/OutcomeTracker";
+
+/* ─── Seed system events for the case conversation ─── */
+const SEED_THREAD = (caseId) => [
+  { id: 1, type: "system", body: "Case assigned to you", at: "2 days ago", author: "System" },
+  { id: 2, type: "system", body: "Income documents uploaded by broker (Watson & Partners)", at: "1 day ago", author: "System" },
+  { id: 3, type: "system", body: "AVM completed — £495,000 (87% confidence)", at: "22h ago", author: "System" },
+  { id: 4, type: "system", body: "Stress test passed at 7.49% — surplus £710/mo", at: "18h ago", author: "System" },
+  { id: 5, type: "system", body: "AI Risk Scorecard generated — overall 91/100", at: "16h ago", author: "System" },
+];
+
+const THREAD_TYPE_STYLES = {
+  system:   { bg: "#F1F5F9", color: "#475569", label: "System",   icon: "settings" },
+  note:     { bg: "#DBEAFE", color: "#1E40AF", label: "Note",     icon: "messages" },
+  question: { bg: "#FEF3C7", color: "#92400E", label: "Question", icon: "alert" },
+  decision: { bg: "#D1FAE5", color: "#065F46", label: "Decision", icon: "check" },
+  mention:  { bg: "#EDE9FE", color: "#5B21B6", label: "Mention",  icon: "users" },
+};
+
+/* ─── Case Conversation thread (persisted per case in localStorage) ─── */
+function CaseConversation({ caseId, onAddNote, draftDecision }) {
+  const storageKey = `uw-thread-${caseId}`;
+  const [entries, setEntries] = useState(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored ? JSON.parse(stored) : SEED_THREAD(caseId);
+    } catch { return SEED_THREAD(caseId); }
+  });
+  const [input, setInput] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify(entries)); } catch {}
+  }, [entries, storageKey]);
+
+  // Auto-post a system entry when a draft decision is selected
+  useEffect(() => {
+    if (!draftDecision) return;
+    const last = entries[entries.length - 1];
+    if (last && last.type === "decision" && last.body.includes(draftDecision)) return;
+    setEntries(prev => [...prev, {
+      id: Date.now(),
+      type: "decision",
+      body: `Decision drafted: ${draftDecision}`,
+      at: "just now",
+      author: "You",
+    }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftDecision]);
+
+  const submit = () => {
+    if (!input.trim()) return;
+    const isQuestion = input.trim().endsWith("?");
+    const hasMention = /@\w+/.test(input);
+    const type = hasMention ? "mention" : isQuestion ? "question" : "note";
+    setEntries(prev => [...prev, {
+      id: Date.now(),
+      type,
+      body: input.trim(),
+      at: "just now",
+      author: "You",
+    }]);
+    setInput("");
+    onAddNote?.();
+  };
+
+  return (
+    <Card style={{ marginTop: 24, padding: 0, overflow: "hidden" }}>
+      {/* Header */}
+      <div onClick={() => setCollapsed(c => !c)} style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "14px 20px", cursor: "pointer", borderBottom: collapsed ? "none" : `1px solid ${T.border}`,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {Ico.messages(18)}
+          <span style={{ fontSize: 14, fontWeight: 700 }}>Case Conversation</span>
+          <span style={{ fontSize: 12, color: T.textMuted }}>· {entries.length} entries</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span style={{ fontSize: 11, color: T.textMuted, fontWeight: 600 }}>Notes, system events and decisions — full audit trail</span>
+          <span style={{ color: T.textMuted, transform: collapsed ? "rotate(0)" : "rotate(90deg)", display: "flex", transition: "transform 0.15s" }}>{Ico.arrow(14)}</span>
+        </div>
+      </div>
+
+      {!collapsed && (
+        <div>
+          {/* Entries */}
+          <div style={{ padding: "16px 20px", maxHeight: 360, overflowY: "auto" }}>
+            {entries.map(e => {
+              const style = THREAD_TYPE_STYLES[e.type] || THREAD_TYPE_STYLES.note;
+              return (
+                <div key={e.id} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                    background: style.bg, color: style.color,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>{Ico[style.icon]?.(16)}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 4, background: style.bg, color: style.color, textTransform: "uppercase", letterSpacing: 0.4 }}>{style.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{e.author}</span>
+                      <span style={{ fontSize: 11, color: T.textMuted }}>· {e.at}</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: T.text, lineHeight: 1.5 }}>{e.body}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Input */}
+          <div style={{ padding: "12px 20px", borderTop: `1px solid ${T.borderLight}`, background: T.bg }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <textarea
+                value={input} onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
+                placeholder="Add a note, ask a question (?), or @mention a colleague…  ⌘+Enter to send"
+                rows={2}
+                style={{
+                  flex: 1, padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.border}`,
+                  fontSize: 13, fontFamily: T.font, background: T.card, color: T.text, outline: "none", resize: "vertical",
+                }}
+              />
+              <Btn primary onClick={submit} disabled={!input.trim()} icon="send">Add</Btn>
+            </div>
+            <div style={{ fontSize: 11, color: T.textMuted, marginTop: 6 }}>
+              Tip: end with <strong>?</strong> for a question, use <strong>@name</strong> to tag a colleague. Persisted per case.
+            </div>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 /* ─── Scorecard dimensions ─── */
 const SCORE_DIMS = [
@@ -86,7 +219,6 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
   const [activeScoreDim, setActiveScoreDim] = useState(null);
   const [decision, setDecision] = useState(null);
   const [reasonCode, setReasonCode] = useState("");
-  const [notes, setNotes] = useState("");
   const [conditions, setConditions] = useState(DEFAULT_CONDITIONS);
   const [customCondition, setCustomCondition] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -94,7 +226,6 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
   const aiRecommendation = "APPROVE";
   const isOverride = decision && decision !== "approve" && decision !== "approve_conditions";
   const needsReason = decision === "refer" || decision === "decline";
-  const canSubmit = decision && notes.trim() && (!needsReason || reasonCode);
 
   const handleSubmit = () => setShowSuccess(true);
 
@@ -147,11 +278,11 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
         <SquadPanel squad={loan.squad} />
       </div>
 
-      {/* ══════ TWO-COLUMN LAYOUT ══════ */}
-      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+      {/* ══════ EVIDENCE + DECISION RAIL ══════ */}
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
 
-        {/* ─── LEFT COLUMN (40%) ─── */}
-        <div style={{ flex: "0 0 38%", minWidth: 340, display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* ─── EVIDENCE COLUMN (left, scrollable) ─── */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 20 }}>
 
           {/* Card 1: Applicant Summary */}
           <Card>
@@ -286,12 +417,8 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
               </div>
             ))}
           </Card>
-        </div>
 
-        {/* ─── RIGHT COLUMN (60%) ─── */}
-        <div style={{ flex: 1, minWidth: 400, display: "flex", flexDirection: "column", gap: 20 }}>
-
-          {/* Card 5: AI Risk Scorecard */}
+          {/* AI Risk Scorecard — moved here from right column */}
           <Card>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
               {Ico.sparkle(18)}
@@ -302,7 +429,6 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
                 <ScoreBar key={d.key} dim={d} active={activeScoreDim === d.key} onClick={() => setActiveScoreDim(activeScoreDim === d.key ? null : d.key)} />
               ))}
             </div>
-            {/* Overall */}
             <div style={{
               marginTop: 16, padding: "14px 16px", borderRadius: 10,
               background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff",
@@ -312,7 +438,6 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
               <span style={{ fontSize: 22, fontWeight: 700 }}>91/100</span>
               <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 6, background: "rgba(255,255,255,0.2)" }}>Low Risk</span>
             </div>
-            {/* Dimension detail */}
             {activeScoreDim && (() => {
               const dim = SCORE_DIMS.find((d) => d.key === activeScoreDim);
               return (
@@ -325,160 +450,146 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
               );
             })()}
           </Card>
+        </div>
 
-          {/* Card 6: AI Recommendation */}
-          <Card style={{ background: T.successBg, borderColor: T.successBorder }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {Ico.bot(20)}
-                <span style={{ fontSize: 14, fontWeight: 700 }}>AI Recommendation</span>
-              </div>
+        {/* ─── DECISION RAIL (right, sticky) ─── */}
+        <div style={{ flex: "0 0 360px", position: "sticky", top: 16, alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 14 }}>
+
+          {/* AI Recommendation — compact at top of rail */}
+          <Card style={{ background: T.successBg, borderColor: T.successBorder, padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              {Ico.bot(16)}
+              <span style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>AI Recommendation</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-              <span style={{
-                fontSize: 28, fontWeight: 800, color: T.success, letterSpacing: 1,
-              }}>APPROVE</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: T.success, padding: "4px 12px", borderRadius: 6, background: "rgba(49,184,151,0.15)" }}>
-                92% confidence
-              </span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
+              <span style={{ fontSize: 24, fontWeight: 800, color: T.success, letterSpacing: 0.5 }}>{aiRecommendation}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.success, padding: "2px 8px", borderRadius: 4, background: "rgba(49,184,151,0.18)" }}>92% confidence</span>
             </div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 10 }}>Key Findings</div>
-            {FINDINGS.map((f, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, fontSize: 13, lineHeight: 1.5 }}>
-                <span style={{ marginTop: 2, flexShrink: 0 }}>
-                  {f.type === "green" ? Ico.check(14) : Ico.alert(14)}
-                </span>
-                <span style={{ color: f.type === "green" ? T.success : "#92400E" }}>{f.text}</span>
-              </div>
-            ))}
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Key findings</div>
+              {FINDINGS.map((f, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 5, fontSize: 12, lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, marginTop: 1, color: f.type === "green" ? T.success : T.warning }}>
+                    {f.type === "green" ? Ico.check(12) : Ico.alert(12)}
+                  </span>
+                  <span style={{ color: f.type === "green" ? T.success : "#92400E" }}>{f.text}</span>
+                </div>
+              ))}
+            </div>
           </Card>
 
-          {/* Card 7: Conditions */}
-          <Card>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              {Ico.file(18)}
-              <span style={{ fontSize: 14, fontWeight: 700 }}>Conditions</span>
-            </div>
-            {conditions.map((c) => (
-              <div key={c.id} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-                padding: "10px 14px", marginBottom: 8, borderRadius: 8, border: `1px solid ${T.borderLight}`,
-                background: c.accepted ? T.successBg : "#FFF",
-              }}>
-                <span style={{ fontSize: 13, flex: 1 }}>{c.text}</span>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <Btn small onClick={() => toggleCondition(c.id)} style={{
-                    background: c.accepted ? T.success : T.card, color: c.accepted ? "#fff" : T.text,
-                    border: c.accepted ? "none" : `1px solid ${T.border}`,
+          {/* Decision options */}
+          <Card style={{ padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Decision</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[
+                { key: "approve", label: "Approve", color: T.success, icon: "check" },
+                { key: "approve_conditions", label: "Approve with Conditions", color: T.warning, icon: "check" },
+                { key: "refer", label: "Refer to Senior", color: "#3B82F6", icon: "arrow" },
+                { key: "decline", label: "Decline", color: T.danger, icon: "x" },
+              ].map(d => {
+                const isSelected = decision === d.key;
+                return (
+                  <div key={d.key} onClick={() => setDecision(d.key)} style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "10px 12px", borderRadius: 8, cursor: "pointer", transition: "all .15s",
+                    border: `1.5px solid ${isSelected ? d.color : T.border}`,
+                    background: isSelected ? `${d.color}12` : T.card,
                   }}>
-                    {c.accepted ? "Accepted" : "Rejected"}
-                  </Btn>
+                    <span style={{ color: d.color, display: "flex" }}>{Ico[d.icon](14)}</span>
+                    <span style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500, color: isSelected ? d.color : T.text, flex: 1 }}>{d.label}</span>
+                    {isSelected && <span style={{ width: 8, height: 8, borderRadius: 4, background: d.color }} />}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Override warning */}
+            {isOverride && (
+              <div style={{
+                marginTop: 12, padding: "10px 12px", borderRadius: 8,
+                background: T.warningBg, border: `1px solid ${T.warningBorder}`,
+                fontSize: 11, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "flex-start", gap: 6,
+              }}>
+                <span style={{ flexShrink: 0, marginTop: 1 }}>{Ico.alert(13)}</span>
+                <span>Overriding AI recommendation of <strong>APPROVE</strong>. Add reasoning to the case conversation below.</span>
+              </div>
+            )}
+
+            {/* Contextual: Conditions (when Approve with Conditions) */}
+            {decision === "approve_conditions" && (
+              <div style={{ marginTop: 14, padding: "12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Conditions</div>
+                {conditions.map(c => (
+                  <div key={c.id} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+                    padding: "8px 10px", marginBottom: 6, borderRadius: 6, border: `1px solid ${T.borderLight}`,
+                    background: c.accepted ? T.successBg : T.card,
+                  }}>
+                    <span style={{ fontSize: 12, flex: 1, lineHeight: 1.4 }}>{c.text}</span>
+                    <button onClick={() => toggleCondition(c.id)} style={{
+                      fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 4, cursor: "pointer",
+                      background: c.accepted ? T.success : T.card, color: c.accepted ? "#fff" : T.textMuted,
+                      border: c.accepted ? "none" : `1px solid ${T.border}`,
+                    }}>{c.accepted ? "ACCEPTED" : "REJECTED"}</button>
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                  <input value={customCondition} onChange={e => setCustomCondition(e.target.value)}
+                    placeholder="Add condition..." onKeyDown={e => e.key === "Enter" && addCondition()}
+                    style={{ flex: 1, padding: "7px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, outline: "none" }} />
+                  <button onClick={addCondition} style={{ padding: "7px 10px", borderRadius: 6, background: T.primary, color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Add</button>
                 </div>
               </div>
-            ))}
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <input
-                value={customCondition} onChange={(e) => setCustomCondition(e.target.value)}
-                placeholder="Add custom condition..."
+            )}
+
+            {/* Contextual: Reason code (when Refer / Decline) */}
+            {needsReason && (
+              <div style={{ marginTop: 14, padding: "12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Reason Code <span style={{ color: T.danger }}>*</span></div>
+                <select value={reasonCode} onChange={e => setReasonCode(e.target.value)} style={{
+                  width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`,
+                  fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none",
+                }}>
+                  {REASON_CODES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                {decision === "decline" && (
+                  <textarea placeholder="Customer-facing decline message (optional)…" rows={2}
+                    style={{
+                      width: "100%", marginTop: 8, padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`,
+                      fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none", resize: "vertical", boxSizing: "border-box",
+                    }} />
+                )}
+              </div>
+            )}
+
+            {/* Submit + secondary actions */}
+            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+              <button onClick={handleSubmit} disabled={!decision || (needsReason && !reasonCode)}
                 style={{
-                  flex: 1, padding: "8px 12px", borderRadius: 8, border: `1px solid ${T.border}`,
-                  fontSize: 13, fontFamily: T.font, outline: "none",
-                }}
-                onKeyDown={(e) => e.key === "Enter" && addCondition()}
-              />
-              <Btn small primary onClick={addCondition}>{Ico.plus(14)} Add</Btn>
+                  padding: "12px 14px", borderRadius: 8, border: "none", cursor: decision ? "pointer" : "not-allowed",
+                  background: decision ? T.success : T.borderLight, color: decision ? "#fff" : T.textMuted,
+                  fontSize: 13, fontWeight: 700, fontFamily: T.font,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  boxShadow: decision ? "0 4px 12px rgba(49,184,151,0.25)" : "none", transition: "all .15s",
+                }}>
+                Submit Decision {Ico.arrow(14)}
+              </button>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: T.textSecondary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: T.font }}>Save Draft</button>
+                <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: T.textSecondary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: T.font }}>Place on Hold</button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <OutcomeTracker stage="Decision" customerId={activeLoan.id} action="Approve" />
             </div>
           </Card>
         </div>
       </div>
 
-      {/* ══════ DECISION ZONE (full width) ══════ */}
-      <Card style={{
-        marginTop: 28,
-        background: `linear-gradient(135deg, ${T.primaryDark}, ${T.primary})`,
-        border: "none", padding: 28,
-      }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 20 }}>Decision Zone</div>
-
-        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
-
-          {/* Left: Decision cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, minWidth: 320 }}>
-            {[
-              { key: "approve", label: "Approve", sub: "Standard approval within mandate", color: T.success, icon: "check" },
-              { key: "approve_conditions", label: "Approve with Conditions", sub: "Approval subject to conditions above", color: T.warning, icon: "check" },
-              { key: "refer", label: "Refer to Senior", sub: "Escalate for L2 review", color: "#3B82F6", icon: "arrow" },
-              { key: "decline", label: "Decline", sub: "Decline with recorded reason", color: T.danger, icon: "x" },
-            ].map((d) => (
-              <div key={d.key} onClick={() => setDecision(d.key)} style={{
-                padding: "16px 14px", borderRadius: 10, cursor: "pointer", transition: "all .15s",
-                border: `2px solid ${decision === d.key ? d.color : "rgba(255,255,255,0.2)"}`,
-                background: decision === d.key ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.04)",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <span style={{ color: d.color }}>{Ico[d.icon](16)}</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{d.label}</span>
-                </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.65)" }}>{d.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Middle: Reason code (if refer/decline) */}
-          {needsReason && (
-            <div style={{ minWidth: 240, flex: "0 0 220px" }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: 6 }}>Reason Code *</label>
-              <select value={reasonCode} onChange={(e) => setReasonCode(e.target.value)} style={{
-                width: "100%", padding: "10px 12px", borderRadius: 9, border: `1px solid rgba(255,255,255,0.3)`,
-                fontSize: 13, fontFamily: T.font, color: T.text, background: "#fff", outline: "none",
-              }}>
-                {REASON_CODES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-          )}
-
-          {/* Right: Notes + submit */}
-          <div style={{ flex: 1, minWidth: 280 }}>
-            {/* Override warning */}
-            {isOverride && (
-              <div style={{
-                padding: "10px 14px", borderRadius: 8, marginBottom: 12,
-                background: T.warningBg, border: `1px solid ${T.warningBorder}`,
-                fontSize: 12, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "center", gap: 6,
-              }}>
-                {Ico.alert(14)} You are overriding the AI recommendation of APPROVE. Override reason is mandatory.
-              </div>
-            )}
-
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: 6 }}>
-              Decision Notes {decision && <span style={{ color: T.danger }}>*</span>}
-            </label>
-            <textarea
-              value={notes} onChange={(e) => setNotes(e.target.value)}
-              placeholder="Record your reasoning for audit trail..."
-              rows={3}
-              style={{
-                width: "100%", padding: "10px 12px", borderRadius: 9, border: `1px solid rgba(255,255,255,0.3)`,
-                fontSize: 13, fontFamily: T.font, color: T.text, outline: "none", resize: "vertical", boxSizing: "border-box",
-              }}
-            />
-
-            <div style={{ marginTop: 14 }}>
-              <OutcomeTracker stage="Decision" customerId={activeLoan.id} action="Approve" />
-            </div>
-
-            <div style={{ marginTop: 14 }}>
-              <Btn primary disabled={!canSubmit} onClick={handleSubmit} style={{
-                padding: "12px 28px", fontSize: 14,
-                background: canSubmit ? T.success : "rgba(255,255,255,0.15)",
-                boxShadow: canSubmit ? `0 4px 16px rgba(49,184,151,0.3)` : "none",
-              }}>
-                Submit Decision {Ico.arrow(16)}
-              </Btn>
-            </div>
-          </div>
-        </div>
-      </Card>
+      {/* ══════ CASE CONVERSATION (collapsible thread) ══════ */}
+      <CaseConversation caseId={activeLoan.id} draftDecision={decision} />
 
       {/* ══════ SUCCESS MODAL ══════ */}
       {showSuccess && (
@@ -496,7 +607,7 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
                 {decision === "approve" ? "Approved" : decision === "approve_conditions" ? "Approved with Conditions" : decision === "refer" ? "Referred to Senior" : "Declined"}
               </b>.<br />Audit trail updated.
             </p>
-            <Btn primary onClick={() => { setShowSuccess(false); onDecisionMade?.({ decision, notes, reasonCode }); }}>
+            <Btn primary onClick={() => { setShowSuccess(false); onDecisionMade?.({ decision, reasonCode }); }}>
               {Ico.check(16)} Done
             </Btn>
           </Card>
