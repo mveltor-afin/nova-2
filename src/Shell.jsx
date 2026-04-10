@@ -684,10 +684,7 @@ export default function Shell({ userType }) {
     }
   };
 
-  // Full-screen modes (wizard / case detail)
-  if (mode === "wizard") {
-    return <LoanWizard onCancel={() => setMode("shell")} onComplete={() => setMode("shell")} />;
-  }
+  // Full-screen mode for case detail only (wizard is now a modal — see below)
   if (mode === "casedetail" && selectedLoan) {
     return (
       <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
@@ -799,6 +796,35 @@ export default function Shell({ userType }) {
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
       <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.6.0"); }} />
       <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
+
+      {/* ─── Loan Wizard Modal ─── */}
+      {mode === "wizard" && (
+        <div style={{ position:"fixed", inset:0, zIndex:300, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div onClick={() => setMode("shell")} style={{ position:"absolute", inset:0, background:"rgba(12,45,59,0.55)", backdropFilter:"blur(6px)" }} />
+          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"94vw", maxWidth:1200, height:"92vh", maxHeight:900,
+            boxShadow:"0 20px 80px rgba(0,0,0,0.3)", border:`1px solid ${T.border}`, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            {/* Modal header */}
+            <div style={{ padding:"16px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:`linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color:"#fff" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {Ico.plus(20)}
+                </div>
+                <div>
+                  <div style={{ fontSize:16, fontWeight:700 }}>Create New Loan</div>
+                  <div style={{ fontSize:12, opacity:0.8 }}>Application wizard — your work is auto-saved</div>
+                </div>
+              </div>
+              <div onClick={() => setMode("shell")} style={{ width:34, height:34, borderRadius:8, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                {Ico.x(18)}
+              </div>
+            </div>
+            {/* Wizard content */}
+            <div style={{ flex:1, overflow:"auto", background:T.bg }}>
+              <LoanWizard onCancel={() => setMode("shell")} onComplete={() => setMode("shell")} />
+            </div>
+          </div>
+        </div>
+      )}
       {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
     </div>
   );
