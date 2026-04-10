@@ -2,6 +2,182 @@ import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 
+// ─────────────────────────────────────────────
+// PRODUCT TYPE CATALOGUE — drives the new product wizard
+// ─────────────────────────────────────────────
+const PRODUCT_TYPE_GROUPS = {
+  "Lending": [
+    "Fixed Rate Mortgage",
+    "Tracker Mortgage",
+    "Discount Mortgage",
+    "Buy-to-Let Mortgage",
+    "Shared Ownership Mortgage",
+  ],
+  "Savings": [
+    "Easy Access Savings",
+    "Notice Account",
+    "Fixed Term Deposit",
+    "Cash ISA",
+    "Regular Saver",
+  ],
+  "Banking": [
+    "Current Account",
+  ],
+  "Insurance": [
+    "Life Insurance",
+    "Buildings & Contents",
+  ],
+};
+
+// Field definitions per product type. Each field: { name, label, type, options?, suffix?, placeholder? }
+const PRODUCT_TYPE_FIELDS = {
+  // ─── Lending ───
+  "Fixed Rate Mortgage": [
+    { name: "rate", label: "Initial Rate", type: "number", suffix: "%", placeholder: "4.49" },
+    { name: "fixedTerm", label: "Fixed Period", type: "select", options: ["2 years","3 years","5 years","7 years","10 years"] },
+    { name: "revertRate", label: "Reversion Rate (SVR)", type: "number", suffix: "%", placeholder: "7.99" },
+    { name: "maxLTV", label: "Max LTV", type: "number", suffix: "%", placeholder: "75" },
+    { name: "minLoan", label: "Min Loan", type: "number", suffix: "£", placeholder: "50000" },
+    { name: "maxLoan", label: "Max Loan", type: "number", suffix: "£", placeholder: "1500000" },
+    { name: "minTerm", label: "Min Term (years)", type: "number", placeholder: "5" },
+    { name: "maxTerm", label: "Max Term (years)", type: "number", placeholder: "35" },
+    { name: "erc", label: "ERC Schedule", type: "text", placeholder: "5/4/3/2/1%" },
+    { name: "arrangementFee", label: "Arrangement Fee", type: "number", suffix: "£", placeholder: "999" },
+    { name: "valuationFee", label: "Valuation Fee", type: "number", suffix: "£", placeholder: "250" },
+    { name: "overpayments", label: "Overpayments Allowed", type: "select", options: ["10% pa","20% pa","Unlimited","None"] },
+    { name: "portable", label: "Portable", type: "toggle" },
+  ],
+  "Tracker Mortgage": [
+    { name: "rate", label: "Margin over Base", type: "number", suffix: "%", placeholder: "0.99" },
+    { name: "trackPeriod", label: "Tracker Period", type: "select", options: ["2 years","Lifetime"] },
+    { name: "maxLTV", label: "Max LTV", type: "number", suffix: "%", placeholder: "75" },
+    { name: "minLoan", label: "Min Loan", type: "number", suffix: "£" },
+    { name: "maxLoan", label: "Max Loan", type: "number", suffix: "£" },
+    { name: "minTerm", label: "Min Term (years)", type: "number" },
+    { name: "maxTerm", label: "Max Term (years)", type: "number" },
+    { name: "erc", label: "ERC Schedule", type: "text", placeholder: "None" },
+    { name: "arrangementFee", label: "Arrangement Fee", type: "number", suffix: "£" },
+    { name: "overpayments", label: "Overpayments Allowed", type: "select", options: ["Unlimited","10% pa","None"] },
+  ],
+  "Discount Mortgage": [
+    { name: "rate", label: "Discount off SVR", type: "number", suffix: "%", placeholder: "1.50" },
+    { name: "period", label: "Discount Period", type: "select", options: ["2 years","3 years","5 years"] },
+    { name: "maxLTV", label: "Max LTV", type: "number", suffix: "%" },
+    { name: "minLoan", label: "Min Loan", type: "number", suffix: "£" },
+    { name: "maxLoan", label: "Max Loan", type: "number", suffix: "£" },
+    { name: "erc", label: "ERC Schedule", type: "text" },
+  ],
+  "Buy-to-Let Mortgage": [
+    { name: "rate", label: "Initial Rate", type: "number", suffix: "%" },
+    { name: "rateType", label: "Rate Type", type: "select", options: ["Fixed","Tracker"] },
+    { name: "maxLTV", label: "Max LTV", type: "number", suffix: "%", placeholder: "75" },
+    { name: "minRental", label: "Min Rental Cover (ICR)", type: "number", suffix: "%", placeholder: "145" },
+    { name: "stressRate", label: "Stress Rate", type: "number", suffix: "%", placeholder: "5.50" },
+    { name: "portfolioLandlord", label: "Portfolio Landlords", type: "toggle" },
+    { name: "minLoan", label: "Min Loan", type: "number", suffix: "£" },
+    { name: "maxLoan", label: "Max Loan", type: "number", suffix: "£" },
+    { name: "erc", label: "ERC Schedule", type: "text" },
+  ],
+  "Shared Ownership Mortgage": [
+    { name: "rate", label: "Initial Rate", type: "number", suffix: "%" },
+    { name: "minShare", label: "Min Share", type: "number", suffix: "%", placeholder: "25" },
+    { name: "maxShare", label: "Max Share", type: "number", suffix: "%", placeholder: "75" },
+    { name: "maxLTVOnShare", label: "Max LTV (on share)", type: "number", suffix: "%", placeholder: "95" },
+    { name: "staircaseAllowed", label: "Staircasing Allowed", type: "toggle" },
+    { name: "rentInclusion", label: "Rent in Affordability", type: "toggle" },
+  ],
+  // ─── Savings ───
+  "Easy Access Savings": [
+    { name: "rate", label: "Headline AER", type: "number", suffix: "%", placeholder: "4.10" },
+    { name: "minDeposit", label: "Min Opening Deposit", type: "number", suffix: "£", placeholder: "1" },
+    { name: "maxDeposit", label: "Max Balance", type: "number", suffix: "£", placeholder: "500000" },
+    { name: "interestPaid", label: "Interest Paid", type: "select", options: ["Monthly","Annually","On closure"] },
+    { name: "withdrawalsPerYear", label: "Free Withdrawals / yr", type: "number", placeholder: "Unlimited" },
+    { name: "tieredRates", label: "Tiered Rates", type: "toggle" },
+    { name: "fscsCovered", label: "FSCS Covered (£85k)", type: "toggle" },
+  ],
+  "Notice Account": [
+    { name: "noticePeriodDays", label: "Notice Period (days)", type: "number", placeholder: "90" },
+    { name: "rate", label: "AER Gross", type: "number", suffix: "%", placeholder: "4.65" },
+    { name: "minDeposit", label: "Min Deposit", type: "number", suffix: "£", placeholder: "1000" },
+    { name: "maxDeposit", label: "Max Balance", type: "number", suffix: "£", placeholder: "1000000" },
+    { name: "additionalDepositsAllowed", label: "Additional Deposits", type: "toggle" },
+    { name: "partialWithdrawals", label: "Partial Withdrawals on Notice", type: "toggle" },
+    { name: "earlyAccessPenalty", label: "Early Access Penalty", type: "text", placeholder: "Loss of interest equivalent to notice period" },
+    { name: "interestPaid", label: "Interest Paid", type: "select", options: ["Monthly","Annually","On Maturity"] },
+    { name: "fscsCovered", label: "FSCS Covered", type: "toggle" },
+  ],
+  "Fixed Term Deposit": [
+    { name: "termMonths", label: "Term (months)", type: "number", placeholder: "12" },
+    { name: "rate", label: "AER Gross", type: "number", suffix: "%", placeholder: "4.85" },
+    { name: "minDeposit", label: "Min Deposit", type: "number", suffix: "£", placeholder: "5000" },
+    { name: "maxDeposit", label: "Max Deposit", type: "number", suffix: "£", placeholder: "500000" },
+    { name: "interestPaid", label: "Interest Paid", type: "select", options: ["Monthly","Annually","At Maturity"] },
+    { name: "earlyWithdrawal", label: "Early Withdrawal Allowed", type: "toggle" },
+    { name: "earlyWithdrawalPenalty", label: "Early Withdrawal Penalty", type: "text", placeholder: "180 days interest" },
+    { name: "rolloverPolicy", label: "Maturity Rollover", type: "select", options: ["Auto-renew same term","Pay to nominated account","Customer choice"] },
+    { name: "fscsCovered", label: "FSCS Covered", type: "toggle" },
+  ],
+  "Cash ISA": [
+    { name: "isaType", label: "ISA Type", type: "select", options: ["Easy Access","Fixed Rate","Lifetime"] },
+    { name: "rate", label: "AER Gross", type: "number", suffix: "%" },
+    { name: "minDeposit", label: "Min Deposit", type: "number", suffix: "£" },
+    { name: "annualAllowance", label: "Annual Allowance", type: "number", suffix: "£", placeholder: "20000" },
+    { name: "transfersIn", label: "Transfers In Allowed", type: "toggle" },
+    { name: "flexibleISA", label: "Flexible ISA", type: "toggle" },
+  ],
+  "Regular Saver": [
+    { name: "rate", label: "AER Gross", type: "number", suffix: "%" },
+    { name: "minMonthlyDeposit", label: "Min Monthly Deposit", type: "number", suffix: "£" },
+    { name: "maxMonthlyDeposit", label: "Max Monthly Deposit", type: "number", suffix: "£" },
+    { name: "termMonths", label: "Term (months)", type: "number", placeholder: "12" },
+    { name: "missedDepositsAllowed", label: "Missed Deposits Allowed", type: "toggle" },
+  ],
+  // ─── Banking ───
+  "Current Account": [
+    { name: "monthlyFee", label: "Monthly Fee", type: "number", suffix: "£", placeholder: "0" },
+    { name: "overdraftLimit", label: "Arranged Overdraft", type: "number", suffix: "£" },
+    { name: "overdraftRate", label: "Overdraft EAR", type: "number", suffix: "%" },
+    { name: "interestOnCredit", label: "Interest on Credit Balance", type: "number", suffix: "%" },
+    { name: "switchingIncentive", label: "Switching Incentive", type: "number", suffix: "£" },
+    { name: "rewards", label: "Rewards / Cashback", type: "text" },
+    { name: "internationalUse", label: "Free International Use", type: "toggle" },
+  ],
+  // ─── Insurance ───
+  "Life Insurance": [
+    { name: "coverType", label: "Cover Type", type: "select", options: ["Level Term","Decreasing Term","Whole of Life"] },
+    { name: "minSum", label: "Min Sum Assured", type: "number", suffix: "£" },
+    { name: "maxSum", label: "Max Sum Assured", type: "number", suffix: "£" },
+    { name: "minTerm", label: "Min Term (years)", type: "number" },
+    { name: "maxTerm", label: "Max Term (years)", type: "number" },
+    { name: "underwriter", label: "Underwriter / Provider", type: "text" },
+    { name: "criticalIllnessOption", label: "Critical Illness Add-on", type: "toggle" },
+  ],
+  "Buildings & Contents": [
+    { name: "coverType", label: "Cover Type", type: "select", options: ["Buildings","Contents","Combined"] },
+    { name: "buildingsLimit", label: "Buildings Limit", type: "number", suffix: "£" },
+    { name: "contentsLimit", label: "Contents Limit", type: "number", suffix: "£" },
+    { name: "excess", label: "Standard Excess", type: "number", suffix: "£" },
+    { name: "underwriter", label: "Underwriter / Provider", type: "text" },
+  ],
+};
+
+// Common fields shown for every product
+const COMMON_FIELDS = [
+  { name: "code", label: "Product Code", type: "text", placeholder: "AFN-MTG-FX2-75" },
+  { name: "eligibility", label: "Eligibility", type: "select", options: ["All","Professional only","HNW only","Existing customers","BTL only","Joint only"] },
+  { name: "channel", label: "Distribution Channel", type: "select", options: ["Direct + Broker","Broker only","Direct only","Internal only"] },
+  { name: "status", label: "Status", type: "select", options: ["Draft","Active","Withdrawn"] },
+];
+
+const COMPLIANCE_FIELDS = [
+  { name: "targetMarket", label: "Target Market", type: "text", placeholder: "e.g. First-time buyers, employed, 25–45" },
+  { name: "fairValueRating", label: "Fair Value Rating", type: "select", options: ["Excellent","Good","Acceptable","Needs Review"] },
+  { name: "vulnerableSuitable", label: "Suitable for Vulnerable Customers", type: "toggle" },
+  { name: "consumerDutyOutcome", label: "Consumer Duty Outcome", type: "select", options: ["Products & Services","Price & Value","Consumer Understanding","Consumer Support"] },
+  { name: "kfiTemplate", label: "KFI Template", type: "select", options: ["Standard","Lending","Savings","Insurance"] },
+];
+
 const LENDING = [
   { id: 1, name: "Afin Fix 2yr 75%", type: "Lending", rate: "4.49%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active" },
   { id: 2, name: "Afin Fix 5yr 75%", type: "Lending", rate: "4.89%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "All", status: "Active" },
@@ -41,11 +217,201 @@ const statusBadge = (status) => {
 const thStyle = { textAlign: "left", padding: "10px 14px", fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${T.border}` };
 const tdStyle = { padding: "12px 14px", fontSize: 13, color: T.text, borderBottom: `1px solid ${T.borderLight}` };
 
+// ─────────────────────────────────────────────
+// Product Wizard — adapts to product type
+// ─────────────────────────────────────────────
+function ProductWizard({ onClose }) {
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("Lending");
+  const [productType, setProductType] = useState("Fixed Rate Mortgage");
+  const [params, setParams] = useState({});
+  const [common, setCommon] = useState({ status: "Draft", channel: "Direct + Broker", eligibility: "All", code: "" });
+  const [compliance, setCompliance] = useState({ fairValueRating: "Good", consumerDutyOutcome: "Price & Value", kfiTemplate: "Standard" });
+
+  const typeFields = PRODUCT_TYPE_FIELDS[productType] || [];
+  const availableTypes = PRODUCT_TYPE_GROUPS[category] || [];
+
+  const setParam = (k, v) => setParams(prev => ({ ...prev, [k]: v }));
+
+  const renderField = (f, value, onChange) => {
+    if (f.type === "toggle") {
+      return (
+        <div onClick={() => onChange(f.name, !value)} style={{
+          display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
+          padding: "8px 12px", borderRadius: 8, background: value ? T.successBg : T.bg,
+          border: `1px solid ${value ? T.successBorder : T.border}`,
+        }}>
+          <div style={{ width: 32, height: 18, borderRadius: 9, background: value ? T.success : T.border, position: "relative", transition: "background 0.15s" }}>
+            <div style={{ position: "absolute", top: 2, left: value ? 16 : 2, width: 14, height: 14, borderRadius: 7, background: "#fff", transition: "left 0.15s" }} />
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 600, color: value ? T.success : T.textMuted }}>{value ? "Yes" : "No"}</span>
+        </div>
+      );
+    }
+    if (f.type === "select") {
+      return (
+        <select value={value || ""} onChange={e => onChange(f.name, e.target.value)} style={{
+          width: "100%", padding: "9px 12px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13,
+          fontFamily: T.font, background: T.card, color: T.text, outline: "none",
+        }}>
+          <option value="">Select…</option>
+          {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    return (
+      <div style={{ position: "relative" }}>
+        {f.suffix && <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: T.textMuted, fontWeight: 600, pointerEvents: "none" }}>
+          {f.suffix === "£" ? "£" : ""}
+        </span>}
+        <input type={f.type === "number" ? "number" : "text"}
+          value={value || ""} placeholder={f.placeholder || ""}
+          onChange={e => onChange(f.name, e.target.value)}
+          style={{
+            width: "100%", padding: f.suffix === "£" ? "9px 12px 9px 24px" : "9px 12px",
+            border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13,
+            fontFamily: T.font, background: T.card, color: T.text, outline: "none",
+          }} />
+        {f.suffix && f.suffix !== "£" && <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: T.textMuted, fontWeight: 600, pointerEvents: "none" }}>
+          {f.suffix}
+        </span>}
+      </div>
+    );
+  };
+
+  const Field = ({ label, children }) => (
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>{label}</div>
+      {children}
+    </div>
+  );
+
+  const StepBar = () => (
+    <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: `1px solid ${T.border}` }}>
+      {[
+        { n: 1, label: "Basics" },
+        { n: 2, label: "Product Parameters" },
+        { n: 3, label: "Compliance & Disclosures" },
+      ].map((s, i) => (
+        <div key={s.n} onClick={() => setStep(s.n)} style={{
+          flex: 1, padding: "12px 16px", textAlign: "center", cursor: "pointer", fontSize: 12, fontWeight: 600,
+          color: step === s.n ? T.primary : T.textMuted,
+          borderBottom: `2.5px solid ${step === s.n ? T.primary : "transparent"}`, marginBottom: -1,
+        }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 22, height: 22, borderRadius: 11, marginRight: 8,
+            background: step >= s.n ? T.primary : T.borderLight, color: step >= s.n ? "#fff" : T.textMuted,
+            fontSize: 11, fontWeight: 800,
+          }}>{s.n}</span>
+          {s.label}
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
+      <div style={{ background: T.card, borderRadius: 18, width: 760, maxWidth: "94vw", maxHeight: "92vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.3)" }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ padding: "22px 28px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0, color: T.text }}>Create New Product</h2>
+            <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0" }}>Define a new product across the catalogue. Parameters adapt to the type you select.</p>
+          </div>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: T.textMuted }}>{Ico.x(20)}</button>
+        </div>
+
+        <div style={{ padding: "20px 28px 0", flex: 1, overflowY: "auto" }}>
+          <StepBar />
+
+          {/* STEP 1 */}
+          {step === 1 && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Field label="Product Name">
+                  <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Afin Fix 5yr 75% LTV"
+                    style={{ width: "100%", padding: "10px 14px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 14, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }} />
+                </Field>
+              </div>
+              <Field label="Category">
+                <select value={category} onChange={e => { setCategory(e.target.value); setProductType(PRODUCT_TYPE_GROUPS[e.target.value][0]); setParams({}); }}
+                  style={{ width: "100%", padding: "9px 12px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.card, color: T.text }}>
+                  {Object.keys(PRODUCT_TYPE_GROUPS).map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </Field>
+              <Field label="Product Type">
+                <select value={productType} onChange={e => { setProductType(e.target.value); setParams({}); }}
+                  style={{ width: "100%", padding: "9px 12px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.card, color: T.text }}>
+                  {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </Field>
+              {COMMON_FIELDS.map(f => (
+                <Field key={f.name} label={f.label}>
+                  {renderField(f, common[f.name], (k, v) => setCommon(prev => ({ ...prev, [k]: v })))}
+                </Field>
+              ))}
+            </div>
+          )}
+
+          {/* STEP 2 — type-aware parameters */}
+          {step === 2 && (
+            <div>
+              <div style={{ padding: "10px 14px", background: T.primaryLight, borderRadius: 8, marginBottom: 18, fontSize: 12, color: T.primary, fontWeight: 600 }}>
+                {Ico.sparkle(14)} <span style={{ marginLeft: 6 }}>Showing parameters for <strong>{productType}</strong>. Fields adapt based on the product type chosen on the previous step.</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                {typeFields.map(f => (
+                  <Field key={f.name} label={f.label}>
+                    {renderField(f, params[f.name], setParam)}
+                  </Field>
+                ))}
+              </div>
+              {typeFields.length === 0 && (
+                <div style={{ padding: 24, textAlign: "center", color: T.textMuted, fontSize: 13 }}>No parameters defined for this product type.</div>
+              )}
+            </div>
+          )}
+
+          {/* STEP 3 — compliance */}
+          {step === 3 && (
+            <div>
+              <div style={{ padding: "10px 14px", background: T.warningBg, border: `1px solid ${T.warningBorder}`, borderRadius: 8, marginBottom: 18, fontSize: 12, color: "#92400E", fontWeight: 600 }}>
+                {Ico.shield(14)} <span style={{ marginLeft: 6 }}>FCA Consumer Duty requires every product to have a defined target market, fair value assessment and outcome mapping.</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                {COMPLIANCE_FIELDS.map(f => (
+                  <Field key={f.name} label={f.label}>
+                    {renderField(f, compliance[f.name], (k, v) => setCompliance(prev => ({ ...prev, [k]: v })))}
+                  </Field>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "16px 28px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.bg }}>
+          <div style={{ fontSize: 12, color: T.textMuted }}>Step {step} of 3</div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {step > 1 && <Btn onClick={() => setStep(step - 1)}>Back</Btn>}
+            {step < 3 && <Btn primary onClick={() => setStep(step + 1)}>Continue</Btn>}
+            {step === 3 && <>
+              <Btn onClick={onClose}>Save as Draft</Btn>
+              <Btn primary onClick={onClose}>Publish Product</Btn>
+            </>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProductCatalogue() {
   const [filter, setFilter] = useState("All");
   const [expanded, setExpanded] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: "", type: "Lending", rate: "", status: "Active" });
 
   const filters = ["All", "Lending", "Savings", "Insurance", "Archived"];
   const shown = filter === "All" ? ALL_PRODUCTS : filter === "Archived" ? [] : ALL_PRODUCTS.filter(p => p.type === filter);
@@ -185,22 +551,8 @@ function ProductCatalogue() {
         </div>
       </Card>
 
-      {/* Create Product Modal */}
-      {showModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={() => setShowModal(false)}>
-          <div style={{ background: T.card, borderRadius: 16, padding: 32, width: 480, maxWidth: "90vw", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 20px", color: T.text }}>Create New Product</h2>
-            <Input label="Product Name" value={newProduct.name} onChange={v => setNewProduct({ ...newProduct, name: v })} placeholder="e.g. Afin Fix 10yr 75%" required />
-            <Select label="Product Type" value={newProduct.type} onChange={v => setNewProduct({ ...newProduct, type: v })} options={["Lending", "Savings", "Insurance"]} required />
-            <Input label="Rate" value={newProduct.rate} onChange={v => setNewProduct({ ...newProduct, rate: v })} placeholder="e.g. 4.75%" suffix="%" required />
-            <Select label="Status" value={newProduct.status} onChange={v => setNewProduct({ ...newProduct, status: v })} options={["Active", "Draft", "Archived"]} />
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
-              <Btn onClick={() => setShowModal(false)}>Cancel</Btn>
-              <Btn primary onClick={() => setShowModal(false)}>Create Product</Btn>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Create Product Wizard */}
+      {showModal && <ProductWizard onClose={() => setShowModal(false)} />}
     </div>
   );
 }

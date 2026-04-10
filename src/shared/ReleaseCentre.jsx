@@ -7,6 +7,18 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.13.0",
+    date: "10 Apr 2026",
+    title: "Per-Persona Releases · Product Wizard · Customer Hub Filtering",
+    items: [
+      { type: "New", text: "Release Centre is now persona-aware — every role sees only releases relevant to their day-to-day work" },
+      { type: "New", text: "Powerful Product Wizard in Admin > Product Catalogue — three-step flow with type-aware parameters for mortgages, notice accounts, fixed term deposits, ISAs, current accounts and insurance" },
+      { type: "New", text: "Compliance step on product creation — target market, fair value rating, Consumer Duty outcome mapping" },
+      { type: "Improved", text: "Customer Hub: clicking a product now scopes Timeline, Documents, Communications and Integrations to that product only" },
+      { type: "Improved", text: "Per-product filter pill on customer detail tabs — clear filter to return to all-product view" },
+    ]
+  },
+  {
     version: "2.12.0",
     date: "10 Apr 2026",
     title: "AI Income Predictor for Underwriters",
@@ -162,11 +174,31 @@ const typeForFilter = { "New Features": "New", "Improvements": "Improved", "Bug 
 // ─────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────
-const BROKER_KEYWORDS = ["smart apply","eligibility","commission","dashboard","pipeline","portal","mobile","squad","dip","broker","application"];
+// Per-persona relevance filter — each role sees what matters to their day-to-day.
+// SHARED items (cross-cutting platform improvements) are visible to everyone.
+const SHARED_KEYWORDS = [
+  "navigation","help centre","release centre","toast","session","autosave",
+  "mobile","instant","ux","layout","kpi","theme","onboarding","persona",
+  "error boundary","responsive","performance","ai summaries","activity ribbon",
+  "tips","wizard","modal","breadcrumb","journey",
+];
+
+const PERSONA_KEYWORDS = {
+  Broker: ["smart apply","eligibility","commission","broker","dip","application","pipeline","portal","prospect","scenario","scorecard"],
+  BDM: ["bdm","enquiry","broker","pipeline","leaderboard","scorecard","funnel","meeting","focus","squad","prospect","conversion"],
+  Underwriter: ["underwriter","uw","policy","income","verification","comparison","workstation","queue","approval","case","predictor","stress","decision","risk","needs attention"],
+  "Risk Analyst": ["risk","stress","compliance","consumer duty","fair value","vulnerability","outcome","monitoring","duty","fca","scorecard"],
+  Finance: ["disbursement","commission","reconcil","payment","accounting","reporting","report","mi","stress","pricing"],
+  Ops: ["servicing","payment","arrears","direct debit","case","needs attention","kyc","intake","customer care","squad","parties"],
+  "Customer Care": ["servicing","customer","squad","kyc","comm","communication","payment","needs attention","care"],
+  Admin: null, // null = see everything
+};
 
 const filterForPersona = (items, persona) => {
-  if (persona !== "Broker") return items;
-  return items.filter(item => BROKER_KEYWORDS.some(kw => item.text.toLowerCase().includes(kw)));
+  const personaKeywords = PERSONA_KEYWORDS[persona];
+  if (personaKeywords === null || personaKeywords === undefined) return items;
+  const allowed = [...personaKeywords, ...SHARED_KEYWORDS];
+  return items.filter(item => allowed.some(kw => item.text.toLowerCase().includes(kw)));
 };
 
 export default function ReleaseCentre({ persona }) {

@@ -124,6 +124,26 @@ function buildComms(customer) {
 const CHANNEL_COLORS = { Email: "#3B82F6", SMS: "#31B897", Call: "#8B5CF6", Push: "#F59E0B", System: "#6B7280" };
 const TABS = ["Products", "Timeline", "Documents", "Communications", "Integrations", "Risk & Vulnerability", "Gamification"];
 
+// Maps a product type → loose "comm category" used in mock comms data
+const TYPE_TO_COMM_CATEGORY = {
+  "Mortgage": "Mortgage",
+  "Shared Ownership": "Mortgage",
+  "Fixed Term Deposit": "Savings",
+  "Notice Account": "Savings",
+  "Current Account": "Banking",
+  "Insurance": "Insurance",
+};
+
+// Which integrations are relevant per product type
+const INTEGRATIONS_BY_TYPE = {
+  "Mortgage": ["Open Banking","Credit Bureau","Land Registry","HMRC","E-Signature"],
+  "Shared Ownership": ["Open Banking","Credit Bureau","Land Registry","HMRC","E-Signature"],
+  "Fixed Term Deposit": ["Open Banking","KYC","HMRC"],
+  "Notice Account": ["Open Banking","KYC","HMRC"],
+  "Current Account": ["Open Banking","KYC","HMRC"],
+  "Insurance": ["KYC","E-Signature"],
+};
+
 // ═════════════════════════════════════════════════════════════════
 // CUSTOMER HUB
 // ═════════════════════════════════════════════════════════════════
@@ -148,6 +168,31 @@ export default function CustomerHub({ customerId, onBack }) {
   const timeline = buildTimeline(customer, activeProducts);
   const documents = buildDocuments(customer, activeProducts);
   const comms = buildComms(customer);
+
+  // ─── Product-scoped filtering ──────────────────────────────
+  // When a product card is selected, the Timeline / Documents / Comms /
+  // Integrations tabs filter to only items relevant to that product.
+  const selectedProductObj = selectedProduct ? PRODUCTS.find(p => p.id === selectedProduct) : null;
+  const selectedType = selectedProductObj?.type || null;
+  const selectedCommCat = selectedType ? TYPE_TO_COMM_CATEGORY[selectedType] : null;
+
+  const filterTimelineByProduct = (events) => {
+    if (!selectedProductObj) return events;
+    return events.filter(e =>
+      (e.productId && e.productId === selectedProduct) ||
+      e.product === selectedType ||
+      e.product === selectedCommCat
+    );
+  };
+  const filterDocsByProduct = (docs) => {
+    if (!selectedProductObj) return docs;
+    return docs.filter(d => d.product === selectedType || d.category === selectedCommCat);
+  };
+  const filterCommsByProduct = (cs) => {
+    if (!selectedProductObj) return cs;
+    return cs.filter(c => c.product === selectedType || c.product === selectedCommCat);
+  };
+  const allowedIntegrations = selectedType ? INTEGRATIONS_BY_TYPE[selectedType] || [] : null;
 
   // ─── badge helper ───
   const badge = (text, bg, color, style = {}) => (
@@ -426,6 +471,21 @@ export default function CustomerHub({ customerId, onBack }) {
 
       {/* ─── TAB CONTENT ─── */}
       <div style={{ margin: "0 32px", paddingTop: 24 }}>
+
+        {/* Product-scoped filter pill (visible on Timeline/Documents/Comms/Integrations) */}
+        {selectedProductObj && ["Timeline","Documents","Communications","Integrations"].includes(activeTab) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: T.primaryLight, border: `1px solid ${T.primary}33`, borderRadius: 10, marginBottom: 16 }}>
+            <span style={{ color: T.primary }}>{Ico.zap(14)}</span>
+            <span style={{ fontSize: 12, color: T.text }}>
+              Filtering by product: <strong>{selectedProductObj.product}</strong> ({selectedType})
+            </span>
+            <button onClick={() => setSelectedProduct(null)} style={{
+              marginLeft: "auto", background: "transparent", border: `1px solid ${T.primary}55`, color: T.primary,
+              borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
+            }}>Clear filter ✕</button>
+          </div>
+        )}
+
 
         {/* ═══════ TAB: PRODUCTS ═══════ */}
         {activeTab === "Products" && (
@@ -807,7 +867,7 @@ export default function CustomerHub({ customerId, onBack }) {
             <div style={{ position: "relative", paddingLeft: 32 }}>
               {/* Vertical line */}
               <div style={{ position: "absolute", left: 10, top: 0, bottom: 0, width: 2, background: T.border }} />
-              {timeline
+              {filterTimelineByProduct(timeline)
                 .filter(e => timelineFilter === "All" || e.product === timelineFilter)
                 .map((e, i) => (
                 <div key={i} style={{ marginBottom: 20, position: "relative" }}>
@@ -840,7 +900,7 @@ export default function CustomerHub({ customerId, onBack }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {documents.map((doc, i) => (
+                  {filterDocsByProduct(documents).map((doc, i) => (
                     <tr key={i} style={{ borderTop: `1px solid ${T.borderLight}` }}>
                       <td style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ color: T.primary }}>{Ico.file(16)}</span>
@@ -873,7 +933,7 @@ export default function CustomerHub({ customerId, onBack }) {
         {/* ═══════ TAB: COMMUNICATIONS ═══════ */}
         {activeTab === "Communications" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {comms.map((c, i) => (
+            {filterCommsByProduct(comms).map((c, i) => (
               <Card key={i} style={{ padding: "16px 20px" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                   <div style={{
@@ -902,7 +962,7 @@ export default function CustomerHub({ customerId, onBack }) {
           const custMortgage = customerProducts.find(p => p.type === "Mortgage");
           const hasSavings = customerProducts.some(p => p.type === "Fixed Term Deposit" || p.type === "Notice Account");
           const hasInsurance = customerProducts.some(p => p.type === "Insurance");
-          const integrations = [
+          let integrations = [
             { name:"Open Banking", icon:"dollar", status: customer.kyc==="Verified" ? "Connected" : "Not Connected",
               statusColor: customer.kyc==="Verified" ? T.success : T.textMuted,
               detail: customer.kyc==="Verified" ? `HSBC Current Account ****4521 · Last synced: 2h ago · Income: £5,833/mo verified` : "Customer has not connected bank account",
@@ -927,7 +987,14 @@ export default function CustomerHub({ customerId, onBack }) {
               statusColor: custMortgage && custMortgage.status === "Active" ? T.success : custMortgage ? T.warning : T.textMuted,
               detail: custMortgage && custMortgage.status === "Active" ? "Offer letter: Signed 14 Feb 2026 · Mortgage deed: Signed 14 Feb 2026" : custMortgage ? "Offer letter sent — awaiting signature" : "No documents pending signature",
               actions: custMortgage ? ["View Envelope","Resend Reminder"] : [] },
+            { name:"KYC", icon:"shield", status: customer.kyc==="Verified" ? "Verified" : customer.kyc==="Expired" ? "Expired" : "Pending",
+              statusColor: customer.kyc==="Verified" ? T.success : customer.kyc==="Expired" ? T.danger : T.warning,
+              detail: `Identity verified via partner KYC provider · Last refresh: ${customer.since}`,
+              actions: ["Refresh","View Audit"] },
           ];
+          if (allowedIntegrations) {
+            integrations = integrations.filter(i => allowedIntegrations.includes(i.name));
+          }
           return (
             <div>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
