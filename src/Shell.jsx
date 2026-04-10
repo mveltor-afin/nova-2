@@ -32,6 +32,7 @@ import SmartPrefill from "./origination/SmartPrefill";
 import PropertyScreen from "./origination/PropertyScreen";
 import ValuationScreen from "./origination/ValuationScreen";
 import BrokerLoansScreen from "./origination/BrokerLoansScreen";
+import BrokerProspects from "./origination/BrokerProspects";
 // Intelligence
 import AIDashboard from "./intelligence/AIDashboard";
 import RiskAnomalies from "./intelligence/RiskAnomalies";
@@ -145,6 +146,7 @@ export default function Shell({ userType }) {
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showEnquiryModal, setShowEnquiryModal] = useState(false);
   const [screenHistory, setScreenHistory] = useState([]);
 
   // Responsive: detect mobile
@@ -193,7 +195,7 @@ export default function Shell({ userType }) {
           { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
         { group:"CUSTOMERS", items:[
-          { id:"allcustomers",    label:"My Customers",  icon:"customers" },
+          { id:"brokerprospects", label:"My Customers",  icon:"customers" },
         ]},
         { group:"INSIGHTS", items:[
           { id:"mymi",            label:"My MI",        icon:"chart" },
@@ -210,7 +212,6 @@ export default function Shell({ userType }) {
     ? [
         { group:"MY WORK", items:[
           { id:"bdmdashboard",    label:"Dashboard",         icon:"dashboard" },
-          { id:"newenquiry",      label:"New Enquiry",       icon:"plus" },
           { id:"criteriacheck",   label:"Criteria Check",    icon:"zap" },
         ]},
         { group:"BROKERS", items:[
@@ -278,7 +279,6 @@ export default function Shell({ userType }) {
           { id:"pricing",         label:"Pricing Engine",      icon:"dollar" },
           { id:"mymi",            label:"My MI",               icon:"chart" },
           { id:"myreports",      label:"My Reports",          icon:"file" },
-          { id:"brokerscorecard", label:"Broker Scorecard",    icon:"customers" },
         ]},
         { group:"TOOLS", items:[
           { id:"boardpack",       label:"Board Pack",          icon:"file" },
@@ -349,12 +349,11 @@ export default function Shell({ userType }) {
         ]},
         { group:"INTELLIGENCE", items:[
           { id:"aidashboard",     label:"AI Dashboard",         icon:"sparkle" },
-          { id:"journeyanalytics",label:"Journey Analytics",    icon:"eye" },
           { id:"mymi",            label:"My MI",                icon:"chart" },
           { id:"myreports",      label:"My Reports",           icon:"file" },
           ...(persona === "Admin" ? [
+            { id:"journeyanalytics",label:"Journey Analytics",  icon:"eye" },
             { id:"forecaster",    label:"Pipeline Forecaster",  icon:"chart" },
-            { id:"brokerscorecard",label:"Broker Scorecard",    icon:"customers" },
           ] : []),
           { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
         ]},
@@ -610,6 +609,7 @@ export default function Shell({ userType }) {
     switch (screen) {
       case "needsattention":  return <NeedsAttentionScreen onSelectCustomer={handleSelectCustomer} />;
       case "allcustomers":    return <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
+      case "brokerprospects": return <BrokerProspects />;
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
@@ -676,8 +676,7 @@ export default function Shell({ userType }) {
       case "casejourney":     return <CaseJourney />;
       case "commission":      return <CommissionTracker />;
       // BDM
-      case "bdmdashboard":   return <BDMDashboard onNewEnquiry={() => setScreen("newenquiry")} onOpenEnquiry={(enq) => { setScreen("enquirydetail"); }} />;
-      case "newenquiry":     return <EnquiryForm onBack={() => setScreen("bdmdashboard")} />;
+      case "bdmdashboard":   return <BDMDashboard onNewEnquiry={() => setShowEnquiryModal(true)} onOpenEnquiry={(enq) => { setScreen("enquirydetail"); }} />;
       case "enquirydetail":  return <EnquiryDetail enquiry={null} onBack={() => setScreen("bdmdashboard")} />;
       case "criteriacheck":  return <CriteriaQuickCheck />;
       // Underwriting Engine
@@ -855,6 +854,33 @@ export default function Shell({ userType }) {
         </div>
       )}
       {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
+
+      {/* ─── BDM Enquiry Modal ─── */}
+      {showEnquiryModal && (
+        <div style={{ position:"fixed", inset:0, zIndex:300, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div onClick={() => setShowEnquiryModal(false)} style={{ position:"absolute", inset:0, background:"rgba(12,45,59,0.55)", backdropFilter:"blur(6px)" }} />
+          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"94vw", maxWidth:1100, height:"92vh", maxHeight:900,
+            boxShadow:"0 20px 80px rgba(0,0,0,0.3)", border:`1px solid ${T.border}`, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <div style={{ padding:"16px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:`linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color:"#fff" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {Ico.plus(20)}
+                </div>
+                <div>
+                  <div style={{ fontSize:16, fontWeight:700 }}>New Enquiry</div>
+                  <div style={{ fontSize:12, opacity:0.8 }}>AI criteria check + squad allocation</div>
+                </div>
+              </div>
+              <div onClick={() => setShowEnquiryModal(false)} style={{ width:34, height:34, borderRadius:8, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                {Ico.x(18)}
+              </div>
+            </div>
+            <div style={{ flex:1, overflow:"auto", background:T.bg }}>
+              <EnquiryForm onBack={() => setShowEnquiryModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
