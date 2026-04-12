@@ -153,6 +153,8 @@ export default function Shell({ userType }) {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [servicingAccountId, setServicingAccountId] = useState(null);
   const [showServicingModal, setShowServicingModal] = useState(false);
+  const [showCaseModal, setShowCaseModal] = useState(false);
+  const [caseLoanForModal, setCaseLoanForModal] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
     const seen = localStorage.getItem("nova_whats_new_seen");
@@ -640,7 +642,7 @@ export default function Shell({ userType }) {
             onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }}
             onOpenCase={(origRef) => {
               const loan = MOCK_LOANS.find(l => l.id === origRef || l.origRef === origRef);
-              if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
+              if (loan) { setCaseLoanForModal(loan); setShowCaseModal(true); }
             }}
             onOpenServicing={(productId) => {
               const cust = contextCustomer;
@@ -912,6 +914,38 @@ export default function Shell({ userType }) {
       )}
       {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
 
+      {/* ─── Case / UW Workstation Modal (opens over CustomerHub) ─── */}
+      {showCaseModal && caseLoanForModal && (
+        <div style={{ position:"fixed", inset:0, zIndex:300, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div onClick={() => setShowCaseModal(false)} style={{ position:"absolute", inset:0, background:"rgba(12,45,59,0.55)", backdropFilter:"blur(6px)" }} />
+          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"96vw", maxWidth:1440, height:"94vh", maxHeight:960,
+            boxShadow:"0 20px 80px rgba(0,0,0,0.3)", border:`1px solid ${T.border}`, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:`linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color:"#fff" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {Ico.shield(20)}
+                </div>
+                <div>
+                  <div style={{ fontSize:16, fontWeight:700 }}>{caseLoanForModal.id} — {caseLoanForModal.names}</div>
+                  <div style={{ fontSize:12, opacity:0.8 }}>{caseLoanForModal.amount} · {caseLoanForModal.product}</div>
+                </div>
+              </div>
+              <div onClick={() => setShowCaseModal(false)} style={{ width:34, height:34, borderRadius:8, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                {Ico.x(18)}
+              </div>
+            </div>
+            <div style={{ flex:1, overflow:"auto", background:T.bg, padding:"0 16px" }}>
+              <UWWorkstation loan={caseLoanForModal} onBack={() => setShowCaseModal(false)} onDecisionMade={() => setShowCaseModal(false)}
+                onViewCustomer={(name) => {
+                  setShowCaseModal(false);
+                  const cust = CUSTOMERS.find(c => c.name === name);
+                  if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
+                }} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Servicing Modal (opens over CustomerHub) ─── */}
       {showServicingModal && (
         <div style={{ position:"fixed", inset:0, zIndex:300, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -937,7 +971,7 @@ export default function Shell({ userType }) {
                 onViewApplication={(originRef) => {
                   setShowServicingModal(false);
                   const loan = MOCK_LOANS.find(l => l.origRef === originRef || l.id === originRef);
-                  if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
+                  if (loan) { setCaseLoanForModal(loan); setShowCaseModal(true); }
                 }}
                 onViewCustomer={(name) => {
                   setShowServicingModal(false);
