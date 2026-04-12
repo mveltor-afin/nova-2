@@ -124,7 +124,28 @@ function buildComms(customer) {
 }
 
 const CHANNEL_COLORS = { Email: "#3B82F6", SMS: "#31B897", Call: "#8B5CF6", Push: "#F59E0B", System: "#6B7280" };
-const TABS = ["Overview", "Products", "Connections", "Timeline", "Documents", "Communications", "Integrations", "Risk", "Lifecycle"];
+const TABS = ["Overview", "Products", "Connections", "Timeline", "Documents", "Communications", "Complaints", "Integrations", "Risk"];
+
+/* ─── Mock complaints per customer ─── */
+const COMPLAINTS_DATA = {
+  "CUS-003": [
+    { id: "CMP-001", date: "15 Mar 2026", category: "Arrears Handling", severity: "High", status: "Open",
+      description: "Customer unhappy with timing of arrears letters — received while vulnerability protocol was active",
+      rootCause: "System auto-generated letters not suppressed during vulnerability hold",
+      resolution: null, compensation: null, deadline: "14 Apr 2026", handler: "Lucy Chen" },
+  ],
+  "CUS-006": [
+    { id: "CMP-002", date: "10 Feb 2026", category: "Account Access", severity: "Medium", status: "Resolved",
+      description: "Customer unable to access online portal after account was locked",
+      rootCause: "Account lock trigger too aggressive — 2 failed login attempts",
+      resolution: "Account unlocked, authentication threshold increased to 5 attempts",
+      compensation: "£50 goodwill", deadline: "24 Feb 2026", handler: "Ahmed Hassan" },
+    { id: "CMP-003", date: "28 Mar 2026", category: "Communication", severity: "High", status: "Open",
+      description: "No contact from the bank in 60 days despite arrears. Customer feels abandoned.",
+      rootCause: "Under investigation — collections workflow gap",
+      resolution: null, compensation: null, deadline: "28 Apr 2026", handler: "Rachel Adams" },
+  ],
+};
 
 // Maps a product type → loose "comm category" used in mock comms data
 const TYPE_TO_COMM_CATEGORY = {
@@ -149,7 +170,7 @@ const INTEGRATIONS_BY_TYPE = {
 // ═════════════════════════════════════════════════════════════════
 // CUSTOMER HUB
 // ═════════════════════════════════════════════════════════════════
-export default function CustomerHub({ customerId, onBack }) {
+export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServicing }) {
   const customer = CUSTOMERS.find(c => c.id === customerId);
   if (!customer) return <div style={{ padding: 40, fontFamily: T.font, color: T.text }}>Customer not found.</div>;
 
@@ -166,6 +187,27 @@ export default function CustomerHub({ customerId, onBack }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [timelineFilter, setTimelineFilter] = useState("All");
   const [staircaseSlider, setStaircaseSlider] = useState(10);
+
+  // Communications — log interaction state
+  const [showLogForm, setShowLogForm] = useState(false);
+  const [loggedInteractions, setLoggedInteractions] = useState(() => {
+    try { const s = localStorage.getItem(`cust-interactions-${customerId}`); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [logForm, setLogForm] = useState({ type: "Call", subject: "", body: "", outcome: "Resolved" });
+  const saveInteraction = () => {
+    if (!logForm.subject.trim()) return;
+    const entry = { ...logForm, id: Date.now(), date: "12 Apr 2026", time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }), loggedBy: "You" };
+    const updated = [entry, ...loggedInteractions];
+    setLoggedInteractions(updated);
+    try { localStorage.setItem(`cust-interactions-${customerId}`, JSON.stringify(updated)); } catch {}
+    setLogForm({ type: "Call", subject: "", body: "", outcome: "Resolved" });
+    setShowLogForm(false);
+  };
+
+  // Complaints state
+  const [showComplaintForm, setShowComplaintForm] = useState(false);
+  const [complaintForm, setComplaintForm] = useState({ category: "Service", description: "", severity: "Medium" });
+  const customerComplaints = COMPLAINTS_DATA[customerId] || [];
 
   const timeline = buildTimeline(customer, activeProducts);
   const documents = buildDocuments(customer, activeProducts);
@@ -325,7 +367,8 @@ export default function CustomerHub({ customerId, onBack }) {
         {/* Action buttons */}
         <div style={{ padding: "0 32px 24px", display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Btn primary small icon="send">Send Message</Btn>
-          <Btn small icon="messages">Log Call</Btn>
+          <Btn small icon="messages" onClick={() => { setActiveTab("Communications"); setShowLogForm(true); }}>Log Call</Btn>
+          {activeProducts.some(p => p.type === "Mortgage") && <Btn small icon="wallet" onClick={() => onOpenServicing?.()}>Servicing</Btn>}
           <Btn small danger={customer.vuln} icon="alert">Flag Vulnerability</Btn>
         </div>
       </div>
@@ -367,6 +410,11 @@ export default function CustomerHub({ customerId, onBack }) {
         {/* ═══════ TAB: OVERVIEW ═══════ */}
         {activeTab === "Overview" && (
           <div>
+            {/* Lifecycle Predictor — front and centre */}
+            <div style={{ marginBottom: 20 }}>
+              <LifecyclePredictor customerId={customer.id} />
+            </div>
+
             {/* AI Recommendations */}
             {actions.length > 0 && (
               <Card style={{ marginBottom: 20, background: `linear-gradient(135deg, ${T.primary}06, ${T.accent}10)`, border: `1px solid ${T.accent}30`, padding: "18px 22px" }}>
@@ -408,11 +456,22 @@ export default function CustomerHub({ customerId, onBack }) {
               {customerProducts.map(p => {
                 const pt = PRODUCT_TYPES[p.type] || {};
                 return (
-                  <div key={p.id} onClick={() => { setSelectedProduct(p.id); setActiveTab("Products"); }}
-                    style={{ minWidth: 160, padding: "12px 16px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}`, borderLeft: `4px solid ${pt.color || T.primary}`, cursor: "pointer", flexShrink: 0 }}>
+                  <div key={p.id} style={{ minWidth: 180, padding: "12px 16px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}`, borderLeft: `4px solid ${pt.color || T.primary}`, flexShrink: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: pt.color, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{pt.label}</div>
                     <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>{p.balance || p.premium || p.share || "—"}</div>
                     <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>{p.product}</div>
+                    <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                      <span onClick={() => { setSelectedProduct(p.id); setActiveTab("Products"); }}
+                        style={{ fontSize: 10, fontWeight: 700, color: T.primary, cursor: "pointer" }}>View details →</span>
+                      {p.origRef && (
+                        <span onClick={() => onOpenCase?.(p.origRef)}
+                          style={{ fontSize: 10, fontWeight: 700, color: "#7C3AED", cursor: "pointer" }}>Case {p.origRef} →</span>
+                      )}
+                      {p.type === "Mortgage" && p.status !== "Application" && (
+                        <span onClick={() => onOpenServicing?.()}
+                          style={{ fontSize: 10, fontWeight: 700, color: T.accent, cursor: "pointer" }}>Servicing →</span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -517,13 +576,27 @@ export default function CustomerHub({ customerId, onBack }) {
                         {[
                           ["Account ID", p.id], ["Status", p.status], ["Balance", p.balance], ["Rate", p.rate],
                           ["LTV", p.ltv], ["Payment", p.payment], ["Next Payment", p.nextPayment],
-                          ["Rate End", p.rateEnd], ["Term", p.term], ["Origination Ref", p.origRef],
+                          ["Rate End", p.rateEnd], ["Term", p.term],
                         ].map(([l, v]) => (
                           <div key={l} style={{ padding: "12px 16px", borderRadius: 10, background: T.bg }}>
                             <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: T.textMuted, letterSpacing: 0.4 }}>{l}</div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginTop: 4 }}>{v}</div>
                           </div>
                         ))}
+                        {/* Origination Ref — clickable to open case */}
+                        {p.origRef && (
+                          <div onClick={() => onOpenCase?.(p.origRef)} style={{ padding: "12px 16px", borderRadius: 10, background: "#EDE9FE", cursor: "pointer", border: "1px solid #C4B5FD" }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: "#7C3AED", letterSpacing: 0.4 }}>Origination Case</div>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: "#7C3AED", marginTop: 4 }}>{p.origRef} →</div>
+                          </div>
+                        )}
+                        {/* Servicing link */}
+                        {p.type === "Mortgage" && p.status !== "Application" && (
+                          <div onClick={() => onOpenServicing?.()} style={{ padding: "12px 16px", borderRadius: 10, background: `${T.accent}12`, cursor: "pointer", border: `1px solid ${T.accent}30` }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: T.accent, letterSpacing: 0.4 }}>Servicing</div>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: T.accent, marginTop: 4 }}>View Servicing →</div>
+                          </div>
+                        )}
                         {p.arrears && (
                           <div style={{ padding: "12px 16px", borderRadius: 10, background: T.dangerBg, border: `1px solid ${T.dangerBorder}` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: T.danger, letterSpacing: 0.4 }}>Arrears</div>
@@ -943,28 +1016,199 @@ export default function CustomerHub({ customerId, onBack }) {
 
         {/* ═══════ TAB: COMMUNICATIONS ═══════ */}
         {activeTab === "Communications" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {filterCommsByProduct(comms).map((c, i) => (
-              <Card key={i} style={{ padding: "16px 20px" }}>
+          <div>
+            {/* Log Interaction button + form */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <Btn primary small icon="plus" onClick={() => setShowLogForm(!showLogForm)}>Log Interaction</Btn>
+              <span style={{ fontSize: 12, color: T.textMuted }}>{filterCommsByProduct(comms).length + loggedInteractions.length} total interactions</span>
+            </div>
+
+            {showLogForm && (
+              <Card style={{ marginBottom: 16, border: `2px solid ${T.primary}30`, padding: "16px 20px" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Record New Interaction</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Type</div>
+                    <select value={logForm.type} onChange={e => setLogForm(f => ({ ...f, type: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Call", "Email", "Meeting", "Note", "SMS"].map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Subject</div>
+                    <input value={logForm.subject} onChange={e => setLogForm(f => ({ ...f, subject: e.target.value }))} placeholder="e.g. Rate switch discussion"
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, boxSizing: "border-box" }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Outcome</div>
+                    <select value={logForm.outcome} onChange={e => setLogForm(f => ({ ...f, outcome: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Resolved", "Follow-up Required", "Escalated", "No Action", "Voicemail Left", "Customer Callback Requested"].map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Notes</div>
+                  <textarea value={logForm.body} onChange={e => setLogForm(f => ({ ...f, body: e.target.value }))}
+                    placeholder="Record the interaction details..." rows={3}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, resize: "vertical", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn primary small icon="check" onClick={saveInteraction}>Save Interaction</Btn>
+                  <Btn small ghost onClick={() => setShowLogForm(false)}>Cancel</Btn>
+                </div>
+              </Card>
+            )}
+
+            {/* Logged interactions (user-created) */}
+            {loggedInteractions.map((c, i) => (
+              <Card key={`logged-${c.id}`} style={{ padding: "14px 20px", marginBottom: 10, borderLeft: `4px solid ${T.primary}` }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
-                    background: (CHANNEL_COLORS[c.channel] || "#6B7280") + "18", color: CHANNEL_COLORS[c.channel] || "#6B7280", flexShrink: 0,
-                  }}>
-                    {Ico[c.channel === "Email" ? "send" : c.channel === "Call" ? "messages" : c.channel === "SMS" ? "send" : c.channel === "Push" ? "bell" : "settings"](18)}
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: `${T.primary}18`, color: T.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {Ico.messages(18)}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
-                      {badge(c.channel, (CHANNEL_COLORS[c.channel] || "#6B7280") + "18", CHANNEL_COLORS[c.channel] || "#6B7280")}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                      {badge(c.type, `${CHANNEL_COLORS[c.type] || T.primary}18`, CHANNEL_COLORS[c.type] || T.primary)}
                       <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{c.subject}</span>
-                      {c.product && <span style={{ fontSize: 11, color: T.textMuted, marginLeft: "auto" }}>{c.product}</span>}
+                      {badge(c.outcome, c.outcome === "Resolved" ? T.successBg : T.warningBg, c.outcome === "Resolved" ? T.success : T.warning)}
+                      <span style={{ fontSize: 11, color: T.textMuted, marginLeft: "auto" }}>Logged by {c.loggedBy}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.4 }}>{c.snippet}</div>
-                    <div style={{ fontSize: 11, color: T.textMuted, marginTop: 6 }}>{c.date}</div>
+                    {c.body && <div style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.4 }}>{c.body}</div>}
+                    <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>{c.date} at {c.time}</div>
                   </div>
                 </div>
               </Card>
             ))}
+
+            {/* System communications */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {filterCommsByProduct(comms).map((c, i) => (
+                <Card key={i} style={{ padding: "14px 20px" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+                      background: (CHANNEL_COLORS[c.channel] || "#6B7280") + "18", color: CHANNEL_COLORS[c.channel] || "#6B7280", flexShrink: 0,
+                    }}>
+                      {Ico[c.channel === "Email" ? "send" : c.channel === "Call" ? "messages" : c.channel === "SMS" ? "send" : c.channel === "Push" ? "bell" : "settings"](18)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
+                        {badge(c.channel, (CHANNEL_COLORS[c.channel] || "#6B7280") + "18", CHANNEL_COLORS[c.channel] || "#6B7280")}
+                        <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{c.subject}</span>
+                        {c.product && <span style={{ fontSize: 11, color: T.textMuted, marginLeft: "auto" }}>{c.product}</span>}
+                      </div>
+                      <div style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.4 }}>{c.snippet}</div>
+                      <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>{c.date}</div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════ TAB: COMPLAINTS ═══════ */}
+        {activeTab === "Complaints" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <Btn primary small icon="plus" onClick={() => setShowComplaintForm(!showComplaintForm)}>Raise Complaint</Btn>
+              <span style={{ fontSize: 12, color: T.textMuted }}>
+                {customerComplaints.filter(c => c.status === "Open").length} open · {customerComplaints.filter(c => c.status === "Resolved").length} resolved
+              </span>
+            </div>
+
+            {showComplaintForm && (
+              <Card style={{ marginBottom: 16, border: `2px solid ${T.danger}30`, padding: "16px 20px" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Raise New Complaint</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Category</div>
+                    <select value={complaintForm.category} onChange={e => setComplaintForm(f => ({ ...f, category: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Service", "Arrears Handling", "Communication", "Account Access", "Fees & Charges", "Product Suitability", "Data & Privacy", "Other"].map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Severity</div>
+                    <select value={complaintForm.severity} onChange={e => setComplaintForm(f => ({ ...f, severity: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Low", "Medium", "High", "Critical"].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Description</div>
+                  <textarea value={complaintForm.description} onChange={e => setComplaintForm(f => ({ ...f, description: e.target.value }))}
+                    placeholder="Describe the complaint in detail..." rows={4}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, resize: "vertical", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn small style={{ background: T.danger, color: "#fff", border: "none" }} icon="alert" onClick={() => setShowComplaintForm(false)}>Submit Complaint</Btn>
+                  <Btn small ghost onClick={() => setShowComplaintForm(false)}>Cancel</Btn>
+                </div>
+              </Card>
+            )}
+
+            {customerComplaints.length === 0 && !showComplaintForm && (
+              <Card style={{ padding: "40px 20px", textAlign: "center" }}>
+                <div style={{ color: T.success, marginBottom: 8 }}>{Ico.check(28)}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>No Complaints</div>
+                <div style={{ fontSize: 12, color: T.textMuted, marginTop: 4 }}>This customer has no recorded complaints.</div>
+              </Card>
+            )}
+
+            {customerComplaints.map(c => {
+              const isOpen = c.status === "Open";
+              return (
+                <Card key={c.id} style={{ marginBottom: 12, padding: 0, overflow: "hidden", border: `1px solid ${isOpen ? T.dangerBorder : T.border}` }}>
+                  <div style={{ display: "flex", alignItems: "stretch" }}>
+                    <div style={{ width: 4, background: isOpen ? T.danger : T.success, flexShrink: 0 }} />
+                    <div style={{ padding: "16px 20px", flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: T.text }}>{c.id}</span>
+                        {badge(c.category, T.primaryLight, T.primary)}
+                        {badge(c.severity, c.severity === "High" || c.severity === "Critical" ? T.dangerBg : T.warningBg, c.severity === "High" || c.severity === "Critical" ? T.danger : T.warning)}
+                        {badge(c.status, isOpen ? T.dangerBg : T.successBg, isOpen ? T.danger : T.success)}
+                        <span style={{ fontSize: 11, color: T.textMuted, marginLeft: "auto" }}>{c.date}</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: T.text, lineHeight: 1.5, marginBottom: 10 }}>{c.description}</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 12 }}>
+                        <div>
+                          <span style={{ fontWeight: 600, color: T.textMuted }}>Root Cause: </span>
+                          <span style={{ color: T.text }}>{c.rootCause || "Under investigation"}</span>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600, color: T.textMuted }}>Handler: </span>
+                          <span style={{ color: T.text }}>{c.handler}</span>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600, color: T.textMuted }}>Resolution: </span>
+                          <span style={{ color: T.text }}>{c.resolution || "Pending"}</span>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600, color: T.textMuted }}>Response Deadline: </span>
+                          <span style={{ color: isOpen && new Date(c.deadline) < new Date() ? T.danger : T.text, fontWeight: 600 }}>{c.deadline}</span>
+                        </div>
+                        {c.compensation && (
+                          <div>
+                            <span style={{ fontWeight: 600, color: T.textMuted }}>Compensation: </span>
+                            <span style={{ color: T.text }}>{c.compensation}</span>
+                          </div>
+                        )}
+                      </div>
+                      {isOpen && (
+                        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                          <Btn small primary icon="messages">Add Update</Btn>
+                          <Btn small ghost icon="check">Resolve</Btn>
+                          <Btn small ghost icon="arrow">Escalate</Btn>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
 
@@ -1120,10 +1364,7 @@ export default function CustomerHub({ customerId, onBack }) {
           </div>
         )}
 
-        {/* ═══════ TAB: LIFECYCLE ═══════ */}
-        {activeTab === "Lifecycle" && (
-          <LifecyclePredictor customerId={customer.id} />
-        )}
+        {/* Lifecycle is now embedded in the Overview tab */}
       </div>
     </div>
   );

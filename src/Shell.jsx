@@ -633,7 +633,15 @@ export default function Shell({ userType }) {
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
-      case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id} onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }} /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
+      case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id}
+            onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }}
+            onOpenCase={(origRef) => {
+              const loan = MOCK_LOANS.find(l => l.id === origRef || l.origRef === origRef);
+              if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
+              else { setScreen("applicationdetail"); }
+            }}
+            onOpenServicing={() => setScreen("servicing")}
+          /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "customerportal":  return <CustomerPortal />;
       // Products
       case "mortgages":       return <MortgagesScreen />;
