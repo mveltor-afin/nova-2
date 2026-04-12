@@ -258,21 +258,6 @@ export default function LifecyclePredictor({ customerId }) {
     return points;
   }, [customerProducts]);
 
-  // ─── SVG Timeline helpers ──────────────────
-  const SVG_W = 960;
-  const SVG_H = 280;
-  const PAD_X = 60;
-  const PAD_TOP = 55;
-  const LINE_Y = 140;
-
-  const dateToX = (d) => {
-    const range = timelineRange.max - timelineRange.min;
-    if (range === 0) return SVG_W / 2;
-    return PAD_X + ((d - timelineRange.min) / range) * (SVG_W - 2 * PAD_X);
-  };
-
-  const todayX = dateToX(today);
-
   // ─── Churn gauge SVG ──────────────────────
   const gaugeRadius = 70;
   const gaugeAngle = (kpis.churnPct / 100) * Math.PI;
@@ -308,220 +293,73 @@ export default function LifecyclePredictor({ customerId }) {
         />
       </div>
 
-      {/* Main Timeline */}
-      <Card style={{ marginBottom: 28, padding: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+      {/* Main Timeline — horizontal card rail */}
+      <Card style={{ marginBottom: 28, padding: "18px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
           <span style={{ color: T.primary }}>{Ico.clock(18)}</span>
           <span style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Lifecycle Timeline</span>
-          <span style={{ fontSize: 11, color: T.textMuted, marginLeft: 8 }}>Past events fade left, predicted events extend right</span>
+          <div style={{ display: "flex", gap: 14, marginLeft: "auto", fontSize: 11, color: T.textMuted }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: 5, background: T.primary }} /> Past</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: 5, background: "#fff", border: `2px dashed ${T.primary}` }} /> Predicted</span>
+          </div>
         </div>
-        <svg
-          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          style={{ width: "100%", height: 280, display: "block" }}
-        >
-          <defs>
-            {/* Confidence band gradient */}
-            <linearGradient id="confGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={T.primary} stopOpacity="0.12" />
-              <stop offset="100%" stopColor={T.primary} stopOpacity="0.02" />
-            </linearGradient>
-            {/* Past line gradient — fading in from left */}
-            <linearGradient id="pastGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={T.textMuted} stopOpacity="0.25" />
-              <stop offset="100%" stopColor={T.primary} stopOpacity="1" />
-            </linearGradient>
-          </defs>
 
-          {/* Confidence band for future */}
-          {futureEvents.length > 0 && (
-            <rect
-              x={todayX}
-              y={LINE_Y - 40}
-              width={Math.max(0, SVG_W - PAD_X - todayX)}
-              height={80}
-              rx={8}
-              fill="url(#confGrad)"
-            />
-          )}
+        {/* Horizontal scroll container */}
+        <div style={{ position: "relative", overflowX: "auto", paddingBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "stretch", minWidth: "max-content" }}>
+            {/* Past events */}
+            {pastEvents.map((evt, i) => (
+              <div key={`past-${i}`} style={{ display: "flex", alignItems: "center" }}>
+                {i > 0 && <div style={{ width: 32, height: 2, background: `${evt.color}60`, flexShrink: 0 }} />}
+                <div style={{
+                  minWidth: 140, maxWidth: 180, padding: "10px 14px", borderRadius: 10,
+                  background: T.card, border: `1.5px solid ${evt.color}40`,
+                  borderLeft: `4px solid ${evt.color}`, flexShrink: 0,
+                }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: evt.color, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>
+                    {fmtShortDate(evt.date)}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T.text, lineHeight: 1.4 }}>{evt.label}</div>
+                </div>
+              </div>
+            ))}
 
-          {/* Past connecting line (solid) */}
-          {pastEvents.length > 1 && (
-            <line
-              x1={dateToX(pastEvents[0].date)}
-              y1={LINE_Y}
-              x2={todayX}
-              y2={LINE_Y}
-              stroke="url(#pastGrad)"
-              strokeWidth={2}
-            />
-          )}
+            {/* Today divider */}
+            <div style={{ display: "flex", alignItems: "center", flexShrink: 0, margin: "0 4px" }}>
+              <div style={{ width: 32, height: 2, background: T.borderLight }} />
+              <div style={{
+                padding: "6px 16px", borderRadius: 20, fontWeight: 800, fontSize: 11,
+                background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark || T.primary})`,
+                color: "#fff", whiteSpace: "nowrap", letterSpacing: 0.5, flexShrink: 0,
+              }}>
+                TODAY
+              </div>
+              <div style={{ width: 32, height: 2, background: T.borderLight, borderStyle: "dashed" }} />
+            </div>
 
-          {/* Future connecting line (dashed) */}
-          {futureEvents.length > 0 && (
-            <line
-              x1={todayX}
-              y1={LINE_Y}
-              x2={dateToX(futureEvents[futureEvents.length - 1].date)}
-              y2={LINE_Y}
-              stroke={T.primary}
-              strokeWidth={2}
-              strokeDasharray="6,4"
-              opacity={0.5}
-            />
-          )}
-
-          {/* Today marker */}
-          <line
-            x1={todayX}
-            y1={PAD_TOP}
-            x2={todayX}
-            y2={SVG_H - 20}
-            stroke={T.primary}
-            strokeWidth={1.5}
-            strokeDasharray="4,3"
-          />
-          <rect
-            x={todayX - 24}
-            y={PAD_TOP - 18}
-            width={48}
-            height={20}
-            rx={4}
-            fill={T.primary}
-          />
-          <text
-            x={todayX}
-            y={PAD_TOP - 5}
-            textAnchor="middle"
-            fill="#fff"
-            fontSize={10}
-            fontWeight={700}
-            fontFamily={T.font}
-          >
-            Today
-          </text>
-
-          {/* Past events */}
-          {pastEvents.map((evt, i) => {
-            const x = dateToX(evt.date);
-            const isHovered = hoveredEvent === `past-${i}`;
-            const stagger = i % 2 === 0 ? -1 : 1;
-            const labelY = LINE_Y + (stagger > 0 ? 28 : -28);
-            const dateY = LINE_Y + (stagger > 0 ? -16 : 28);
-            return (
-              <g
-                key={`past-${i}`}
-                onMouseEnter={() => setHoveredEvent(`past-${i}`)}
-                onMouseLeave={() => setHoveredEvent(null)}
-                style={{ cursor: "pointer" }}
-              >
-                {/* Tick line */}
-                <line x1={x} y1={LINE_Y - 6} x2={x} y2={LINE_Y + 6} stroke={evt.color} strokeWidth={1.5} />
-                {/* Solid dot */}
-                <circle
-                  cx={x}
-                  cy={LINE_Y}
-                  r={isHovered ? 7 : 5}
-                  fill={evt.color}
-                  stroke="#fff"
-                  strokeWidth={2}
-                  style={{ transition: "r 0.15s" }}
-                />
-                {/* Date label */}
-                <text
-                  x={x}
-                  y={dateY}
-                  textAnchor="middle"
-                  fontSize={9}
-                  fill={T.textMuted}
-                  fontFamily={T.font}
-                >
-                  {fmtMonthYear(evt.date)}
-                </text>
-                {/* Event label */}
-                <text
-                  x={x}
-                  y={labelY}
-                  textAnchor="middle"
-                  fontSize={10}
-                  fontWeight={isHovered ? 700 : 500}
-                  fill={T.text}
-                  fontFamily={T.font}
-                >
-                  {evt.label}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Future events */}
-          {futureEvents.map((evt, i) => {
-            const x = dateToX(evt.date);
-            const isHovered = hoveredEvent === `future-${i}`;
-            const stagger = i % 2 === 0 ? -1 : 1;
-            const labelY = LINE_Y + (stagger > 0 ? 28 : -28);
-            const dateY = LINE_Y + (stagger > 0 ? -16 : 28);
-            // Opacity fades further into the future
-            const maxFuture = futureEvents.length > 0 ? futureEvents[futureEvents.length - 1].date - today : 1;
-            const dist = evt.date - today;
-            const opacity = Math.max(0.35, 1 - (dist / maxFuture) * 0.6);
-            return (
-              <g
-                key={`future-${i}`}
-                onMouseEnter={() => setHoveredEvent(`future-${i}`)}
-                onMouseLeave={() => setHoveredEvent(null)}
-                style={{ cursor: "pointer" }}
-                opacity={opacity}
-              >
-                {/* Tick line */}
-                <line x1={x} y1={LINE_Y - 6} x2={x} y2={LINE_Y + 6} stroke={evt.color} strokeWidth={1.5} strokeDasharray="2,2" />
-                {/* Hollow dot with dashed border */}
-                <circle
-                  cx={x}
-                  cy={LINE_Y}
-                  r={isHovered ? 7 : 5}
-                  fill="#fff"
-                  stroke={evt.color}
-                  strokeWidth={2}
-                  strokeDasharray="3,2"
-                  style={{ transition: "r 0.15s" }}
-                />
-                {/* Date label */}
-                <text
-                  x={x}
-                  y={dateY}
-                  textAnchor="middle"
-                  fontSize={9}
-                  fill={T.textMuted}
-                  fontFamily={T.font}
-                  fontStyle="italic"
-                >
-                  {fmtMonthYear(evt.date)}
-                </text>
-                {/* Event label */}
-                <text
-                  x={x}
-                  y={labelY}
-                  textAnchor="middle"
-                  fontSize={10}
-                  fontWeight={isHovered ? 700 : 500}
-                  fill={T.text}
-                  fontFamily={T.font}
-                  fontStyle="italic"
-                >
-                  {evt.label}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Legend */}
-          <circle cx={PAD_X} cy={SVG_H - 12} r={4} fill={T.primary} />
-          <text x={PAD_X + 10} y={SVG_H - 8} fontSize={9} fill={T.textMuted} fontFamily={T.font}>Past event</text>
-          <circle cx={PAD_X + 90} cy={SVG_H - 12} r={4} fill="#fff" stroke={T.primary} strokeWidth={1.5} strokeDasharray="3,2" />
-          <text x={PAD_X + 100} y={SVG_H - 8} fontSize={9} fill={T.textMuted} fontFamily={T.font}>Predicted event</text>
-          <rect x={PAD_X + 200} y={SVG_H - 18} width={20} height={12} rx={2} fill={T.primary} opacity={0.1} />
-          <text x={PAD_X + 226} y={SVG_H - 8} fontSize={9} fill={T.textMuted} fontFamily={T.font}>Confidence band</text>
-        </svg>
+            {/* Future events */}
+            {futureEvents.map((evt, i) => {
+              const maxFuture = futureEvents.length > 0 ? futureEvents[futureEvents.length - 1].date - today : 1;
+              const dist = evt.date - today;
+              const opacity = Math.max(0.45, 1 - (dist / maxFuture) * 0.55);
+              return (
+                <div key={`future-${i}`} style={{ display: "flex", alignItems: "center", opacity }}>
+                  {i > 0 && <div style={{ width: 32, height: 2, borderTop: `2px dashed ${evt.color}40`, flexShrink: 0 }} />}
+                  <div style={{
+                    minWidth: 140, maxWidth: 180, padding: "10px 14px", borderRadius: 10,
+                    background: `${evt.color}08`, border: `1.5px dashed ${evt.color}50`,
+                    borderLeft: `4px solid ${evt.color}`, flexShrink: 0,
+                  }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: evt.color, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>
+                      {fmtShortDate(evt.date)} <span style={{ fontStyle: "italic", fontWeight: 500, fontSize: 9 }}>predicted</span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: T.text, lineHeight: 1.4, fontStyle: "italic" }}>{evt.label}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </Card>
 
       {/* Three columns below timeline */}
