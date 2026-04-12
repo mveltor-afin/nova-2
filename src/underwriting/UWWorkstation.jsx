@@ -4,6 +4,8 @@ import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
 import OutcomeTracker from "../shared/OutcomeTracker";
+import DecisionEngine from "./DecisionEngine";
+import DocumentIntelligence from "./DocumentIntelligence";
 
 /* ─── Seed system events for the case conversation ─── */
 const SEED_THREAD = (caseId) => [
@@ -216,6 +218,7 @@ const Td = ({ children, style }) => (
 function UWWorkstation({ loan, onBack, onDecisionMade }) {
   const activeLoan = loan || MOCK_LOANS[0];
 
+  const [caseTab, setCaseTab] = useState("evidence");
   const [activeScoreDim, setActiveScoreDim] = useState(null);
   const [decision, setDecision] = useState(null);
   const [reasonCode, setReasonCode] = useState("");
@@ -274,15 +277,38 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
       </div>
 
       {/* ══════ SQUAD PANEL ══════ */}
-      <div style={{ marginBottom:20 }}>
+      <div style={{ marginBottom:16 }}>
         <SquadPanel squad={loan.squad} />
       </div>
 
-      {/* ══════ EVIDENCE + DECISION RAIL ══════ */}
+      {/* ══════ CASE TABS ══════ */}
+      <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 20 }}>
+        {[
+          { id: "evidence", label: "Evidence", icon: "shield" },
+          { id: "decision", label: "Decision Engine", icon: "zap" },
+          { id: "documents", label: "Documents", icon: "file" },
+        ].map(tab => (
+          <button key={tab.id} onClick={() => setCaseTab(tab.id)} style={{
+            padding: "10px 20px", border: "none", background: "none", cursor: "pointer",
+            fontSize: 13, fontWeight: caseTab === tab.id ? 700 : 500, fontFamily: T.font,
+            color: caseTab === tab.id ? T.primary : T.textMuted,
+            borderBottom: caseTab === tab.id ? `2.5px solid ${T.primary}` : "2.5px solid transparent",
+            marginBottom: -2, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 6,
+          }}>
+            {Ico[tab.icon]?.(14)} {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ══════ TAB CONTENT + DECISION RAIL ══════ */}
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
 
-        {/* ─── EVIDENCE COLUMN (left, scrollable) ─── */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* ─── TAB CONTENT (left) ─── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+
+        {/* ═══ TAB: EVIDENCE ═══ */}
+        {caseTab === "evidence" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
           {/* Card 1: Applicant Summary */}
           <Card>
@@ -451,8 +477,21 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
             })()}
           </Card>
         </div>
+        )}
 
-        {/* ─── DECISION RAIL (right, sticky) ─── */}
+        {/* ═══ TAB: DECISION ENGINE ═══ */}
+        {caseTab === "decision" && (
+          <DecisionEngine loan={activeLoan} />
+        )}
+
+        {/* ═══ TAB: DOCUMENTS ═══ */}
+        {caseTab === "documents" && (
+          <DocumentIntelligence caseId={activeLoan.id} />
+        )}
+
+        </div>
+
+        {/* ─── DECISION RAIL (right, sticky — persists across all tabs) ─── */}
         <div style={{ flex: "0 0 360px", position: "sticky", top: 16, alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 14 }}>
 
           {/* AI Recommendation — compact at top of rail */}

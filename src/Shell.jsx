@@ -108,8 +108,7 @@ import PricingEngine from "./intelligence/PricingEngine";
 import StressTestDashboard from "./intelligence/StressTestDashboard";
 import BoardPackGenerator from "./intelligence/BoardPackGenerator";
 // Game-changer enhancements (v2.14)
-import DecisionEngine from "./underwriting/DecisionEngine";
-import DocumentIntelligence from "./underwriting/DocumentIntelligence";
+// DecisionEngine + DocumentIntelligence are now embedded inside UWWorkstation as tabs
 import LifecyclePredictor from "./customers/LifecyclePredictor";
 import CommandCentre from "./operations/CommandCentre";
 
@@ -245,8 +244,6 @@ export default function Shell({ userType }) {
         { group:"UNDERWRITING", items:[
           { id:"uwqueue",           label:"Smart Queue",           icon:"shield", badge:5 },
           { id:"approvals",         label:"Approvals",             icon:"check" },
-          { id:"decisionengine",    label:"Decisioning Engine",    icon:"zap" },
-          { id:"docintelligence",   label:"Document Intelligence", icon:"file" },
           { id:"comparison",        label:"Case Comparison",       icon:"search" },
           { id:"policychecker",     label:"Policy Checker",        icon:"lock" },
           { id:"incomeanalysis",    label:"Income Analysis",       icon:"chart" },
@@ -729,8 +726,7 @@ export default function Shell({ userType }) {
       case "consumerduty":    return <ConsumerDutyScreen />;
       case "regulatory":      return <RegulatoryReportingScreen />;
       // Game-changer enhancements (v2.14)
-      case "decisionengine":    return <DecisionEngine />;
-      case "docintelligence":   return <DocumentIntelligence />;
+      // DecisionEngine + DocumentIntelligence are now tabs inside UWWorkstation
       case "lifecyclepredictor":return <LifecyclePredictor customerId={contextCustomer?.id} />;
       case "commandcentre":     return <CommandCentre />;
 
