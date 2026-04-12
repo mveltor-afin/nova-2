@@ -91,10 +91,9 @@ import CriteriaQuickCheck from "./bdm/CriteriaQuickCheck";
 // Underwriting Engine
 import SmartQueue from "./underwriting/SmartQueue";
 import UWWorkstation from "./underwriting/UWWorkstation";
-import ComparisonEngine from "./underwriting/ComparisonEngine";
-import PolicyChecker from "./underwriting/PolicyChecker";
+// ComparisonEngine, PolicyChecker now embedded as tabs inside UWWorkstation
 import UWPerformance from "./underwriting/UWPerformance";
-import IncomeAnalysis from "./underwriting/IncomeAnalysis";
+// IncomeAnalysis now embedded as a tab inside UWWorkstation
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -109,7 +108,7 @@ import StressTestDashboard from "./intelligence/StressTestDashboard";
 import BoardPackGenerator from "./intelligence/BoardPackGenerator";
 // Game-changer enhancements (v2.14)
 // DecisionEngine + DocumentIntelligence are now embedded inside UWWorkstation as tabs
-import LifecyclePredictor from "./customers/LifecyclePredictor";
+// LifecyclePredictor now embedded as a tab inside UWWorkstation
 import CommandCentre from "./operations/CommandCentre";
 
 import ScenarioModeller from "./intelligence/ScenarioModeller";
@@ -244,14 +243,10 @@ export default function Shell({ userType }) {
         { group:"UNDERWRITING", items:[
           { id:"uwqueue",           label:"Smart Queue",           icon:"shield", badge:5 },
           { id:"approvals",         label:"Approvals",             icon:"check" },
-          { id:"comparison",        label:"Case Comparison",       icon:"search" },
-          { id:"policychecker",     label:"Policy Checker",        icon:"lock" },
-          { id:"incomeanalysis",    label:"Income Analysis",       icon:"chart" },
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
           { id:"allcustomers",    label:"All Customers",      icon:"customers" },
-          { id:"lifecyclepredictor", label:"Lifecycle Predictor", icon:"sparkle" },
         ]},
         { group:"INTELLIGENCE", items:[
           { id:"uwperformance",   label:"My Performance",     icon:"chart" },
@@ -708,10 +703,9 @@ export default function Shell({ userType }) {
       // Underwriting Engine
       case "uwqueue":        return <SmartQueue onOpenCase={(loan) => { setSelectedLoan(loan); setScreen("uwworkstation"); }} />;
       case "uwworkstation":  return <UWWorkstation loan={selectedLoan || MOCK_LOANS[0]} onBack={() => setScreen("uwqueue")} onDecisionMade={() => setScreen("uwqueue")} />;
-      case "comparison":     return <ComparisonEngine />;
-      case "policychecker":  return <PolicyChecker />;
+      // comparison + policychecker are now tabs inside UWWorkstation
       case "uwperformance":  return <UWPerformance />;
-      case "incomeanalysis": return <IncomeAnalysis />;
+      // incomeanalysis is now a tab inside UWWorkstation
       case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
       case "brokeronboard":   return <BrokerOnboarding />;
@@ -727,7 +721,7 @@ export default function Shell({ userType }) {
       case "regulatory":      return <RegulatoryReportingScreen />;
       // Game-changer enhancements (v2.14)
       // DecisionEngine + DocumentIntelligence are now tabs inside UWWorkstation
-      case "lifecyclepredictor":return <LifecyclePredictor customerId={contextCustomer?.id} />;
+      // lifecyclepredictor is now a tab inside UWWorkstation
       case "commandcentre":     return <CommandCentre />;
 
       case "scenariomodeller":  return <ScenarioModeller />;

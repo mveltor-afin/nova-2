@@ -620,38 +620,13 @@ function IncomePredictor({ baseIncome }) {
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
 
-export default function IncomeAnalysis() {
-  const [selectedCase, setSelectedCase] = useState(MOCK_LOANS[0].id);
-
-  const currentLoan = MOCK_LOANS.find(l => l.id === selectedCase) || MOCK_LOANS[0];
+export default function IncomeAnalysis({ loan }) {
+  const selectedCase = loan?.id || MOCK_LOANS[0].id;
+  const currentLoan = loan || MOCK_LOANS[0];
   const incomeData = getIncomeData(selectedCase);
-
-  const caseOptions = MOCK_LOANS.map(l => ({ value: l.id, label: `${l.id} — ${l.names}` }));
 
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 20, fontWeight: 700 }}>
-          {Ico.dollar(22)} Income Structure Analysis
-        </div>
-        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
-          AI-powered income verification and sustainability assessment
-        </div>
-      </div>
-
-      {/* Case Selector */}
-      <Card style={{ marginBottom: 24 }}>
-        <Select
-          label="Select Case"
-          value={selectedCase}
-          onChange={setSelectedCase}
-          options={caseOptions}
-        />
-        <div style={{ fontSize: 12, color: T.textSecondary, fontWeight: 600, marginTop: -8 }}>
-          {currentLoan.names} &middot; {currentLoan.amount} &middot; {currentLoan.product} &middot; {currentLoan.type}
-        </div>
-      </Card>
 
       {/* KPIs */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>

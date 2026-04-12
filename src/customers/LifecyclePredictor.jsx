@@ -280,17 +280,6 @@ export default function LifecyclePredictor({ customerId }) {
   // ─── Render ────────────────────────────────
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
-      {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-          <span style={{ color: T.primary }}>{Ico.sparkle(22)}</span>
-          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: T.text }}>Customer Lifecycle Predictor</h2>
-        </div>
-        <p style={{ margin: 0, fontSize: 13, color: T.textMuted, marginLeft: 32 }}>
-          AI-powered forward-looking view — past events, current state, and predicted future
-        </p>
-      </div>
-
       {/* KPI Strip */}
       <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
         <KPICard

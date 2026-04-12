@@ -149,19 +149,13 @@ function StatusBadge({ status }) {
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
 
-export default function PolicyChecker() {
-  const [selectedCase, setSelectedCase] = useState(MOCK_LOANS[0].id);
+export default function PolicyChecker({ loan }) {
+  const selectedCase = loan?.id || MOCK_LOANS[0].id;
   const [expanded, setExpanded] = useState({});
   const [generated, setGenerated] = useState(false);
 
-  const currentLoan = MOCK_LOANS.find(l => l.id === selectedCase) || MOCK_LOANS[0];
+  const currentLoan = loan || MOCK_LOANS[0];
   const rules = getRulesForCase(selectedCase);
-
-  const handleCaseChange = (val) => {
-    setSelectedCase(val);
-    setExpanded({});
-    setGenerated(false);
-  };
 
   const toggle = (i) => setExpanded((p) => ({ ...p, [i]: !p[i] }));
 
@@ -179,33 +173,8 @@ export default function PolicyChecker() {
     ? `${passed} rules passed. ${warnings} warning(s). ${failed} failure(s) requiring exception requests. Case cannot proceed without resolution.`
     : `${passed} rules passed. ${warnings} warning(s) (non-blocking). ${failed} failures. No exceptions required. Case is policy-compliant for standard approval.`;
 
-  const caseOptions = MOCK_LOANS.map(l => ({ value: l.id, label: `${l.id} — ${l.names}` }));
-
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 20, fontWeight: 700 }}>
-          {Ico.shield(22)} Policy Compliance Checker
-        </div>
-        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
-          Real-time validation against lending policy
-        </div>
-      </div>
-
-      {/* Case Selector */}
-      <Card style={{ marginBottom: 24 }}>
-        <Select
-          label="Select Case"
-          value={selectedCase}
-          onChange={handleCaseChange}
-          options={caseOptions}
-        />
-        <div style={{ fontSize: 12, color: T.textSecondary, fontWeight: 600, marginTop: -8 }}>
-          {currentLoan.names} &middot; {currentLoan.amount} &middot; {currentLoan.product} &middot; {currentLoan.type}
-        </div>
-      </Card>
-
       {/* KPIs */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <KPICard label="Rules Checked" value={rules.length} color={T.primary} />
