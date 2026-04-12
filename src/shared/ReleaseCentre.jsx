@@ -7,6 +7,23 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.14.0",
+    date: "12 Apr 2026",
+    title: "Game-Changer Release — 10 Major Enhancements",
+    items: [
+      { type: "New", text: "Real-Time Decisioning Engine — interactive sliders let underwriters adjust parameters and watch AI risk scores recalculate live with explainable scoring" },
+      { type: "New", text: "Document Intelligence — AI-powered extraction, cross-document verification and anomaly detection for payslips, P60s, bank statements, valuations and more" },
+      { type: "New", text: "Customer Lifecycle Predictor — predictive timeline showing future events (rate switches, maturities, churn risk) with confidence bands and cross-sell opportunities" },
+      { type: "New", text: "Ops Command Centre — real-time SLA heatmap, bottleneck funnel, squad utilisation, auto-escalation queue and live activity feed" },
+      { type: "New", text: "Broker Portal — dedicated broker-facing view with instant eligibility checker, live DIP tracker, commission dashboard and product catalogue" },
+      { type: "New", text: "Interactive Scenario Modeller — drag sliders for base rate, unemployment, house prices and inflation to see portfolio impact recalculate live" },
+      { type: "New", text: "Embedded Compliance Engine — FCA Consumer Duty dashboard with fair value scorecard, vulnerability tracking, outcome monitoring timeline and compliance coverage map" },
+      { type: "New", text: "White-Label Theme Editor — customise branding, colours and typography with live preview, pre-built themes and JSON export" },
+      { type: "New", text: "API Observatory — live integration health monitor with latency trends, circuit breaker status, degradation alerts and fallback strategies" },
+      { type: "New", text: "My Inbox — universal notification hub aggregating @mentions, questions, tasks and alerts across the platform with filter tabs and quick actions" },
+    ]
+  },
+  {
     version: "2.13.0",
     date: "10 Apr 2026",
     title: "Per-Persona Releases · Product Wizard · Customer Hub Filtering",

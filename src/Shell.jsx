@@ -107,6 +107,17 @@ import DataExportCentre from "./admin/DataExportCentre";
 import PricingEngine from "./intelligence/PricingEngine";
 import StressTestDashboard from "./intelligence/StressTestDashboard";
 import BoardPackGenerator from "./intelligence/BoardPackGenerator";
+// Game-changer enhancements (v2.14)
+import DecisionEngine from "./underwriting/DecisionEngine";
+import DocumentIntelligence from "./underwriting/DocumentIntelligence";
+import LifecyclePredictor from "./customers/LifecyclePredictor";
+import CommandCentre from "./operations/CommandCentre";
+import BrokerPortal from "./origination/BrokerPortal";
+import ScenarioModeller from "./intelligence/ScenarioModeller";
+import ComplianceEngine from "./shared/ComplianceEngine";
+import ThemeEditor from "./admin/ThemeEditor";
+import ApiObservatory from "./admin/ApiObservatory";
+import MyInbox from "./shared/MyInbox";
 // Re-exports from extracted screens (for copilot panel)
 import { getNeedsAttention, PRIORITY_COLORS } from "./customers/NeedsAttentionScreen";
 
@@ -188,6 +199,7 @@ export default function Shell({ userType }) {
     ? [
         { group:"HOME", items:[
           { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
+          { id:"brokerportal",    label:"Broker Portal",        icon:"products" },
           { id:"smartapply",      label:"Smart Apply",          icon:"sparkle" },
           { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
@@ -199,6 +211,7 @@ export default function Shell({ userType }) {
           { id:"myreports",      label:"My Reports",   icon:"file" },
           { id:"commission",      label:"Commission",   icon:"dollar" },
           { id:"messages",        label:"Messages",     icon:"messages", badge:3 },
+          { id:"myinbox",         label:"My Inbox",     icon:"bell", badge:8 },
         ]},
         { group:null, items:[
           { id:"releases", label:"Releases", icon:"sparkle" },
@@ -220,6 +233,7 @@ export default function Shell({ userType }) {
         { group:"INSIGHTS", items:[
           { id:"mymi",            label:"My MI",             icon:"chart" },
           { id:"myreports",      label:"My Reports",        icon:"file" },
+          { id:"myinbox",         label:"My Inbox",          icon:"bell", badge:8 },
         ]},
         { group:null, items:[
           { id:"releases",        label:"Releases",          icon:"sparkle" },
@@ -230,15 +244,18 @@ export default function Shell({ userType }) {
     ? [
         // Underwriter: AI-powered credit decision engine
         { group:"UNDERWRITING", items:[
-          { id:"uwqueue",         label:"Smart Queue",        icon:"shield", badge:5 },
-          { id:"approvals",       label:"Approvals",          icon:"check" },
-          { id:"comparison",      label:"Case Comparison",    icon:"search" },
-          { id:"policychecker",   label:"Policy Checker",     icon:"lock" },
-          { id:"incomeanalysis",  label:"Income Analysis",    icon:"chart" },
+          { id:"uwqueue",           label:"Smart Queue",           icon:"shield", badge:5 },
+          { id:"approvals",         label:"Approvals",             icon:"check" },
+          { id:"decisionengine",    label:"Decisioning Engine",    icon:"zap" },
+          { id:"docintelligence",   label:"Document Intelligence", icon:"file" },
+          { id:"comparison",        label:"Case Comparison",       icon:"search" },
+          { id:"policychecker",     label:"Policy Checker",        icon:"lock" },
+          { id:"incomeanalysis",    label:"Income Analysis",       icon:"chart" },
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
           { id:"allcustomers",    label:"All Customers",      icon:"customers" },
+          { id:"lifecyclepredictor", label:"Lifecycle Predictor", icon:"sparkle" },
         ]},
         { group:"INTELLIGENCE", items:[
           { id:"uwperformance",   label:"My Performance",     icon:"chart" },
@@ -246,6 +263,7 @@ export default function Shell({ userType }) {
           { id:"myreports",       label:"My Reports",         icon:"file" },
           { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
           { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
+          { id:"myinbox",         label:"My Inbox",           icon:"bell", badge:8 },
         ]},
         { group:"SERVICING", items:[
           { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
@@ -272,16 +290,19 @@ export default function Shell({ userType }) {
           { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
         ]},
         { group:"RISK & ANALYTICS", items:[
-          { id:"portfoliorisk",   label:"Portfolio Risk",      icon:"shield" },
-          { id:"stresstest",      label:"Stress Testing",      icon:"alert" },
-          { id:"pricing",         label:"Pricing Engine",      icon:"dollar" },
-          { id:"mymi",            label:"My MI",               icon:"chart" },
-          { id:"myreports",      label:"My Reports",          icon:"file" },
+          { id:"portfoliorisk",    label:"Portfolio Risk",      icon:"shield" },
+          { id:"stresstest",       label:"Stress Testing",      icon:"alert" },
+          { id:"scenariomodeller", label:"Scenario Modeller",   icon:"chart" },
+          { id:"pricing",          label:"Pricing Engine",      icon:"dollar" },
+          { id:"mymi",             label:"My MI",               icon:"chart" },
+          { id:"myreports",       label:"My Reports",          icon:"file" },
         ]},
         { group:"TOOLS", items:[
-          { id:"boardpack",       label:"Board Pack",          icon:"file" },
-          { id:"compliance_cal",  label:"Compliance Calendar", icon:"clock" },
-          { id:"messages",        label:"Messages",            icon:"messages", badge:5 },
+          { id:"boardpack",        label:"Board Pack",          icon:"file" },
+          { id:"compliance_cal",   label:"Compliance Calendar", icon:"clock" },
+          { id:"complianceengine", label:"Compliance Engine",   icon:"shield" },
+          { id:"messages",         label:"Messages",            icon:"messages", badge:5 },
+          { id:"myinbox",          label:"My Inbox",            icon:"bell", badge:8 },
         ]},
         { group:null, items:[
           { id:"releases",        label:"Releases",           icon:"sparkle" },
@@ -296,10 +317,12 @@ export default function Shell({ userType }) {
           { id:"compliance_cal",  label:"Compliance Calendar", icon:"clock" },
         ]},
         { group:"RISK ANALYSIS", items:[
-          { id:"portfoliorisk",   label:"Portfolio Risk",      icon:"shield" },
-          { id:"stresstest",      label:"Stress Testing",      icon:"alert" },
-          { id:"riskanomaly",     label:"Risk & Anomalies",    icon:"alert" },
-          { id:"aimodels",        label:"AI Models",           icon:"sparkle" },
+          { id:"portfoliorisk",    label:"Portfolio Risk",      icon:"shield" },
+          { id:"stresstest",       label:"Stress Testing",      icon:"alert" },
+          { id:"scenariomodeller", label:"Scenario Modeller",   icon:"chart" },
+          { id:"riskanomaly",      label:"Risk & Anomalies",    icon:"alert" },
+          { id:"aimodels",         label:"AI Models",           icon:"sparkle" },
+          { id:"complianceengine", label:"Compliance Engine",   icon:"shield" },
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",     icon:"alert", badge:needsAttentionCount },
@@ -312,6 +335,7 @@ export default function Shell({ userType }) {
           { id:"mymi",            label:"My MI",              icon:"chart" },
           { id:"myreports",      label:"My Reports",         icon:"file" },
           { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
+          { id:"myinbox",         label:"My Inbox",           icon:"bell", badge:8 },
           { id:"releases",        label:"Releases",           icon:"sparkle" },
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
@@ -354,12 +378,15 @@ export default function Shell({ userType }) {
             { id:"forecaster",    label:"Pipeline Forecaster",  icon:"chart" },
           ] : []),
           { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
+          { id:"myinbox",         label:"My Inbox",             icon:"bell", badge:8 },
         ]},
         ...((persona === "Ops" || persona === "Admin") ? [{
           group:"OPS TOOLKIT", items:[
+            { id:"commandcentre",  label:"Command Centre",      icon:"dashboard" },
             { id:"commscentre",    label:"Comms Centre",        icon:"send" },
             { id:"doctemplates",   label:"Doc Templates",       icon:"file" },
             { id:"casejourney",    label:"Case Journey",        icon:"clock" },
+            { id:"complianceengine",label:"Compliance Engine",  icon:"shield" },
           ],
         }] : []),
         ...(persona === "Admin" ? [{
@@ -373,24 +400,27 @@ export default function Shell({ userType }) {
         },
         {
           group:"PLATFORM", collapsed:true, items:[
-            { id:"workflows",     label:"Workflow Builder",      icon:"zap" },
-            { id:"products",      label:"Product Catalogue",     icon:"products" },
-            { id:"flags",         label:"Feature Flags",         icon:"zap" },
-            { id:"mandates",      label:"Mandates",              icon:"shield" },
-            { id:"reportbuilder", label:"Report Builder",        icon:"chart" },
-            { id:"apihealth",     label:"API Health",            icon:"zap" },
-            { id:"dataexport",    label:"Data Export",            icon:"download" },
-            { id:"audit",         label:"Audit & Sessions",      icon:"clock" },
-            { id:"anomalies",     label:"AI Anomalies",          icon:"alert" },
+            { id:"workflows",      label:"Workflow Builder",      icon:"zap" },
+            { id:"products",       label:"Product Catalogue",     icon:"products" },
+            { id:"themeeditor",    label:"Theme Editor",          icon:"settings" },
+            { id:"flags",          label:"Feature Flags",         icon:"zap" },
+            { id:"mandates",       label:"Mandates",              icon:"shield" },
+            { id:"reportbuilder",  label:"Report Builder",        icon:"chart" },
+            { id:"apihealth",      label:"API Health",            icon:"zap" },
+            { id:"apiobservatory", label:"API Observatory",       icon:"eye" },
+            { id:"dataexport",     label:"Data Export",            icon:"download" },
+            { id:"audit",          label:"Audit & Sessions",      icon:"clock" },
+            { id:"anomalies",      label:"AI Anomalies",          icon:"alert" },
           ],
         },
         {
           group:"FINANCE & RISK", collapsed:true, items:[
-            { id:"portfoliorisk", label:"Portfolio Risk",        icon:"shield" },
-            { id:"stresstest",    label:"Stress Testing",        icon:"alert" },
-            { id:"pricing",       label:"Pricing Engine",        icon:"dollar" },
-            { id:"boardpack",     label:"Board Pack",            icon:"file" },
-            { id:"compliance_cal",label:"Compliance Calendar",   icon:"clock" },
+            { id:"portfoliorisk",    label:"Portfolio Risk",        icon:"shield" },
+            { id:"stresstest",       label:"Stress Testing",        icon:"alert" },
+            { id:"scenariomodeller", label:"Scenario Modeller",     icon:"chart" },
+            { id:"pricing",          label:"Pricing Engine",        icon:"dollar" },
+            { id:"boardpack",        label:"Board Pack",            icon:"file" },
+            { id:"compliance_cal",   label:"Compliance Calendar",   icon:"clock" },
           ],
         }] : []),
         { group:null, items:[
@@ -699,6 +729,17 @@ export default function Shell({ userType }) {
       case "complaints":      return <ComplaintsScreen />;
       case "consumerduty":    return <ConsumerDutyScreen />;
       case "regulatory":      return <RegulatoryReportingScreen />;
+      // Game-changer enhancements (v2.14)
+      case "decisionengine":    return <DecisionEngine />;
+      case "docintelligence":   return <DocumentIntelligence />;
+      case "lifecyclepredictor":return <LifecyclePredictor customerId={contextCustomer?.id} />;
+      case "commandcentre":     return <CommandCentre />;
+      case "brokerportal":      return <BrokerPortal />;
+      case "scenariomodeller":  return <ScenarioModeller />;
+      case "complianceengine":  return <ComplianceEngine />;
+      case "themeeditor":       return <ThemeEditor />;
+      case "apiobservatory":    return <ApiObservatory />;
+      case "myinbox":           return <MyInbox />;
       default: {
         let label = screen;
         for (const g of navGroups) {
