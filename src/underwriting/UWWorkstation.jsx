@@ -3,7 +3,7 @@ import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
-import OutcomeTracker from "../shared/OutcomeTracker";
+// OutcomeTracker is now only used in ConsumerDutyTab
 import DecisionEngine from "./DecisionEngine";
 import DocumentIntelligence from "./DocumentIntelligence";
 import IncomeAnalysis from "./IncomeAnalysis";
@@ -170,28 +170,7 @@ const INCOME_ROWS = [
   { source: "HMRC", declared: "£70,000 PAYE", verified: "£70,000", match: true },
 ];
 
-/* ─── Key findings ─── */
-const FINDINGS = [
-  { type: "green", text: "Stable 7-year employment in resilient technology sector" },
-  { type: "green", text: "LTV 72% provides 28% equity buffer — well within product limits" },
-  { type: "green", text: "Credit score 742 with clean history — no adverse in 6 years" },
-  { type: "amber", text: "P60 discrepancy £2,500 — explained by bonus timing, supporting evidence available" },
-  { type: "amber", text: "Sensitivity: combined adverse scenario (rate +2% AND income -10%) leaves minimal headroom (£320/mo surplus)" },
-];
-
-/* ─── Reason codes ─── */
-const REASON_CODES = [
-  { value: "", label: "Select reason code..." },
-  { value: "affordability", label: "Affordability — fails stress test" },
-  { value: "credit", label: "Credit — adverse history" },
-  { value: "collateral", label: "Collateral — valuation concern" },
-  { value: "policy", label: "Policy — exceeds mandate" },
-  { value: "fraud", label: "Fraud — suspicious indicators" },
-  { value: "docs", label: "Documentation — incomplete" },
-  { value: "other", label: "Other" },
-];
-
-/* ─── Default conditions ─── */
+/* ─── Default conditions (shared with RecommendationTab) ─── */
 const DEFAULT_CONDITIONS = [
   { id: 1, text: "Obtain employer reference letter confirming bonus structure", accepted: true },
   { id: 2, text: "Note P60 discrepancy explanation on file for audit trail", accepted: true },
@@ -232,9 +211,7 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
   const [customCondition, setCustomCondition] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const aiRecommendation = "APPROVE";
-  const isOverride = decision && decision !== "approve" && decision !== "approve_conditions";
-  const needsReason = decision === "refer" || decision === "decline";
+  // Decision state is passed to RecommendationTab which hosts the decision controls
 
   const handleSubmit = () => setShowSuccess(true);
 
@@ -528,144 +505,14 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
 
         {/* ═══ TAB: RECOMMENDATION ═══ */}
         {caseTab === "recommendation" && (
-          <RecommendationTab loan={activeLoan} />
+          <RecommendationTab loan={activeLoan}
+            decision={decision} setDecision={setDecision}
+            reasonCode={reasonCode} setReasonCode={setReasonCode}
+            conditions={conditions} toggleCondition={toggleCondition}
+            customCondition={customCondition} setCustomCondition={setCustomCondition}
+            addCondition={addCondition} onSubmit={handleSubmit} />
         )}
 
-        </div>
-
-        {/* ─── DECISION RAIL (right, sticky — persists across all tabs) ─── */}
-        <div style={{ flex: "0 0 360px", position: "sticky", top: 16, alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 14 }}>
-
-          {/* AI Recommendation — compact at top of rail */}
-          <Card style={{ background: T.successBg, borderColor: T.successBorder, padding: "14px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              {Ico.bot(16)}
-              <span style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>AI Recommendation</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
-              <span style={{ fontSize: 24, fontWeight: 800, color: T.success, letterSpacing: 0.5 }}>{aiRecommendation}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.success, padding: "2px 8px", borderRadius: 4, background: "rgba(49,184,151,0.18)" }}>92% confidence</span>
-            </div>
-            <div style={{ marginTop: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Key findings</div>
-              {FINDINGS.map((f, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 5, fontSize: 12, lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, marginTop: 1, color: f.type === "green" ? T.success : T.warning }}>
-                    {f.type === "green" ? Ico.check(12) : Ico.alert(12)}
-                  </span>
-                  <span style={{ color: f.type === "green" ? T.success : "#92400E" }}>{f.text}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Decision options */}
-          <Card style={{ padding: "14px 16px" }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Decision</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {[
-                { key: "approve", label: "Approve", color: T.success, icon: "check" },
-                { key: "approve_conditions", label: "Approve with Conditions", color: T.warning, icon: "check" },
-                { key: "refer", label: "Refer to Senior", color: "#3B82F6", icon: "arrow" },
-                { key: "decline", label: "Decline", color: T.danger, icon: "x" },
-              ].map(d => {
-                const isSelected = decision === d.key;
-                return (
-                  <div key={d.key} onClick={() => setDecision(d.key)} style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "10px 12px", borderRadius: 8, cursor: "pointer", transition: "all .15s",
-                    border: `1.5px solid ${isSelected ? d.color : T.border}`,
-                    background: isSelected ? `${d.color}12` : T.card,
-                  }}>
-                    <span style={{ color: d.color, display: "flex" }}>{Ico[d.icon](14)}</span>
-                    <span style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500, color: isSelected ? d.color : T.text, flex: 1 }}>{d.label}</span>
-                    {isSelected && <span style={{ width: 8, height: 8, borderRadius: 4, background: d.color }} />}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Override warning */}
-            {isOverride && (
-              <div style={{
-                marginTop: 12, padding: "10px 12px", borderRadius: 8,
-                background: T.warningBg, border: `1px solid ${T.warningBorder}`,
-                fontSize: 11, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "flex-start", gap: 6,
-              }}>
-                <span style={{ flexShrink: 0, marginTop: 1 }}>{Ico.alert(13)}</span>
-                <span>Overriding AI recommendation of <strong>APPROVE</strong>. Add reasoning to the case conversation below.</span>
-              </div>
-            )}
-
-            {/* Contextual: Conditions (when Approve with Conditions) */}
-            {decision === "approve_conditions" && (
-              <div style={{ marginTop: 14, padding: "12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Conditions</div>
-                {conditions.map(c => (
-                  <div key={c.id} style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-                    padding: "8px 10px", marginBottom: 6, borderRadius: 6, border: `1px solid ${T.borderLight}`,
-                    background: c.accepted ? T.successBg : T.card,
-                  }}>
-                    <span style={{ fontSize: 12, flex: 1, lineHeight: 1.4 }}>{c.text}</span>
-                    <button onClick={() => toggleCondition(c.id)} style={{
-                      fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 4, cursor: "pointer",
-                      background: c.accepted ? T.success : T.card, color: c.accepted ? "#fff" : T.textMuted,
-                      border: c.accepted ? "none" : `1px solid ${T.border}`,
-                    }}>{c.accepted ? "ACCEPTED" : "REJECTED"}</button>
-                  </div>
-                ))}
-                <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                  <input value={customCondition} onChange={e => setCustomCondition(e.target.value)}
-                    placeholder="Add condition..." onKeyDown={e => e.key === "Enter" && addCondition()}
-                    style={{ flex: 1, padding: "7px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, outline: "none" }} />
-                  <button onClick={addCondition} style={{ padding: "7px 10px", borderRadius: 6, background: T.primary, color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Add</button>
-                </div>
-              </div>
-            )}
-
-            {/* Contextual: Reason code (when Refer / Decline) */}
-            {needsReason && (
-              <div style={{ marginTop: 14, padding: "12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Reason Code <span style={{ color: T.danger }}>*</span></div>
-                <select value={reasonCode} onChange={e => setReasonCode(e.target.value)} style={{
-                  width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`,
-                  fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none",
-                }}>
-                  {REASON_CODES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-                {decision === "decline" && (
-                  <textarea placeholder="Customer-facing decline message (optional)…" rows={2}
-                    style={{
-                      width: "100%", marginTop: 8, padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`,
-                      fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none", resize: "vertical", boxSizing: "border-box",
-                    }} />
-                )}
-              </div>
-            )}
-
-            {/* Submit + secondary actions */}
-            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
-              <button onClick={handleSubmit} disabled={!decision || (needsReason && !reasonCode)}
-                style={{
-                  padding: "12px 14px", borderRadius: 8, border: "none", cursor: decision ? "pointer" : "not-allowed",
-                  background: decision ? T.success : T.borderLight, color: decision ? "#fff" : T.textMuted,
-                  fontSize: 13, fontWeight: 700, fontFamily: T.font,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  boxShadow: decision ? "0 4px 12px rgba(49,184,151,0.25)" : "none", transition: "all .15s",
-                }}>
-                Submit Decision {Ico.arrow(14)}
-              </button>
-              <div style={{ display: "flex", gap: 6 }}>
-                <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: T.textSecondary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: T.font }}>Save Draft</button>
-                <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: T.textSecondary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: T.font }}>Place on Hold</button>
-              </div>
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <OutcomeTracker stage="Decision" customerId={activeLoan.id} action="Approve" />
-            </div>
-          </Card>
         </div>
       </div>
 
