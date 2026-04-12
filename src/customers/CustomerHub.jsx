@@ -4,6 +4,7 @@ import { Btn, Card, KPICard } from "../shared/primitives";
 import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES, TIERS, BADGES } from "../data/customers";
 import JourneyMap from "./JourneyMap";
 import ConnectionsTab from "./ConnectionsTab";
+import LifecyclePredictor from "./LifecyclePredictor";
 
 // ─── Tier colours ───
 const TIER_COLORS = { Bronze: "#CD7F32", Silver: "#C0C0C0", Gold: "#FFD700", Platinum: "#E5E4E2" };
@@ -123,7 +124,7 @@ function buildComms(customer) {
 }
 
 const CHANNEL_COLORS = { Email: "#3B82F6", SMS: "#31B897", Call: "#8B5CF6", Push: "#F59E0B", System: "#6B7280" };
-const TABS = ["Products", "Connections", "Timeline", "Documents", "Communications", "Integrations", "Risk & Vulnerability", "Gamification"];
+const TABS = ["Overview", "Products", "Connections", "Timeline", "Documents", "Communications", "Integrations", "Risk", "Lifecycle"];
 
 // Maps a product type → loose "comm category" used in mock comms data
 const TYPE_TO_COMM_CATEGORY = {
@@ -161,7 +162,7 @@ export default function CustomerHub({ customerId, onBack }) {
   const nextTier = TIERS[TIERS.indexOf(tierData) + 1];
   const tierColor = TIER_COLORS[tierData.name] || "#CD7F32";
 
-  const [activeTab, setActiveTab] = useState("Products");
+  const [activeTab, setActiveTab] = useState("Overview");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [timelineFilter, setTimelineFilter] = useState("All");
   const [staircaseSlider, setStaircaseSlider] = useState(10);
@@ -321,142 +322,17 @@ export default function CustomerHub({ customerId, onBack }) {
           </div>
         </div>
 
-        {/* Gamification strip */}
-        <div style={{ padding: "0 32px 20px", display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ color: T.danger, display:"flex" }}>{Ico.zap(20)}</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: T.primary }}>{customer.gamification?.streak || 0} month streak</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: tierColor }}>{customer.gamification?.points?.toLocaleString() || 0} pts</span>
-          </div>
-          {nextTier && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 200, maxWidth: 320 }}>
-              <span style={{ fontSize: 11, color: T.textMuted, whiteSpace: "nowrap" }}>Next: {nextTier.name}</span>
-              {progressBar(customer.gamification?.points || 0, nextTier.minPoints, tierColor)}
-              <span style={{ fontSize: 11, color: T.textMuted, whiteSpace: "nowrap" }}>{nextTier.minPoints - (customer.gamification?.points || 0)} pts to go</span>
-            </div>
-          )}
-          {!nextTier && <span style={{ fontSize: 12, fontWeight: 700, color: tierColor }}>Max tier reached!</span>}
-        </div>
-
         {/* Action buttons */}
         <div style={{ padding: "0 32px 24px", display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Btn primary small icon="send">Send Message</Btn>
           <Btn small icon="messages">Log Call</Btn>
           <Btn small danger={customer.vuln} icon="alert">Flag Vulnerability</Btn>
-          <Btn small icon="clock">View Timeline</Btn>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════
-          1b. JOURNEY MAP
-      ═══════════════════════════════════════════ */}
-      <div style={{ margin: "24px 32px 0" }}>
-        <JourneyMap customerId={customer.id} />
-      </div>
-
-      {/* ═══════════════════════════════════════════
-          2. PRODUCT CARDS STRIP
-      ═══════════════════════════════════════════ */}
-      <div style={{ margin: "24px 32px 0" }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 12 }}>Products ({customerProducts.length})</div>
-        <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8 }}>
-          {customerProducts.map(p => {
-            const pt = PRODUCT_TYPES[p.type] || {};
-            const isPending = customer.pendingProducts.includes(p.id);
-            const isSelected = selectedProduct === p.id;
-            return (
-              <div key={p.id} onClick={() => setSelectedProduct(isSelected ? null : p.id)}
-                style={{
-                  minWidth: 200, maxWidth: 240, borderRadius: 14, background: T.card,
-                  border: isPending ? `2px dashed ${pt.color || T.border}` : isSelected ? `2px solid ${pt.color || T.primary}` : `1px solid ${T.border}`,
-                  cursor: "pointer", overflow: "hidden", transition: "all 0.2s",
-                  boxShadow: isSelected ? `0 4px 16px ${pt.color}22` : "0 1px 4px rgba(0,0,0,0.04)",
-                  transform: isSelected ? "translateY(-2px)" : "none",
-                }}>
-                {/* Colour bar */}
-                <div style={{ height: 4, background: pt.color || T.primary }} />
-                <div style={{ padding: "14px 16px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ color: pt.color }}>{Ico[pt.icon]?.(18)}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: pt.color, textTransform: "uppercase", letterSpacing: 0.4 }}>{pt.label}</span>
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 }}>{p.product}</div>
-
-                  {/* Key metric */}
-                  {p.type === "Mortgage" && <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.balance}</div>}
-                  {p.type === "Fixed Term Deposit" && <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.balance}</div>}
-                  {p.type === "Notice Account" && <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.balance}</div>}
-                  {p.type === "Current Account" && <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.balance}</div>}
-                  {p.type === "Insurance" && <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.premium || "—"}</div>}
-                  {p.type === "Shared Ownership" && <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.share}</div>}
-
-                  {/* Sub-metric */}
-                  <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
-                    {p.type === "Mortgage" && <span>{p.rate} | Next: {p.nextPayment}</span>}
-                    {p.type === "Fixed Term Deposit" && <span>{p.rate} | Mat: {p.maturity}</span>}
-                    {p.type === "Notice Account" && <span>{p.rate} | {p.noticePeriod}</span>}
-                    {p.type === "Current Account" && <span>SC: {p.sortCode}</span>}
-                    {p.type === "Insurance" && <span>Cover: {p.cover}</span>}
-                    {p.type === "Shared Ownership" && <span>{p.ownedValue} owned | Rent {p.rent}</span>}
-                  </div>
-
-                  {/* Status */}
-                  <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
-                    {isPending && badge("Pending", T.warningBg, T.warning)}
-                    {!isPending && badge(p.status, p.status.includes("Arrears") ? T.dangerBg : T.successBg, p.status.includes("Arrears") ? T.danger : T.success)}
-                    {p.type === "Fixed Term Deposit" && p.daysToMaturity != null && p.daysToMaturity <= 60 && badge(`${p.daysToMaturity}d to maturity`, T.warningBg, T.warning)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          {customerProducts.length === 0 && (
-            <div style={{ padding: 24, fontSize: 13, color: T.textMuted }}>No products yet.</div>
-          )}
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════
-          3. AI ACTIONS PANEL
-      ═══════════════════════════════════════════ */}
-      {actions.length > 0 && (
-        <div style={{ margin: "24px 32px 0" }}>
-          <div style={{
-            borderRadius: 16, overflow: "hidden",
-            background: `linear-gradient(135deg, ${T.primary}08, ${T.accent}12)`,
-            border: `1px solid ${T.accent}30`,
-          }}>
-            <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ color: T.accent }}>{Ico.sparkle(22)}</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: T.primary }}>Nova AI — Recommended Actions</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginLeft: "auto" }}>{actions.length} action{actions.length !== 1 ? "s" : ""}</span>
-            </div>
-            <div style={{ padding: "0 24px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-              {actions.map((a, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 18px", borderRadius: 12, background: T.card, border: `1px solid ${T.borderLight}` }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      {badge(a.priority, PRIORITY_COLORS[a.priority] + "18", PRIORITY_COLORS[a.priority])}
-                      {badge(a.type, (ACTION_TYPE_COLORS[a.type] || "#666") + "18", ACTION_TYPE_COLORS[a.type] || "#666")}
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: T.text, lineHeight: 1.4 }}>{a.action}</div>
-                    <div style={{ fontSize: 12, color: T.textMuted }}>Impact: {a.impact}</div>
-                  </div>
-                  <Btn primary small>Take Action</Btn>
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: "0 24px 20px" }}>
-              <Btn small icon="sparkle" style={{ background: `linear-gradient(135deg,${T.accent},${T.primary})`, color: "#fff", border: "none" }}>Generate Fresh Insights</Btn>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════
-          4. TABS
+          TABS — everything else is inside a tab
+      ═══════════════════════════════════════════
       ═══════════════════════════════════════════ */}
       <div style={{ margin: "28px 32px 0", display: "flex", gap: 4, borderBottom: `2px solid ${T.border}`, overflowX: "auto" }}>
         {TABS.map(tab => (
@@ -488,9 +364,138 @@ export default function CustomerHub({ customerId, onBack }) {
         )}
 
 
+        {/* ═══════ TAB: OVERVIEW ═══════ */}
+        {activeTab === "Overview" && (
+          <div>
+            {/* AI Recommendations */}
+            {actions.length > 0 && (
+              <Card style={{ marginBottom: 20, background: `linear-gradient(135deg, ${T.primary}06, ${T.accent}10)`, border: `1px solid ${T.accent}30`, padding: "18px 22px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg, ${T.primary}, ${T.accent})`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>{Ico.sparkle(18)}</div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: T.primary }}>Nova AI — Recommended Actions</div>
+                    <div style={{ fontSize: 11, color: T.textMuted }}>{actions.length} action{actions.length !== 1 ? "s" : ""} identified for this customer</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {actions.map((a, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 16px", borderRadius: 10, background: T.card, border: `1px solid ${T.borderLight}` }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
+                          {badge(a.priority, PRIORITY_COLORS[a.priority] + "18", PRIORITY_COLORS[a.priority])}
+                          {badge(a.type, (ACTION_TYPE_COLORS[a.type] || "#666") + "18", ACTION_TYPE_COLORS[a.type] || "#666")}
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, lineHeight: 1.4 }}>{a.action}</div>
+                        <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>Impact: {a.impact}</div>
+                      </div>
+                      <Btn primary small>Take Action</Btn>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+            {actions.length === 0 && (
+              <Card style={{ marginBottom: 20, padding: "16px 20px", background: T.successBg, border: `1px solid ${T.successBorder}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: T.success }}>{Ico.check(16)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: T.success }}>No outstanding actions — customer is in good standing</span>
+                </div>
+              </Card>
+            )}
+
+            {/* Product summary strip */}
+            <div style={{ display: "flex", gap: 12, marginBottom: 20, overflowX: "auto", paddingBottom: 4 }}>
+              {customerProducts.map(p => {
+                const pt = PRODUCT_TYPES[p.type] || {};
+                return (
+                  <div key={p.id} onClick={() => { setSelectedProduct(p.id); setActiveTab("Products"); }}
+                    style={{ minWidth: 160, padding: "12px 16px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}`, borderLeft: `4px solid ${pt.color || T.primary}`, cursor: "pointer", flexShrink: 0 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: pt.color, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{pt.label}</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>{p.balance || p.premium || p.share || "—"}</div>
+                    <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>{p.product}</div>
+                  </div>
+                );
+              })}
+              {customerProducts.length === 0 && <div style={{ fontSize: 13, color: T.textMuted, padding: 12 }}>No active products</div>}
+            </div>
+
+            {/* Gamification summary */}
+            <Card style={{ marginBottom: 20, padding: "16px 20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: TIER_GRADIENTS[tierData.name], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 800 }}>
+                    {tierData.name[0]}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: tierColor }}>{tierData.name} Tier</div>
+                    <div style={{ fontSize: 11, color: T.textMuted }}>{customer.gamification?.points?.toLocaleString() || 0} points · {customer.gamification?.streak || 0} month streak</div>
+                  </div>
+                </div>
+                {nextTier && (
+                  <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: T.textMuted, whiteSpace: "nowrap" }}>Next: {nextTier.name}</span>
+                    {progressBar(customer.gamification?.points || 0, nextTier.minPoints, tierColor)}
+                    <span style={{ fontSize: 11, color: T.textMuted, whiteSpace: "nowrap" }}>{nextTier.minPoints - (customer.gamification?.points || 0)} to go</span>
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {(customer.gamification?.badges || []).slice(0, 5).map((b, i) => (
+                    <span key={i} style={{ padding: "3px 10px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: `${tierColor}15`, color: tierColor, border: `1px solid ${tierColor}30` }}>{b}</span>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Journey Map */}
+            <JourneyMap customerId={customer.id} />
+          </div>
+        )}
+
         {/* ═══════ TAB: PRODUCTS ═══════ */}
         {activeTab === "Products" && (
           <div>
+            {/* Product cards strip */}
+            <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 12, marginBottom: 16 }}>
+              {customerProducts.map(p => {
+                const pt = PRODUCT_TYPES[p.type] || {};
+                const isPending = customer.pendingProducts.includes(p.id);
+                const isSelected = selectedProduct === p.id;
+                return (
+                  <div key={p.id} onClick={() => setSelectedProduct(isSelected ? null : p.id)}
+                    style={{
+                      minWidth: 200, maxWidth: 240, borderRadius: 14, background: T.card,
+                      border: isPending ? `2px dashed ${pt.color || T.border}` : isSelected ? `2px solid ${pt.color || T.primary}` : `1px solid ${T.border}`,
+                      cursor: "pointer", overflow: "hidden", transition: "all 0.2s",
+                      boxShadow: isSelected ? `0 4px 16px ${pt.color}22` : "0 1px 4px rgba(0,0,0,0.04)",
+                      transform: isSelected ? "translateY(-2px)" : "none", flexShrink: 0,
+                    }}>
+                    <div style={{ height: 4, background: pt.color || T.primary }} />
+                    <div style={{ padding: "14px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <span style={{ color: pt.color }}>{Ico[pt.icon]?.(16)}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: pt.color, textTransform: "uppercase", letterSpacing: 0.4 }}>{pt.label}</span>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4 }}>{p.product}</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{p.balance || p.premium || p.share || "—"}</div>
+                      <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
+                        {p.type === "Mortgage" && <span>{p.rate} | Next: {p.nextPayment}</span>}
+                        {p.type === "Fixed Term Deposit" && <span>{p.rate} | Mat: {p.maturity}</span>}
+                        {p.type === "Notice Account" && <span>{p.rate} | {p.noticePeriod}</span>}
+                        {p.type === "Current Account" && <span>SC: {p.sortCode}</span>}
+                        {p.type === "Insurance" && <span>Cover: {p.cover}</span>}
+                        {p.type === "Shared Ownership" && <span>{p.ownedValue} owned | Rent {p.rent}</span>}
+                      </div>
+                      <div style={{ marginTop: 6, display: "flex", gap: 6 }}>
+                        {isPending && badge("Pending", T.warningBg, T.warning)}
+                        {!isPending && badge(p.status, p.status.includes("Arrears") ? T.dangerBg : T.successBg, p.status.includes("Arrears") ? T.danger : T.success)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {customerProducts.length === 0 && <div style={{ padding: 24, fontSize: 13, color: T.textMuted }}>No products yet.</div>}
+            </div>
+
             {selectedProduct ? (() => {
               const p = PRODUCTS.find(pr => pr.id === selectedProduct);
               if (!p) return <div style={{ color: T.textMuted }}>Product not found.</div>;
@@ -1048,7 +1053,7 @@ export default function CustomerHub({ customerId, onBack }) {
         })()}
 
         {/* ═══════ TAB: RISK & VULNERABILITY ═══════ */}
-        {activeTab === "Risk & Vulnerability" && (
+        {activeTab === "Risk" && (
           <div>
             {/* Risk Cards */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16, marginBottom: 28 }}>
@@ -1115,155 +1120,9 @@ export default function CustomerHub({ customerId, onBack }) {
           </div>
         )}
 
-        {/* ═══════ TAB: GAMIFICATION ═══════ */}
-        {activeTab === "Gamification" && (
-          <div>
-            {/* Tier Card */}
-            <div style={{
-              borderRadius: 16, overflow: "hidden", marginBottom: 28,
-              background: TIER_GRADIENTS[tierData.name], color: "#fff",
-              boxShadow: `0 8px 32px ${tierColor}33`,
-            }}>
-              <div style={{ padding: "28px 32px" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8 }}>Current Tier</div>
-                <div style={{ fontSize: 36, fontWeight: 900, marginTop: 4 }}>{tierData.name}</div>
-                <div style={{ fontSize: 22, fontWeight: 700, marginTop: 8 }}>{customer.gamification?.points?.toLocaleString() || 0} Points</div>
-
-                {nextTier && (
-                  <div style={{ marginTop: 16 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.8, marginBottom: 6 }}>
-                      <span>{tierData.name}</span>
-                      <span>{nextTier.name} ({nextTier.minPoints} pts)</span>
-                    </div>
-                    <div style={{ width: "100%", height: 10, borderRadius: 5, background: "rgba(255,255,255,0.3)", overflow: "hidden" }}>
-                      <div style={{ width: `${Math.min(100, ((customer.gamification?.points || 0) / nextTier.minPoints) * 100)}%`, height: "100%", borderRadius: 5, background: "#fff", transition: "width 0.6s" }} />
-                    </div>
-                    <div style={{ fontSize: 12, marginTop: 6, opacity: 0.8 }}>{nextTier.minPoints - (customer.gamification?.points || 0)} points to {nextTier.name}</div>
-                  </div>
-                )}
-                {!nextTier && <div style={{ marginTop: 12, fontSize: 14, fontWeight: 600, opacity: 0.9 }}>You have reached the highest tier!</div>}
-
-                <div style={{ marginTop: 20 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, opacity: 0.8, marginBottom: 8 }}>Tier Benefits</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {tierData.benefits.map((b, i) => (
-                      <span key={i} style={{ padding: "4px 12px", borderRadius: 8, background: "rgba(255,255,255,0.2)", fontSize: 12, fontWeight: 600 }}>{b}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Streak */}
-            <Card style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ color: T.danger, display:"flex" }}>{Ico.zap(28)}</span>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>{customer.gamification?.streak || 0} Consecutive Months</div>
-                  <div style={{ fontSize: 12, color: T.textMuted }}>On-time payment streak</div>
-                </div>
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 8 }}>Monthly Heatmap (36 months)</div>
-              {paymentHeatmap(customer.gamification?.streak || 0)}
-              <div style={{ display: "flex", gap: 16, marginTop: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: T.textMuted }}>
-                  <div style={{ width: 12, height: 12, borderRadius: 2, background: "#31B897" }} /> On time
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: T.textMuted }}>
-                  <div style={{ width: 12, height: 12, borderRadius: 2, background: "#FF6B61" }} /> Missed
-                </div>
-              </div>
-            </Card>
-
-            {/* Badges */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Badges Earned</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                  {BADGES.filter(b => (customer.gamification?.badges || []).includes(b.name)).map(b => (
-                    <div key={b.id} style={{
-                      padding: "12px 16px", borderRadius: 12, background: T.successBg, border: `1px solid ${T.successBorder}`,
-                      display: "flex", alignItems: "center", gap: 10, minWidth: 150,
-                    }}>
-                      <span style={{ color: T.success, display:"flex" }}>{Ico[b.icoKey]?.(22)}</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: T.success }}>{b.name}</div>
-                        <div style={{ fontSize: 11, color: T.textMuted }}>{b.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                  {(customer.gamification?.badges || []).length === 0 && (
-                    <div style={{ fontSize: 13, color: T.textMuted }}>No badges earned yet. Keep going!</div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Available to Earn</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                  {BADGES.filter(b => !(customer.gamification?.badges || []).includes(b.name)).map(b => (
-                    <div key={b.id} style={{
-                      padding: "12px 16px", borderRadius: 12, background: T.bg, border: `1px solid ${T.border}`,
-                      display: "flex", alignItems: "center", gap: 10, minWidth: 150, opacity: 0.7,
-                    }}>
-                      <span style={{ color: T.textMuted, display:"flex" }}>{Ico[b.icoKey]?.(22)}</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: T.textMuted }}>{b.name}</div>
-                        <div style={{ fontSize: 11, color: T.textMuted }}>{b.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Referral Stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16, marginBottom: 24 }}>
-              <KPICard label="Friends Referred" value={(customer.gamification?.badges || []).includes("Referrer") ? "3" : "0"} sub={(customer.gamification?.badges || []).includes("Referrer") ? "2 completed, 1 pending" : "Share your referral link"} color="#8B5CF6" />
-              <KPICard label="Referral Points Earned" value={(customer.gamification?.badges || []).includes("Referrer") ? "600" : "0"} sub="200 pts per successful referral" color="#0EA5E9" />
-            </div>
-
-            {/* Milestones */}
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Milestones</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
-              {[
-                { label: "LTV < 80%", achieved: (() => { const m = activeProducts.find(p => p.type === "Mortgage"); return m && parseInt(m.ltv) < 80; })() },
-                { label: "LTV < 75%", achieved: (() => { const m = activeProducts.find(p => p.type === "Mortgage"); return m && parseInt(m.ltv) < 75; })() },
-                { label: "LTV < 60%", achieved: (() => { const m = activeProducts.find(p => p.type === "Mortgage"); return m && parseInt(m.ltv) < 60; })() },
-                { label: "First Savings Goal", achieved: activeProducts.some(p => p.type === "Fixed Term Deposit" || p.type === "Notice Account") },
-                { label: "£10k Saved", achieved: activeProducts.filter(p => p.type === "Fixed Term Deposit" || p.type === "Notice Account").reduce((sum, p) => sum + parseFloat((p.balance || "£0").replace(/[£,]/g, "")), 0) >= 10000 },
-                { label: "Multi-Product", achieved: activeProducts.length >= 3 },
-              ].map((m, i) => (
-                <div key={i} style={{
-                  padding: "10px 18px", borderRadius: 10,
-                  background: m.achieved ? T.successBg : T.bg,
-                  border: `1px solid ${m.achieved ? T.successBorder : T.border}`,
-                  display: "flex", alignItems: "center", gap: 8,
-                }}>
-                  <span style={{ color: m.achieved ? T.success : T.textMuted }}>{m.achieved ? Ico.check(16) : Ico.lock(16)}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: m.achieved ? T.success : T.textMuted }}>{m.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Leaderboard */}
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Leaderboard Position</div>
-            <Card>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
-                  background: TIER_GRADIENTS[tierData.name], color: "#fff", fontSize: 20, fontWeight: 900,
-                }}>
-                  {CUSTOMERS.filter(c => (c.gamification?.points || 0) >= (customer.gamification?.points || 0)).length}
-                </div>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: T.navy }}>
-                    #{CUSTOMERS.filter(c => (c.gamification?.points || 0) >= (customer.gamification?.points || 0)).length} of {CUSTOMERS.length} customers
-                  </div>
-                  <div style={{ fontSize: 12, color: T.textMuted }}>Based on total loyalty points</div>
-                </div>
-              </div>
-            </Card>
-          </div>
+        {/* ═══════ TAB: LIFECYCLE ═══════ */}
+        {activeTab === "Lifecycle" && (
+          <LifecyclePredictor customerId={customer.id} />
         )}
       </div>
     </div>
