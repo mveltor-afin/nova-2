@@ -216,7 +216,7 @@ const pulseKeyframes = `
 // ─────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────
-export default function DocumentIntelligence() {
+export default function DocumentIntelligence({ caseId }) {
   const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -237,7 +237,7 @@ export default function DocumentIntelligence() {
   const autoFields = DOCUMENTS.reduce((s, d) => s + d.extractedFields, 0);
 
   return (
-    <div style={{ fontFamily: T.font, color: T.text, background: T.bg, minHeight: "100vh", padding: 32 }}>
+    <div style={{ fontFamily: T.font, color: T.text }}>
       <style>{pulseKeyframes}</style>
 
       {/* ── Toast ── */}
@@ -252,16 +252,6 @@ export default function DocumentIntelligence() {
           {Ico.sparkle(16)} {toast}
         </div>
       )}
-
-      {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: -0.5, color: T.navy }}>
-          Document Intelligence
-        </h1>
-        <p style={{ fontSize: 13, color: T.textMuted, margin: "6px 0 0" }}>
-          AI-powered document extraction, verification and anomaly detection
-        </p>
-      </div>
 
       {/* ── KPI Strip ── */}
       <div style={{ display: "flex", gap: 14, marginBottom: 28 }}>

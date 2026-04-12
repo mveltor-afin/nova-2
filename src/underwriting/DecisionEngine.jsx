@@ -286,18 +286,21 @@ function AffordabilityBar({ income, payment, stressed }) {
 /* ═══════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
-export default function DecisionEngine() {
-  const [selectedLoan, setSelectedLoan] = useState(MOCK_LOANS[0].id);
+export default function DecisionEngine({ loan }) {
+  // Pre-populate from case data when available
+  const caseAmount = loan ? parseInt(loan.amount?.replace(/[^0-9]/g, "") || "350000", 10) : 350000;
+  const caseRate = loan ? parseFloat(loan.rate || "4.49") : 4.49;
+
   const [income, setIncome] = useState(70000);
-  const [loanAmount, setLoanAmount] = useState(350000);
-  const [propertyValue, setPropertyValue] = useState(485000);
-  const [rate, setRate] = useState(4.49);
+  const [loanAmount, setLoanAmount] = useState(caseAmount);
+  const [propertyValue, setPropertyValue] = useState(Math.round(caseAmount / 0.72));
+  const [rate, setRate] = useState(caseRate);
   const [term, setTerm] = useState(25);
   const [creditScore, setCreditScore] = useState(742);
   const [dependants, setDependants] = useState(1);
   const [employmentTenure, setEmploymentTenure] = useState(7);
   const [activePreset, setActivePreset] = useState("base");
-  const [snapshot, setSnapshot] = useState(null); // locked comparison state
+  const [snapshot, setSnapshot] = useState(null);
 
   const params = { income, loanAmount, propertyValue, rate, term, creditScore, dependants, employmentTenure };
   const analysis = useMemo(() => runAnalysis(params), [income, loanAmount, propertyValue, rate, term, creditScore, dependants, employmentTenure]);
@@ -320,24 +323,6 @@ export default function DecisionEngine() {
 
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
-
-      {/* ── Header + Case Selector + Presets ── */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 22, fontWeight: 700 }}>
-            {Ico.sparkle(22)} Real-Time Decisioning Engine
-          </div>
-          <div style={{ fontSize: 13, color: T.textMuted, marginLeft: 32, marginTop: 2 }}>
-            Adjust parameters, compare scenarios, see the AI model respond — explainable, transparent, auditable
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <select value={selectedLoan} onChange={e => setSelectedLoan(e.target.value)}
-            style={{ padding: "7px 12px", borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, color: T.text, background: T.card, outline: "none" }}>
-            {MOCK_LOANS.map(l => <option key={l.id} value={l.id}>{l.id} — {l.names}</option>)}
-          </select>
-        </div>
-      </div>
 
       {/* Presets + snapshot controls */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
