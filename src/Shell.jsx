@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { T, Ico, PERSONAS } from "./shared/tokens";
 import { Btn, Card } from "./shared/primitives";
-import { PRODUCTS, AI_ACTIONS } from "./data/customers";
+import { PRODUCTS, AI_ACTIONS, CUSTOMERS } from "./data/customers";
 import { MOCK_LOANS } from "./data/loans";
 // Shared overlays
 import NotificationsPanel from "./shared/NotificationsPanel";
@@ -152,6 +152,7 @@ export default function Shell({ userType }) {
   const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [servicingAccountId, setServicingAccountId] = useState(null);
+  const [showServicingModal, setShowServicingModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
     const seen = localStorage.getItem("nova_whats_new_seen");
@@ -640,16 +641,14 @@ export default function Shell({ userType }) {
             onOpenCase={(origRef) => {
               const loan = MOCK_LOANS.find(l => l.id === origRef || l.origRef === origRef);
               if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
-              else { setScreen("applicationdetail"); }
             }}
             onOpenServicing={(productId) => {
-              // Find servicing account by customer name or product origRef
               const cust = contextCustomer;
               const svcAcc = MOCK_SVC_ACCOUNTS.find(a =>
                 a.name === cust.name || (productId && a.originRef === productId)
               );
               setServicingAccountId(svcAcc?.id || null);
-              setScreen("servicing");
+              setShowServicingModal(true);
             }}
           /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "customerportal":  return <CustomerPortal />;
@@ -662,7 +661,15 @@ export default function Shell({ userType }) {
       case "sharedownership": return <SharedOwnershipScreen />;
       case "disbursements":   return <DisbursementsScreen />;
       // Servicing
-      case "servicing":       return <ServicingScreen initialAccountId={servicingAccountId} />;
+      case "servicing":       return <ServicingScreen initialAccountId={servicingAccountId}
+            onViewApplication={(originRef) => {
+              const loan = MOCK_LOANS.find(l => l.origRef === originRef || l.id === originRef);
+              if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
+            }}
+            onViewCustomer={(name) => {
+              const cust = CUSTOMERS.find(c => c.name === name);
+              if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
+            }} />;
       case "collections":     return <CollectionsScreen />;
       case "rateswitch":      return <RateSwitchPortal />;
       // Workflows
@@ -720,7 +727,11 @@ export default function Shell({ userType }) {
       case "criteriacheck":  return <CriteriaQuickCheck />;
       // Underwriting Engine
       case "uwqueue":        return <SmartQueue onOpenCase={(loan) => { setSelectedLoan(loan); setScreen("uwworkstation"); }} />;
-      case "uwworkstation":  return <UWWorkstation loan={selectedLoan || MOCK_LOANS[0]} onBack={() => setScreen("uwqueue")} onDecisionMade={() => setScreen("uwqueue")} />;
+      case "uwworkstation":  return <UWWorkstation loan={selectedLoan || MOCK_LOANS[0]} onBack={() => setScreen("uwqueue")} onDecisionMade={() => setScreen("uwqueue")}
+            onViewCustomer={(name) => {
+              const cust = CUSTOMERS.find(c => c.name === name);
+              if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
+            }} />;
       // comparison + policychecker are now tabs inside UWWorkstation
       case "uwperformance":  return <UWPerformance />;
       // incomeanalysis is now a tab inside UWWorkstation
@@ -900,6 +911,43 @@ export default function Shell({ userType }) {
         </div>
       )}
       {showOnboarding && <OnboardingTour persona={persona} onComplete={() => { setShowOnboarding(false); localStorage.setItem("nova_onboarding_done","1"); }} />}
+
+      {/* ─── Servicing Modal (opens over CustomerHub) ─── */}
+      {showServicingModal && (
+        <div style={{ position:"fixed", inset:0, zIndex:300, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div onClick={() => setShowServicingModal(false)} style={{ position:"absolute", inset:0, background:"rgba(12,45,59,0.55)", backdropFilter:"blur(6px)" }} />
+          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"96vw", maxWidth:1400, height:"94vh", maxHeight:960,
+            boxShadow:"0 20px 80px rgba(0,0,0,0.3)", border:`1px solid ${T.border}`, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:`linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color:"#fff" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {Ico.wallet(20)}
+                </div>
+                <div>
+                  <div style={{ fontSize:16, fontWeight:700 }}>Mortgage Servicing</div>
+                  <div style={{ fontSize:12, opacity:0.8 }}>Account detail — payments, rate switches, actions</div>
+                </div>
+              </div>
+              <div onClick={() => setShowServicingModal(false)} style={{ width:34, height:34, borderRadius:8, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                {Ico.x(18)}
+              </div>
+            </div>
+            <div style={{ flex:1, overflow:"auto", background:T.bg }}>
+              <ServicingScreen initialAccountId={servicingAccountId}
+                onViewApplication={(originRef) => {
+                  setShowServicingModal(false);
+                  const loan = MOCK_LOANS.find(l => l.origRef === originRef || l.id === originRef);
+                  if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
+                }}
+                onViewCustomer={(name) => {
+                  setShowServicingModal(false);
+                  const cust = CUSTOMERS.find(c => c.name === name);
+                  if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
+                }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── BDM Enquiry Modal ─── */}
       {showEnquiryModal && (

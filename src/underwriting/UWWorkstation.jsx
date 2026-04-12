@@ -200,7 +200,7 @@ const Td = ({ children, style }) => (
 /* ═══════════════════════════════════════════
    UW WORKSTATION COMPONENT
    ═══════════════════════════════════════════ */
-function UWWorkstation({ loan, onBack, onDecisionMade }) {
+function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
   const activeLoan = loan || MOCK_LOANS[0];
 
   const [caseTab, setCaseTab] = useState("evidence");
@@ -242,7 +242,7 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{activeLoan.id}</h1>
-          <span style={{ fontSize: 15, fontWeight: 600 }}>{activeLoan.names}</span>
+          <span onClick={() => onViewCustomer?.(activeLoan.names)} style={{ fontSize: 15, fontWeight: 600, color: T.primary, cursor: "pointer", textDecoration: "underline", textDecorationColor: `${T.primary}40`, textUnderlineOffset: 2 }}>{activeLoan.names}</span>
           <span style={{ fontSize: 14, color: T.textMuted }}>{activeLoan.amount}</span>
           <span style={{ fontSize: 13, color: T.textMuted }}>{activeLoan.product}</span>
           <StatusBadge status={activeLoan.status} />
