@@ -112,7 +112,7 @@ import DecisionEngine from "./underwriting/DecisionEngine";
 import DocumentIntelligence from "./underwriting/DocumentIntelligence";
 import LifecyclePredictor from "./customers/LifecyclePredictor";
 import CommandCentre from "./operations/CommandCentre";
-import BrokerPortal from "./origination/BrokerPortal";
+
 import ScenarioModeller from "./intelligence/ScenarioModeller";
 import ComplianceEngine from "./shared/ComplianceEngine";
 import ThemeEditor from "./admin/ThemeEditor";
@@ -199,7 +199,6 @@ export default function Shell({ userType }) {
     ? [
         { group:"HOME", items:[
           { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
-          { id:"brokerportal",    label:"Broker Portal",        icon:"products" },
           { id:"smartapply",      label:"Smart Apply",          icon:"sparkle" },
           { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
@@ -734,7 +733,7 @@ export default function Shell({ userType }) {
       case "docintelligence":   return <DocumentIntelligence />;
       case "lifecyclepredictor":return <LifecyclePredictor customerId={contextCustomer?.id} />;
       case "commandcentre":     return <CommandCentre />;
-      case "brokerportal":      return <BrokerPortal />;
+
       case "scenariomodeller":  return <ScenarioModeller />;
       case "complianceengine":  return <ComplianceEngine />;
       case "themeeditor":       return <ThemeEditor />;
