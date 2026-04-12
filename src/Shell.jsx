@@ -44,6 +44,7 @@ import AIModelScreen from "./intelligence/AIModelScreen";
 import MIScreen from "./intelligence/MIScreen";
 // Servicing
 import ServicingScreen from "./servicing/ServicingScreen";
+import { MOCK_SVC_ACCOUNTS } from "./data/servicing";
 import CollectionsScreen from "./servicing/CollectionsScreen";
 import RateSwitchPortal from "./servicing/RateSwitchPortal";
 // Admin
@@ -150,6 +151,7 @@ export default function Shell({ userType }) {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [mode, setMode] = useState("shell"); // "shell" | "wizard" | "casedetail"
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [servicingAccountId, setServicingAccountId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
     const seen = localStorage.getItem("nova_whats_new_seen");
@@ -640,7 +642,15 @@ export default function Shell({ userType }) {
               if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
               else { setScreen("applicationdetail"); }
             }}
-            onOpenServicing={() => setScreen("servicing")}
+            onOpenServicing={(productId) => {
+              // Find servicing account by customer name or product origRef
+              const cust = contextCustomer;
+              const svcAcc = MOCK_SVC_ACCOUNTS.find(a =>
+                a.name === cust.name || (productId && a.originRef === productId)
+              );
+              setServicingAccountId(svcAcc?.id || null);
+              setScreen("servicing");
+            }}
           /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "customerportal":  return <CustomerPortal />;
       // Products
@@ -652,7 +662,7 @@ export default function Shell({ userType }) {
       case "sharedownership": return <SharedOwnershipScreen />;
       case "disbursements":   return <DisbursementsScreen />;
       // Servicing
-      case "servicing":       return <ServicingScreen />;
+      case "servicing":       return <ServicingScreen initialAccountId={servicingAccountId} />;
       case "collections":     return <CollectionsScreen />;
       case "rateswitch":      return <RateSwitchPortal />;
       // Workflows
