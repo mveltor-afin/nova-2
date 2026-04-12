@@ -6,6 +6,11 @@ import SquadPanel from "../shared/SquadPanel";
 import OutcomeTracker from "../shared/OutcomeTracker";
 import DecisionEngine from "./DecisionEngine";
 import DocumentIntelligence from "./DocumentIntelligence";
+import IncomeAnalysis from "./IncomeAnalysis";
+import PolicyChecker from "./PolicyChecker";
+import ComparisonEngine from "./ComparisonEngine";
+import RecommendationTab from "./RecommendationTab";
+import LifecyclePredictor from "../customers/LifecyclePredictor";
 
 /* ─── Seed system events for the case conversation ─── */
 const SEED_THREAD = (caseId) => [
@@ -285,8 +290,13 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
       <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 20 }}>
         {[
           { id: "evidence", label: "Evidence", icon: "shield" },
+          { id: "income", label: "Income", icon: "dollar" },
           { id: "decision", label: "Decision Engine", icon: "zap" },
           { id: "documents", label: "Documents", icon: "file" },
+          { id: "policy", label: "Policy", icon: "lock" },
+          { id: "comparison", label: "Comparisons", icon: "search" },
+          { id: "lifecycle", label: "Lifecycle", icon: "clock" },
+          { id: "recommendation", label: "Recommendation", icon: "sparkle" },
         ].map(tab => (
           <button key={tab.id} onClick={() => setCaseTab(tab.id)} style={{
             padding: "10px 20px", border: "none", background: "none", cursor: "pointer",
@@ -487,6 +497,31 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
         {/* ═══ TAB: DOCUMENTS ═══ */}
         {caseTab === "documents" && (
           <DocumentIntelligence caseId={activeLoan.id} />
+        )}
+
+        {/* ═══ TAB: INCOME ═══ */}
+        {caseTab === "income" && (
+          <IncomeAnalysis loan={activeLoan} />
+        )}
+
+        {/* ═══ TAB: POLICY ═══ */}
+        {caseTab === "policy" && (
+          <PolicyChecker loan={activeLoan} />
+        )}
+
+        {/* ═══ TAB: COMPARISONS ═══ */}
+        {caseTab === "comparison" && (
+          <ComparisonEngine loan={activeLoan} />
+        )}
+
+        {/* ═══ TAB: LIFECYCLE ═══ */}
+        {caseTab === "lifecycle" && (
+          <LifecyclePredictor customerId={activeLoan.customerId || "CUS-001"} />
+        )}
+
+        {/* ═══ TAB: RECOMMENDATION ═══ */}
+        {caseTab === "recommendation" && (
+          <RecommendationTab loan={activeLoan} />
         )}
 
         </div>

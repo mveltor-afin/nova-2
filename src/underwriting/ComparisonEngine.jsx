@@ -153,21 +153,15 @@ function PerfBadge({ text, color }) {
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
 
-export default function ComparisonEngine() {
-  const [selectedCase, setSelectedCase] = useState(MOCK_LOANS[0].id);
+export default function ComparisonEngine({ loan }) {
+  const selectedCase = loan?.id || MOCK_LOANS[0].id;
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [precedents, setPrecedents] = useState([]);
 
-  const currentLoan = MOCK_LOANS.find(l => l.id === selectedCase) || MOCK_LOANS[0];
+  const currentLoan = loan || MOCK_LOANS[0];
   const currentParams = getCaseParams(selectedCase);
   const comparisonData = getComparisonData(selectedCase);
-
-  const handleCaseChange = (val) => {
-    setSelectedCase(val);
-    setSearched(false);
-    setPrecedents([]);
-  };
 
   const handleSearch = () => {
     setLoading(true);
@@ -178,33 +172,8 @@ export default function ComparisonEngine() {
     if (!precedents.includes(c.id)) setPrecedents([...precedents, c.id]);
   };
 
-  const caseOptions = MOCK_LOANS.map(l => ({ value: l.id, label: `${l.id} — ${l.names}` }));
-
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 20, fontWeight: 700 }}>
-          {Ico.search(22)} Case Comparison Engine
-        </div>
-        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
-          Find similar historical cases and their outcomes
-        </div>
-      </div>
-
-      {/* Case Selector */}
-      <Card style={{ marginBottom: 24 }}>
-        <Select
-          label="Select Case"
-          value={selectedCase}
-          onChange={handleCaseChange}
-          options={caseOptions}
-        />
-        <div style={{ fontSize: 12, color: T.textMuted, marginTop: -8 }}>
-          {currentLoan.names} &middot; {currentLoan.amount} &middot; {currentLoan.product} &middot; {currentLoan.type}
-        </div>
-      </Card>
-
       {/* Search Panel */}
       <Card style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 14, color: T.textSecondary }}>Current Case Parameters</div>
