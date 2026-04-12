@@ -10,6 +10,7 @@ import IncomeAnalysis from "./IncomeAnalysis";
 import PolicyChecker from "./PolicyChecker";
 import ComparisonEngine from "./ComparisonEngine";
 import RecommendationTab from "./RecommendationTab";
+import ConsumerDutyTab from "./ConsumerDutyTab";
 import LifecyclePredictor from "../customers/LifecyclePredictor";
 
 /* ─── Seed system events for the case conversation ─── */
@@ -296,6 +297,7 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
           { id: "policy", label: "Policy", icon: "lock" },
           { id: "comparison", label: "Comparisons", icon: "search" },
           { id: "lifecycle", label: "Lifecycle", icon: "clock" },
+          { id: "duty", label: "Consumer Duty", icon: "shield" },
           { id: "recommendation", label: "Recommendation", icon: "sparkle" },
         ].map(tab => (
           <button key={tab.id} onClick={() => setCaseTab(tab.id)} style={{
@@ -517,6 +519,11 @@ function UWWorkstation({ loan, onBack, onDecisionMade }) {
         {/* ═══ TAB: LIFECYCLE ═══ */}
         {caseTab === "lifecycle" && (
           <LifecyclePredictor customerId={activeLoan.customerId || "CUS-001"} />
+        )}
+
+        {/* ═══ TAB: CONSUMER DUTY ═══ */}
+        {caseTab === "duty" && (
+          <ConsumerDutyTab loan={activeLoan} />
         )}
 
         {/* ═══ TAB: RECOMMENDATION ═══ */}

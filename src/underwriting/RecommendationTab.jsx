@@ -1,15 +1,6 @@
 import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card } from "../shared/primitives";
-import OutcomeTracker from "../shared/OutcomeTracker";
-
-/* ─── Consumer Duty outcomes for the case ─── */
-const DUTY_OUTCOMES = [
-  { outcome: "Products & Services", score: 96, status: "Met", detail: "Product is suitable for the customer's needs and financial position. No evidence of mis-selling risk." },
-  { outcome: "Price & Value", score: 91, status: "Met", detail: "Rate is competitive vs market. Fees are proportionate. Fair value assessment passed." },
-  { outcome: "Consumer Understanding", score: 94, status: "Met", detail: "Customer has been provided with clear KFI documentation. Risk warnings issued for interest rate changes." },
-  { outcome: "Consumer Support", score: 88, status: "Monitor", detail: "Customer assigned to squad. No vulnerability indicators detected. Communication preferences recorded." },
-];
 
 /* ─── AI analysis sections ─── */
 const AI_SECTIONS = [
@@ -79,32 +70,6 @@ export default function RecommendationTab({ loan }) {
           </Card>
         ))}
       </div>
-
-      {/* ── Consumer Duty ── */}
-      <Card style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          {Ico.shield(16)}
-          <span style={{ fontSize: 14, fontWeight: 700 }}>FCA Consumer Duty Assessment</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-          {DUTY_OUTCOMES.map(d => {
-            const met = d.status === "Met";
-            return (
-              <div key={d.outcome} style={{ padding: 14, borderRadius: 10, background: met ? T.successBg : T.warningBg, border: `1px solid ${met ? T.successBorder : T.warningBorder}` }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{d.outcome}</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: met ? T.success : T.warning }}>{d.score}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: met ? T.success : T.warning }}>{d.status}</span>
-                </div>
-                <div style={{ fontSize: 11, color: T.textSecondary, lineHeight: 1.5 }}>{d.detail}</div>
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <OutcomeTracker stage="Recommendation" customerId={caseId} action="Review" />
-        </div>
-      </Card>
 
       {/* ── Underwriter's Own Analysis ── */}
       <Card style={{ marginBottom: 20, border: `2px solid ${T.primary}30` }}>
