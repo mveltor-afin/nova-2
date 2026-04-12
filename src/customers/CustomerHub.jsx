@@ -368,7 +368,7 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
         <div style={{ padding: "0 32px 24px", display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Btn primary small icon="send">Send Message</Btn>
           <Btn small icon="messages" onClick={() => { setActiveTab("Communications"); setShowLogForm(true); }}>Log Call</Btn>
-          {activeProducts.some(p => p.type === "Mortgage") && <Btn small icon="wallet" onClick={() => onOpenServicing?.()}>Servicing</Btn>}
+          {activeProducts.some(p => p.type === "Mortgage") && <Btn small icon="wallet" onClick={() => onOpenServicing?.(activeProducts.find(p => p.type === "Mortgage")?.origRef)}>Servicing</Btn>}
           <Btn small danger={customer.vuln} icon="alert">Flag Vulnerability</Btn>
         </div>
       </div>
@@ -468,7 +468,7 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
                           style={{ fontSize: 10, fontWeight: 700, color: "#7C3AED", cursor: "pointer" }}>Case {p.origRef} →</span>
                       )}
                       {p.type === "Mortgage" && p.status !== "Application" && (
-                        <span onClick={() => onOpenServicing?.()}
+                        <span onClick={() => onOpenServicing?.(p.origRef)}
                           style={{ fontSize: 10, fontWeight: 700, color: T.accent, cursor: "pointer" }}>Servicing →</span>
                       )}
                     </div>
@@ -592,7 +592,7 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
                         )}
                         {/* Servicing link */}
                         {p.type === "Mortgage" && p.status !== "Application" && (
-                          <div onClick={() => onOpenServicing?.()} style={{ padding: "12px 16px", borderRadius: 10, background: `${T.accent}12`, cursor: "pointer", border: `1px solid ${T.accent}30` }}>
+                          <div onClick={() => onOpenServicing?.(p.origRef)} style={{ padding: "12px 16px", borderRadius: 10, background: `${T.accent}12`, cursor: "pointer", border: `1px solid ${T.accent}30` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: T.accent, letterSpacing: 0.4 }}>Servicing</div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: T.accent, marginTop: 4 }}>View Servicing →</div>
                           </div>
