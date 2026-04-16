@@ -383,6 +383,8 @@ export default function Shell({ userType }) {
             { id:"doctemplates",   label:"Doc Templates",       icon:"file" },
             { id:"casejourney",    label:"Case Journey",        icon:"clock" },
             { id:"complianceengine",label:"Compliance Engine",  icon:"shield" },
+            { id:"brokeronboard", label:"Broker Onboarding",    icon:"assign" },
+            { id:"segmentation",  label:"Segmentation",          icon:"customers" },
           ],
         }] : []),
         ...(persona === "Admin" ? [{
@@ -390,8 +392,6 @@ export default function Shell({ userType }) {
             { id:"usersroles",    label:"Users & Roles",        icon:"users" },
             { id:"permissions",   label:"Permissions",           icon:"shield" },
             { id:"team",          label:"Team Hierarchy",        icon:"assign" },
-            { id:"brokeronboard", label:"Broker Onboarding",    icon:"assign" },
-            { id:"segmentation",  label:"Segmentation",          icon:"customers" },
           ],
         },
         {
