@@ -7,6 +7,38 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.16.0",
+    date: "16 Apr 2026",
+    title: "Unified Data Model, Business Customers & Servicing Enhancements",
+    items: [
+      { type: "New", text: "Repayment Schedule tab in Mortgage Servicing — full amortisation table, principal vs interest breakdown chart, outstanding balance curve" },
+      { type: "New", text: "Business customer support — company type, registration number, directors, industry, turnover, trading years. 2 business customers with BTL and commercial products" },
+      { type: "New", text: "Agentic data layer (src/data/index.js) — unified query functions: getCustomerAggregate, getCaseAggregate, getAtRiskCustomers, globalSearch" },
+      { type: "New", text: "Mortgage product drill-down — View Customer, View Case, View Servicing buttons from the Mortgages screen" },
+      { type: "Improved", text: "Unified data model — customerId and servicingId on every loan, standardised origRef across all data files, unified risk schema" },
+      { type: "Improved", text: "ID-based navigation — replaced fragile name-based customer lookups with robust ID-first matching" },
+      { type: "Improved", text: "Complaints data extracted from CustomerHub into centralised data layer" },
+      { type: "Fixed", text: "Broker dashboard stepper/squad label overlap" },
+      { type: "Fixed", text: "Servicing modal uses customerId for account lookup instead of name matching" },
+    ]
+  },
+  {
+    version: "2.15.0",
+    date: "13 Apr 2026",
+    title: "Navigation Overhaul & Case Modals",
+    items: [
+      { type: "New", text: "Servicing opens as modal overlay from customer view — no context lost" },
+      { type: "New", text: "Case/UW Workstation opens as modal from customer view — all 9 tabs work inside the modal" },
+      { type: "New", text: "Customer Hub restructured — Overview tab with AI first, Lifecycle timeline, Complaints tab, Communications logging" },
+      { type: "New", text: "UW Workstation now has 9 tabs: Evidence, Income, Decision Engine, Documents, Policy, Comparisons, Lifecycle, Consumer Duty, Recommendation" },
+      { type: "Improved", text: "Customer name clickable in UW Workstation header — navigates to CustomerHub" },
+      { type: "Improved", text: "Origination references clickable — opens the case from customer product cards" },
+      { type: "Improved", text: "Decision controls moved to Recommendation tab — right-hand rail removed" },
+      { type: "Fixed", text: "7 navigation disconnects fixed across the platform" },
+      { type: "Fixed", text: "10 orphaned files deleted" },
+    ]
+  },
+  {
     version: "2.14.0",
     date: "12 Apr 2026",
     title: "Game-Changer Release — 10 Major Enhancements",

@@ -30,7 +30,7 @@ const parseLTV = (l) => {
   return parseFloat(l.replace("%", ""));
 };
 
-export default function MortgagesScreen() {
+export default function MortgagesScreen({ onViewCustomer, onViewCase, onViewServicing }) {
   const [selected, setSelected] = useState(null);
 
   const mortgages = useMemo(() => PRODUCTS.filter((p) => p.type === "Mortgage"), []);
@@ -195,6 +195,12 @@ export default function MortgagesScreen() {
                   }
                 </div>
               </div>
+            </div>
+            {/* Navigation actions */}
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              {cust && <Btn small primary icon="customers" onClick={() => onViewCustomer?.(cust)}>View Customer</Btn>}
+              {m.origRef && <Btn small icon="shield" onClick={() => onViewCase?.(m.origRef)}>View Case</Btn>}
+              {m.status !== "Application" && <Btn small icon="wallet" onClick={() => onViewServicing?.(m.origRef)}>View Servicing</Btn>}
             </div>
           </Card>
         );

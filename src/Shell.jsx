@@ -655,7 +655,17 @@ export default function Shell({ userType }) {
           /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "customerportal":  return <CustomerPortal />;
       // Products
-      case "mortgages":       return <MortgagesScreen />;
+      case "mortgages":       return <MortgagesScreen
+            onViewCustomer={(cust) => { setContextCustomer(cust); setScreen("customerhub"); }}
+            onViewCase={(origRef) => {
+              const loan = MOCK_LOANS.find(l => l.id === origRef || l.origRef === origRef);
+              if (loan) { setCaseLoanForModal(loan); setShowCaseModal(true); }
+            }}
+            onViewServicing={(origRef) => {
+              const svcAcc = MOCK_SVC_ACCOUNTS.find(a => a.origRef === origRef);
+              setServicingAccountId(svcAcc?.id || null);
+              setShowServicingModal(true);
+            }} />;
       case "savings":         return <SavingsScreen />;
       case "savingsdashboard":return <SavingsDashboard />;
       case "currentaccounts": return <CurrentAccountsScreen />;

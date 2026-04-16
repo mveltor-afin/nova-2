@@ -971,8 +971,138 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
   // ═════════════════════════════════════════════
   // RENDER
   // ═════════════════════════════════════════════
+  // ═════════════════════════════════════════════
+  // REPAYMENT SCHEDULE TAB
+  // ═════════════════════════════════════════════
+  const renderRepaymentTab = () => {
+    if (!selectedAccount) return null;
+    const acc = selectedAccount;
+    const principal = parseBalance(acc.balance);
+    const annualRate = parseFloat(acc.rate) / 100;
+    const monthlyRate = annualRate / 12;
+    const termYears = parseInt(acc.term) || 20;
+    const totalMonths = termYears * 12;
+    const payment = monthlyRate > 0
+      ? principal * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+      : principal / totalMonths;
+
+    // Generate yearly schedule
+    const schedule = [];
+    let remaining = principal;
+    let totalInterest = 0;
+    for (let year = 1; year <= termYears && remaining > 0; year++) {
+      let yearInterest = 0;
+      let yearPrincipal = 0;
+      for (let m = 0; m < 12 && remaining > 0; m++) {
+        const interest = remaining * monthlyRate;
+        const princ = Math.min(payment - interest, remaining);
+        yearInterest += interest;
+        yearPrincipal += princ;
+        remaining -= princ;
+      }
+      totalInterest += yearInterest;
+      schedule.push({
+        year, principalPaid: Math.round(yearPrincipal), interestPaid: Math.round(yearInterest),
+        totalPaid: Math.round(yearPrincipal + yearInterest), remainingBalance: Math.max(0, Math.round(remaining)),
+      });
+    }
+    const totalCost = Math.round(principal + totalInterest);
+
+    return (
+      <div>
+        {/* Summary KPIs */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+          {[
+            { label: "Monthly Payment", value: fmtCurrency(Math.round(payment)), color: T.primary },
+            { label: "Total Interest", value: fmtCurrency(Math.round(totalInterest)), color: T.warning },
+            { label: "Total Cost", value: fmtCurrency(totalCost), color: T.text },
+            { label: "Remaining Term", value: `${termYears} yrs`, color: T.primary },
+            { label: "Interest Rate", value: acc.rate, color: T.text },
+          ].map(k => (
+            <div key={k.label} style={{ flex: 1, minWidth: 140, padding: "12px 14px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}` }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{k.label}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: k.color, fontFamily: "'DM Sans', sans-serif" }}>{k.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Visual: principal vs interest over time */}
+        <Card style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Amortisation Breakdown</div>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 160, marginBottom: 8 }}>
+            {schedule.filter((_, i) => i % Math.max(1, Math.floor(termYears / 20)) === 0).map((s, i, arr) => {
+              const maxPaid = Math.max(...arr.map(x => x.totalPaid));
+              const h = maxPaid > 0 ? (s.totalPaid / maxPaid) * 140 : 0;
+              const intPct = s.totalPaid > 0 ? (s.interestPaid / s.totalPaid) * 100 : 0;
+              return (
+                <div key={s.year} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ width: "80%", height: h, borderRadius: "4px 4px 0 0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                    <div style={{ flex: intPct, background: T.warning, minHeight: intPct > 0 ? 2 : 0 }} />
+                    <div style={{ flex: 100 - intPct, background: T.success }} />
+                  </div>
+                  <div style={{ fontSize: 8, color: T.textMuted, marginTop: 4 }}>Y{s.year}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: 16, fontSize: 11, color: T.textMuted }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: T.success }} /> Principal</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: T.warning }} /> Interest</span>
+          </div>
+        </Card>
+
+        {/* Balance curve */}
+        <Card style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Outstanding Balance Over Time</div>
+          <svg viewBox={`0 0 ${schedule.length * 30 + 40} 120`} style={{ width: "100%", height: 120 }}>
+            <polyline
+              points={schedule.map((s, i) => `${20 + i * 30},${10 + (1 - s.remainingBalance / principal) * 100}`).join(" ")}
+              fill="none" stroke={T.primary} strokeWidth="2" />
+            <polyline
+              points={`20,10 ${schedule.map((s, i) => `${20 + i * 30},${10 + (1 - s.remainingBalance / principal) * 100}`).join(" ")} ${20 + (schedule.length - 1) * 30},110 20,110`}
+              fill={`${T.primary}15`} stroke="none" />
+            {schedule.filter((_, i) => i % Math.max(1, Math.floor(termYears / 5)) === 0 || i === schedule.length - 1).map((s, i) => (
+              <text key={s.year} x={20 + (s.year - 1) * 30} y={118} textAnchor="middle" fontSize="8" fill={T.textMuted}>Y{s.year}</text>
+            ))}
+          </svg>
+        </Card>
+
+        {/* Schedule table */}
+        <Card noPad>
+          <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>Yearly Repayment Schedule</span>
+            <Btn small ghost icon="download">Export</Btn>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ background: T.bg }}>
+                  {["Year", "Principal", "Interest", "Total Paid", "Remaining Balance"].map(h => (
+                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {schedule.map(s => (
+                  <tr key={s.year} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
+                    <td style={{ padding: "10px 14px", fontWeight: 600 }}>Year {s.year}</td>
+                    <td style={{ padding: "10px 14px", color: T.success, fontWeight: 600 }}>{fmtCurrency(s.principalPaid)}</td>
+                    <td style={{ padding: "10px 14px", color: T.warning }}>{fmtCurrency(s.interestPaid)}</td>
+                    <td style={{ padding: "10px 14px", fontWeight: 600 }}>{fmtCurrency(s.totalPaid)}</td>
+                    <td style={{ padding: "10px 14px", fontWeight: 700, color: s.remainingBalance === 0 ? T.success : T.text }}>{fmtCurrency(s.remainingBalance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
   const tabs = [
     { id: "overview", label: "Overview" },
+    { id: "repayment", label: "Repayment Schedule" },
     { id: "payments", label: "Payments" },
     { id: "actions", label: "Actions" },
     { id: "timeline", label: "Timeline" },
@@ -1247,6 +1377,7 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
 
           {/* Tab content */}
           {activeTab === "overview" && renderOverviewTab()}
+          {activeTab === "repayment" && renderRepaymentTab()}
           {activeTab === "payments" && renderPaymentsTab()}
           {activeTab === "actions" && renderActionsTab()}
           {activeTab === "timeline" && renderTimelineTab()}
