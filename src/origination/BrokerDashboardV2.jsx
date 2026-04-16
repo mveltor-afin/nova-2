@@ -63,7 +63,7 @@ const NOTIFICATIONS = [
 
 /* ── stepper component ── */
 const ProgressStepper = ({ currentStep }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 0, margin: "14px 0 10px" }}>
+  <div style={{ display: "flex", alignItems: "center", gap: 0, margin: "14px 0 24px" }}>
     {STEPS.map((label, idx) => {
       const done = idx < currentStep;
       const active = idx === currentStep;
