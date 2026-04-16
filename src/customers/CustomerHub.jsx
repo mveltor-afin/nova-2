@@ -2,6 +2,7 @@ import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import { CUSTOMERS, PRODUCTS, AI_ACTIONS, PRODUCT_TYPES, TIERS, BADGES } from "../data/customers";
+import { COMPLAINTS } from "../data/index";
 import JourneyMap from "./JourneyMap";
 import ConnectionsTab from "./ConnectionsTab";
 import LifecyclePredictor from "./LifecyclePredictor";
@@ -126,26 +127,7 @@ function buildComms(customer) {
 const CHANNEL_COLORS = { Email: "#3B82F6", SMS: "#31B897", Call: "#8B5CF6", Push: "#F59E0B", System: "#6B7280" };
 const TABS = ["Overview", "Products", "Connections", "Timeline", "Documents", "Communications", "Complaints", "Integrations", "Risk"];
 
-/* ─── Mock complaints per customer ─── */
-const COMPLAINTS_DATA = {
-  "CUS-003": [
-    { id: "CMP-001", date: "15 Mar 2026", category: "Arrears Handling", severity: "High", status: "Open",
-      description: "Customer unhappy with timing of arrears letters — received while vulnerability protocol was active",
-      rootCause: "System auto-generated letters not suppressed during vulnerability hold",
-      resolution: null, compensation: null, deadline: "14 Apr 2026", handler: "Lucy Chen" },
-  ],
-  "CUS-006": [
-    { id: "CMP-002", date: "10 Feb 2026", category: "Account Access", severity: "Medium", status: "Resolved",
-      description: "Customer unable to access online portal after account was locked",
-      rootCause: "Account lock trigger too aggressive — 2 failed login attempts",
-      resolution: "Account unlocked, authentication threshold increased to 5 attempts",
-      compensation: "£50 goodwill", deadline: "24 Feb 2026", handler: "Ahmed Hassan" },
-    { id: "CMP-003", date: "28 Mar 2026", category: "Communication", severity: "High", status: "Open",
-      description: "No contact from the bank in 60 days despite arrears. Customer feels abandoned.",
-      rootCause: "Under investigation — collections workflow gap",
-      resolution: null, compensation: null, deadline: "28 Apr 2026", handler: "Rachel Adams" },
-  ],
-};
+// Complaints imported from data/index.js (single source of truth)
 
 // Maps a product type → loose "comm category" used in mock comms data
 const TYPE_TO_COMM_CATEGORY = {
@@ -207,7 +189,7 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
   // Complaints state
   const [showComplaintForm, setShowComplaintForm] = useState(false);
   const [complaintForm, setComplaintForm] = useState({ category: "Service", description: "", severity: "Medium" });
-  const customerComplaints = COMPLAINTS_DATA[customerId] || [];
+  const customerComplaints = COMPLAINTS[customerId] || [];
 
   const timeline = buildTimeline(customer, activeProducts);
   const documents = buildDocuments(customer, activeProducts);

@@ -18,19 +18,19 @@ export const TEAM_MEMBERS = {
 };
 
 export const MOCK_LOANS = [
-  { id: "AFN-2026-00142", names: "James & Sarah Mitchell", product: "Afin Fix 2yr 75%", amount: "£350,000", term: "25 yrs", rate: "4.49%", type: "C&I", status: "Underwriting", updated: "2h ago",
+  { id: "AFN-2026-00142", customerId: "CUS-002", servicingId: "M-001234", names: "James & Sarah Mitchell", product: "Afin Fix 2yr 75%", amount: "£350,000", term: "25 yrs", rate: "4.49%", type: "C&I", status: "Underwriting", updated: "2h ago", riskScore: 18, riskLevel: "Low",
     squad: { adviser:"ADV-01", underwriter:"UW-01", ops:"OPS-01" } },
-  { id: "AFN-2026-00139", names: "Priya Sharma", product: "Afin Track SVR", amount: "£275,000", term: "30 yrs", rate: "5.14%", type: "C&I", status: "Offer_Issued", updated: "1d ago",
+  { id: "AFN-2026-00139", customerId: "CUS-003", servicingId: "M-001891", names: "Priya Sharma", product: "Afin Track SVR", amount: "£275,000", term: "30 yrs", rate: "5.14%", type: "C&I", status: "Offer_Issued", updated: "1d ago", riskScore: 78, riskLevel: "High",
     squad: { adviser:"ADV-02", underwriter:"UW-03", ops:"OPS-02" } },
-  { id: "AFN-2026-00135", names: "David Chen", product: "Afin Fix 5yr 90%", amount: "£425,000", term: "25 yrs", rate: "5.29%", type: "Interest Only", status: "KYC_In_Progress", updated: "3d ago",
+  { id: "AFN-2026-00135", customerId: "CUS-004", servicingId: "M-002456", names: "David Chen", product: "Afin Fix 5yr 90%", amount: "£425,000", term: "25 yrs", rate: "5.29%", type: "Interest Only", status: "KYC_In_Progress", updated: "3d ago", riskScore: 12, riskLevel: "Low",
     squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-02" } },
-  { id: "AFN-2026-00128", names: "Emma & Tom Wilson", product: "Afin Fix 2yr 75%", amount: "£290,000", term: "20 yrs", rate: "4.49%", type: "C&I", status: "Disbursed", updated: "1w ago", servicingId: "M-002891",
+  { id: "AFN-2026-00128", customerId: "CUS-001", servicingId: "M-002891", names: "Emma Wilson", product: "Afin Fix 2yr 75%", amount: "£290,000", term: "20 yrs", rate: "4.49%", type: "C&I", status: "Disbursed", updated: "1w ago", riskScore: 14, riskLevel: "Low",
     squad: { adviser:"ADV-01", underwriter:"UW-01", ops:"OPS-01" } },
-  { id: "AFN-2026-00125", names: "Aisha Patel", product: "Afin Fix 5yr 75%", amount: "£510,000", term: "25 yrs", rate: "4.89%", type: "C&I", status: "Approved", updated: "4d ago",
+  { id: "AFN-2026-00125", customerId: "CUS-005", servicingId: "M-003567", names: "Aisha Patel", product: "Afin Fix 5yr 75%", amount: "£510,000", term: "25 yrs", rate: "4.89%", type: "C&I", status: "Approved", updated: "4d ago", riskScore: 22, riskLevel: "Low",
     squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-03" } },
-  { id: "AFN-2026-00119", names: "Robert Hughes", product: "—", amount: "£180,000", term: "15 yrs", rate: "—", type: "C&I", status: "Referred", updated: "5d ago",
+  { id: "AFN-2026-00119", customerId: "CUS-006", servicingId: "M-003124", names: "Robert Hughes", product: "—", amount: "£180,000", term: "15 yrs", rate: "—", type: "C&I", status: "Referred", updated: "5d ago", riskScore: 82, riskLevel: "High",
     squad: { adviser:"ADV-02", underwriter:"UW-02", ops:"OPS-01" } },
-  { id: "AFN-2026-00115", names: "Sophie & Jack Brown", product: "Afin Fix 2yr 90%", amount: "£320,000", term: "30 yrs", rate: "5.29%", type: "C&I", status: "DIP_Approved", updated: "6d ago",
+  { id: "AFN-2026-00115", customerId: null, servicingId: "M-003890", names: "Sophie & Jack Brown", product: "Afin Fix 2yr 90%", amount: "£320,000", term: "30 yrs", rate: "5.29%", type: "C&I", status: "DIP_Approved", updated: "6d ago", riskScore: 45, riskLevel: "Medium",
     squad: { adviser:"ADV-01", underwriter:"UW-03", ops:"OPS-03" } },
 ];
 

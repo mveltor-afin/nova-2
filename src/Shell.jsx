@@ -647,7 +647,7 @@ export default function Shell({ userType }) {
             onOpenServicing={(productId) => {
               const cust = contextCustomer;
               const svcAcc = MOCK_SVC_ACCOUNTS.find(a =>
-                a.name === cust.name || (productId && a.originRef === productId)
+                a.customerId === cust.id || (productId && a.origRef === productId)
               );
               setServicingAccountId(svcAcc?.id || null);
               setShowServicingModal(true);
@@ -669,7 +669,7 @@ export default function Shell({ userType }) {
               if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
             }}
             onViewCustomer={(name) => {
-              const cust = CUSTOMERS.find(c => c.name === name);
+              const cust = CUSTOMERS.find(c => c.id === name) || CUSTOMERS.find(c => c.name === name);
               if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
             }} />;
       case "collections":     return <CollectionsScreen />;
@@ -730,8 +730,8 @@ export default function Shell({ userType }) {
       // Underwriting Engine
       case "uwqueue":        return <SmartQueue onOpenCase={(loan) => { setSelectedLoan(loan); setScreen("uwworkstation"); }} />;
       case "uwworkstation":  return <UWWorkstation loan={selectedLoan || MOCK_LOANS[0]} onBack={() => setScreen("uwqueue")} onDecisionMade={() => setScreen("uwqueue")}
-            onViewCustomer={(name) => {
-              const cust = CUSTOMERS.find(c => c.name === name);
+            onViewCustomer={(nameOrId) => {
+              const cust = CUSTOMERS.find(c => c.id === nameOrId) || CUSTOMERS.find(c => c.name === nameOrId);
               if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
             }} />;
       // comparison + policychecker are now tabs inside UWWorkstation
@@ -938,7 +938,7 @@ export default function Shell({ userType }) {
               <UWWorkstation loan={caseLoanForModal} onBack={() => setShowCaseModal(false)} onDecisionMade={() => setShowCaseModal(false)}
                 onViewCustomer={(name) => {
                   setShowCaseModal(false);
-                  const cust = CUSTOMERS.find(c => c.name === name);
+                  const cust = CUSTOMERS.find(c => c.id === name) || CUSTOMERS.find(c => c.name === name);
                   if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
                 }} />
             </div>
@@ -975,7 +975,7 @@ export default function Shell({ userType }) {
                 }}
                 onViewCustomer={(name) => {
                   setShowServicingModal(false);
-                  const cust = CUSTOMERS.find(c => c.name === name);
+                  const cust = CUSTOMERS.find(c => c.id === name) || CUSTOMERS.find(c => c.name === name);
                   if (cust) { setContextCustomer(cust); setScreen("customerhub"); }
                 }} />
             </div>
