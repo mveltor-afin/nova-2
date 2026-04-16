@@ -974,73 +974,152 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
   // ═════════════════════════════════════════════
   // REPAYMENT SCHEDULE TAB
   // ═════════════════════════════════════════════
+  const [scheduleView, setScheduleView] = useState("monthly");
+  const [scheduleMonthPage, setScheduleMonthPage] = useState(0);
+
   const renderRepaymentTab = () => {
     if (!selectedAccount) return null;
     const acc = selectedAccount;
     const principal = parseBalance(acc.balance);
     const annualRate = parseFloat(acc.rate) / 100;
     const monthlyRate = annualRate / 12;
+    const dailyRate = annualRate / 365;
     const termYears = parseInt(acc.term) || 20;
     const totalMonths = termYears * 12;
     const payment = monthlyRate > 0
       ? principal * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
       : principal / totalMonths;
 
-    // Generate yearly schedule
-    const schedule = [];
-    let remaining = principal;
-    let totalInterest = 0;
-    for (let year = 1; year <= termYears && remaining > 0; year++) {
-      let yearInterest = 0;
-      let yearPrincipal = 0;
-      for (let m = 0; m < 12 && remaining > 0; m++) {
-        const interest = remaining * monthlyRate;
-        const princ = Math.min(payment - interest, remaining);
-        yearInterest += interest;
-        yearPrincipal += princ;
-        remaining -= princ;
-      }
-      totalInterest += yearInterest;
-      schedule.push({
-        year, principalPaid: Math.round(yearPrincipal), interestPaid: Math.round(yearInterest),
-        totalPaid: Math.round(yearPrincipal + yearInterest), remainingBalance: Math.max(0, Math.round(remaining)),
+    // Fees
+    const arrangementFee = 999;
+    const valuationFee = 250;
+    const legalFee = 850;
+    const monthlyAccountFee = 12;
+    const totalFees = arrangementFee + valuationFee + legalFee + (monthlyAccountFee * totalMonths);
+
+    // Generate MONTHLY schedule (master — daily and yearly derived from this)
+    const monthlySchedule = [];
+    let rem = principal;
+    let cumInterest = 0;
+    let cumPrincipal = 0;
+    let cumFees = arrangementFee + valuationFee + legalFee;
+    const startDate = new Date(2026, 4, 1); // May 2026
+
+    for (let m = 1; m <= totalMonths && rem > 0; m++) {
+      const interest = rem * monthlyRate;
+      const princ = Math.min(payment - interest, rem);
+      rem -= princ;
+      cumInterest += interest;
+      cumPrincipal += princ;
+      cumFees += monthlyAccountFee;
+      const d = new Date(startDate);
+      d.setMonth(d.getMonth() + m - 1);
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      monthlySchedule.push({
+        month: m, label: `${months[d.getMonth()]} ${d.getFullYear()}`,
+        year: d.getFullYear(), monthIdx: d.getMonth(),
+        principal: Math.round(princ), interest: Math.round(interest),
+        fees: m === 1 ? arrangementFee + valuationFee + legalFee + monthlyAccountFee : monthlyAccountFee,
+        payment: Math.round(payment), remaining: Math.max(0, Math.round(rem)),
+        cumInterest: Math.round(cumInterest), cumPrincipal: Math.round(cumPrincipal), cumFees: Math.round(cumFees),
       });
     }
-    const totalCost = Math.round(principal + totalInterest);
+
+    // YEARLY schedule (aggregate from monthly)
+    const yearlySchedule = [];
+    const yearMap = {};
+    monthlySchedule.forEach(m => {
+      const yr = m.year;
+      if (!yearMap[yr]) yearMap[yr] = { year: yr, principal: 0, interest: 0, fees: 0, totalPaid: 0, remaining: 0, months: 0 };
+      yearMap[yr].principal += m.principal;
+      yearMap[yr].interest += m.interest;
+      yearMap[yr].fees += m.fees;
+      yearMap[yr].totalPaid += m.payment;
+      yearMap[yr].remaining = m.remaining;
+      yearMap[yr].months++;
+    });
+    Object.values(yearMap).sort((a, b) => a.year - b.year).forEach(y => yearlySchedule.push(y));
+
+    // DAILY schedule (generate for current month only — showing 30 days)
+    const dailySchedule = [];
+    const dailyBal = principal;
+    const dailyInterest = dailyBal * dailyRate;
+    const dailyPrinc = (payment / 30) - dailyInterest;
+    for (let d = 1; d <= 30; d++) {
+      const accruedInterest = Math.round(dailyInterest * d * 100) / 100;
+      dailySchedule.push({
+        day: d, date: `${d} May 2026`,
+        interestAccrued: Math.round(dailyInterest * 100) / 100,
+        cumInterest: accruedInterest,
+        balance: Math.round((principal - (dailyPrinc > 0 ? dailyPrinc * d : 0)) * 100) / 100,
+      });
+    }
+
+    const totalInterest = Math.round(cumInterest);
+    const totalCost = Math.round(principal + totalInterest + totalFees);
+
+    // Which rows to show in the table
+    const viewData = scheduleView === "yearly" ? yearlySchedule
+      : scheduleView === "daily" ? dailySchedule
+      : monthlySchedule.slice(scheduleMonthPage * 12, (scheduleMonthPage + 1) * 12);
+    const totalMonthPages = Math.ceil(monthlySchedule.length / 12);
 
     return (
       <div>
         {/* Summary KPIs */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
           {[
             { label: "Monthly Payment", value: fmtCurrency(Math.round(payment)), color: T.primary },
-            { label: "Total Interest", value: fmtCurrency(Math.round(totalInterest)), color: T.warning },
+            { label: "Daily Interest", value: fmtCurrency(Math.round(dailyInterest * 100) / 100), color: T.text },
+            { label: "Total Interest", value: fmtCurrency(totalInterest), color: T.warning },
+            { label: "Total Fees", value: fmtCurrency(Math.round(totalFees)), color: "#8B5CF6" },
             { label: "Total Cost", value: fmtCurrency(totalCost), color: T.text },
-            { label: "Remaining Term", value: `${termYears} yrs`, color: T.primary },
-            { label: "Interest Rate", value: acc.rate, color: T.text },
+            { label: "Term", value: `${termYears} yrs`, color: T.primary },
           ].map(k => (
-            <div key={k.label} style={{ flex: 1, minWidth: 140, padding: "12px 14px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{k.label}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: k.color, fontFamily: "'DM Sans', sans-serif" }}>{k.value}</div>
+            <div key={k.label} style={{ flex: 1, minWidth: 120, padding: "10px 12px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}` }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 3 }}>{k.label}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: k.color }}>{k.value}</div>
             </div>
           ))}
         </div>
 
-        {/* Visual: principal vs interest over time */}
+        {/* Fees breakdown */}
+        <Card style={{ marginBottom: 20, padding: "14px 18px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            {Ico.dollar(16)}
+            <span style={{ fontSize: 14, fontWeight: 700 }}>Fee Schedule</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+            {[
+              { label: "Arrangement Fee", value: fmtCurrency(arrangementFee), when: "On completion", color: "#8B5CF6" },
+              { label: "Valuation Fee", value: fmtCurrency(valuationFee), when: "On application", color: "#8B5CF6" },
+              { label: "Legal Fee", value: fmtCurrency(legalFee), when: "On completion", color: "#8B5CF6" },
+              { label: "Monthly Account Fee", value: `${fmtCurrency(monthlyAccountFee)}/mo`, when: `${fmtCurrency(monthlyAccountFee * totalMonths)} over term`, color: T.textMuted },
+            ].map(f => (
+              <div key={f.label} style={{ padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 3 }}>{f.label}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: f.color }}>{f.value}</div>
+                <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>{f.when}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Amortisation chart (yearly) */}
         <Card style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Amortisation Breakdown</div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 160, marginBottom: 8 }}>
-            {schedule.filter((_, i) => i % Math.max(1, Math.floor(termYears / 20)) === 0).map((s, i, arr) => {
-              const maxPaid = Math.max(...arr.map(x => x.totalPaid));
+            {yearlySchedule.map((s, i) => {
+              const maxPaid = Math.max(...yearlySchedule.map(x => x.totalPaid));
               const h = maxPaid > 0 ? (s.totalPaid / maxPaid) * 140 : 0;
-              const intPct = s.totalPaid > 0 ? (s.interestPaid / s.totalPaid) * 100 : 0;
+              const intPct = s.totalPaid > 0 ? (s.interest / s.totalPaid) * 100 : 0;
               return (
                 <div key={s.year} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <div style={{ width: "80%", height: h, borderRadius: "4px 4px 0 0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
                     <div style={{ flex: intPct, background: T.warning, minHeight: intPct > 0 ? 2 : 0 }} />
                     <div style={{ flex: 100 - intPct, background: T.success }} />
                   </div>
-                  <div style={{ fontSize: 8, color: T.textMuted, marginTop: 4 }}>Y{s.year}</div>
+                  <div style={{ fontSize: 7, color: T.textMuted, marginTop: 3 }}>{s.year}</div>
                 </div>
               );
             })}
@@ -1051,50 +1130,84 @@ function ServicingScreen({ onViewApplication, initialAccountId }) {
           </div>
         </Card>
 
-        {/* Balance curve */}
-        <Card style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Outstanding Balance Over Time</div>
-          <svg viewBox={`0 0 ${schedule.length * 30 + 40} 120`} style={{ width: "100%", height: 120 }}>
-            <polyline
-              points={schedule.map((s, i) => `${20 + i * 30},${10 + (1 - s.remainingBalance / principal) * 100}`).join(" ")}
-              fill="none" stroke={T.primary} strokeWidth="2" />
-            <polyline
-              points={`20,10 ${schedule.map((s, i) => `${20 + i * 30},${10 + (1 - s.remainingBalance / principal) * 100}`).join(" ")} ${20 + (schedule.length - 1) * 30},110 20,110`}
-              fill={`${T.primary}15`} stroke="none" />
-            {schedule.filter((_, i) => i % Math.max(1, Math.floor(termYears / 5)) === 0 || i === schedule.length - 1).map((s, i) => (
-              <text key={s.year} x={20 + (s.year - 1) * 30} y={118} textAnchor="middle" fontSize="8" fill={T.textMuted}>Y{s.year}</text>
-            ))}
-          </svg>
-        </Card>
-
-        {/* Schedule table */}
+        {/* View toggle + Schedule table */}
         <Card noPad>
-          <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 700 }}>Yearly Repayment Schedule</span>
+          <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>Repayment Schedule</span>
+            <div style={{ display: "flex", gap: 0 }}>
+              {["daily", "monthly", "yearly"].map(v => (
+                <button key={v} onClick={() => { setScheduleView(v); setScheduleMonthPage(0); }} style={{
+                  padding: "6px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
+                  background: scheduleView === v ? T.primary : T.card,
+                  color: scheduleView === v ? "#fff" : T.textMuted,
+                  border: `1px solid ${scheduleView === v ? T.primary : T.border}`,
+                  borderRadius: v === "daily" ? "6px 0 0 6px" : v === "yearly" ? "0 6px 6px 0" : 0,
+                }}>{v.charAt(0).toUpperCase() + v.slice(1)}</button>
+              ))}
+            </div>
             <Btn small ghost icon="download">Export</Btn>
           </div>
+
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ background: T.bg }}>
-                  {["Year", "Principal", "Interest", "Total Paid", "Remaining Balance"].map(h => (
-                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>{h}</th>
-                  ))}
+                  {scheduleView === "daily"
+                    ? ["Day", "Date", "Daily Interest", "Cumulative Interest", "Balance"].map(h => (
+                        <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>{h}</th>))
+                    : ["Period", "Principal", "Interest", "Fees", "Total Paid", "Remaining"].map(h => (
+                        <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>{h}</th>))
+                  }
                 </tr>
               </thead>
               <tbody>
-                {schedule.map(s => (
+                {scheduleView === "daily" ? dailySchedule.map(d => (
+                  <tr key={d.day} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
+                    <td style={{ padding: "9px 14px", fontWeight: 600 }}>{d.day}</td>
+                    <td style={{ padding: "9px 14px", color: T.textMuted }}>{d.date}</td>
+                    <td style={{ padding: "9px 14px", color: T.warning }}>{fmtCurrency(d.interestAccrued)}</td>
+                    <td style={{ padding: "9px 14px", color: T.warning, fontWeight: 600 }}>{fmtCurrency(d.cumInterest)}</td>
+                    <td style={{ padding: "9px 14px", fontWeight: 700 }}>{fmtCurrency(d.balance)}</td>
+                  </tr>
+                )) : scheduleView === "yearly" ? yearlySchedule.map(s => (
                   <tr key={s.year} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
-                    <td style={{ padding: "10px 14px", fontWeight: 600 }}>Year {s.year}</td>
-                    <td style={{ padding: "10px 14px", color: T.success, fontWeight: 600 }}>{fmtCurrency(s.principalPaid)}</td>
-                    <td style={{ padding: "10px 14px", color: T.warning }}>{fmtCurrency(s.interestPaid)}</td>
-                    <td style={{ padding: "10px 14px", fontWeight: 600 }}>{fmtCurrency(s.totalPaid)}</td>
-                    <td style={{ padding: "10px 14px", fontWeight: 700, color: s.remainingBalance === 0 ? T.success : T.text }}>{fmtCurrency(s.remainingBalance)}</td>
+                    <td style={{ padding: "9px 14px", fontWeight: 600 }}>{s.year}</td>
+                    <td style={{ padding: "9px 14px", color: T.success, fontWeight: 600 }}>{fmtCurrency(s.principal)}</td>
+                    <td style={{ padding: "9px 14px", color: T.warning }}>{fmtCurrency(s.interest)}</td>
+                    <td style={{ padding: "9px 14px", color: "#8B5CF6" }}>{fmtCurrency(s.fees)}</td>
+                    <td style={{ padding: "9px 14px", fontWeight: 600 }}>{fmtCurrency(s.totalPaid)}</td>
+                    <td style={{ padding: "9px 14px", fontWeight: 700, color: s.remaining === 0 ? T.success : T.text }}>{fmtCurrency(s.remaining)}</td>
+                  </tr>
+                )) : viewData.map(s => (
+                  <tr key={s.month} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
+                    <td style={{ padding: "9px 14px", fontWeight: 600 }}>{s.label}</td>
+                    <td style={{ padding: "9px 14px", color: T.success, fontWeight: 600 }}>{fmtCurrency(s.principal)}</td>
+                    <td style={{ padding: "9px 14px", color: T.warning }}>{fmtCurrency(s.interest)}</td>
+                    <td style={{ padding: "9px 14px", color: "#8B5CF6" }}>{fmtCurrency(s.fees)}</td>
+                    <td style={{ padding: "9px 14px", fontWeight: 600 }}>{fmtCurrency(s.payment)}</td>
+                    <td style={{ padding: "9px 14px", fontWeight: 700, color: s.remaining === 0 ? T.success : T.text }}>{fmtCurrency(s.remaining)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination for monthly view */}
+          {scheduleView === "monthly" && totalMonthPages > 1 && (
+            <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <button onClick={() => setScheduleMonthPage(Math.max(0, scheduleMonthPage - 1))} disabled={scheduleMonthPage === 0}
+                style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: scheduleMonthPage === 0 ? T.textMuted : T.text, fontSize: 12, cursor: scheduleMonthPage === 0 ? "not-allowed" : "pointer", fontFamily: T.font }}>
+                Previous Year
+              </button>
+              <span style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>
+                Year {scheduleMonthPage + 1} of {totalMonthPages} · Months {scheduleMonthPage * 12 + 1}–{Math.min((scheduleMonthPage + 1) * 12, monthlySchedule.length)}
+              </span>
+              <button onClick={() => setScheduleMonthPage(Math.min(totalMonthPages - 1, scheduleMonthPage + 1))} disabled={scheduleMonthPage >= totalMonthPages - 1}
+                style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: scheduleMonthPage >= totalMonthPages - 1 ? T.textMuted : T.text, fontSize: 12, cursor: scheduleMonthPage >= totalMonthPages - 1 ? "not-allowed" : "pointer", fontFamily: T.font }}>
+                Next Year
+              </button>
+            </div>
+          )}
         </Card>
       </div>
     );
