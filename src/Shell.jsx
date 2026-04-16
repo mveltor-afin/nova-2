@@ -96,9 +96,12 @@ import UWWorkstation from "./underwriting/UWWorkstation";
 import UWPerformance from "./underwriting/UWPerformance";
 // IncomeAnalysis now embedded as a tab inside UWWorkstation
 // Customer Portal
-import CustomerDashboard from "./customers/CustomerDashboard";
-import CustomerApply from "./customers/CustomerApply";
+import SmartMoneyFlow from "./customers/SmartMoneyFlow";
+import CustomerApplyChat from "./customers/CustomerApplyChat";
 import CustomerTracker from "./customers/CustomerTracker";
+import MortgageExplorer from "./customers/MortgageExplorer";
+import RateSwitchSimulator from "./customers/RateSwitchSimulator";
+import SavingsGoal from "./customers/SavingsGoal";
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -348,7 +351,9 @@ export default function Shell({ userType }) {
           { id:"customertracker",   label:"My Applications",    icon:"clock" },
         ]},
         { group:"MY PRODUCTS", items:[
-          { id:"customerproducts",  label:"My Products",        icon:"wallet" },
+          { id:"mortgageexplorer",  label:"My Mortgage",        icon:"loans" },
+          { id:"savingsgoal",       label:"My Savings",         icon:"dollar" },
+          { id:"rateswitchsim",     label:"Rate Options",       icon:"arrow" },
           { id:"messages",          label:"Messages",           icon:"messages", badge:1 },
         ]},
         { group:null, items:[
@@ -780,12 +785,12 @@ export default function Shell({ userType }) {
       case "consumerduty":    return <ConsumerDutyScreen />;
       case "regulatory":      return <RegulatoryReportingScreen />;
       // Customer Portal
-      case "customerdashboard": return <CustomerDashboard onNavigate={(screen) => setScreen(screen)} />;
-      case "customerapply":     return <CustomerApply onSubmitted={() => setScreen("customertracker")} />;
+      case "customerdashboard": return <SmartMoneyFlow onNavigate={(screen) => setScreen(screen)} />;
+      case "customerapply":     return <CustomerApplyChat onSubmitted={() => setScreen("customertracker")} />;
       case "customertracker":   return <CustomerTracker />;
-      case "customerproducts":  return contextCustomer
-        ? <CustomerHub customerId={contextCustomer.id} onBack={() => { setContextCustomer(null); setScreen("customerdashboard"); }} />
-        : (() => { setContextCustomer(CUSTOMERS[0]); return <CustomerHub customerId="CUS-001" onBack={() => { setContextCustomer(null); setScreen("customerdashboard"); }} />; })();
+      case "mortgageexplorer":  return <MortgageExplorer />;
+      case "savingsgoal":       return <SavingsGoal />;
+      case "rateswitchsim":     return <RateSwitchSimulator />;
       // Game-changer enhancements (v2.14)
       // DecisionEngine + DocumentIntelligence are now tabs inside UWWorkstation
       // lifecyclepredictor is now a tab inside UWWorkstation
