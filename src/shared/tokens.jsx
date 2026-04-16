@@ -60,7 +60,7 @@ export const Ico = {
 // ─────────────────────────────────────────────
 // PORTAL DATA
 // ─────────────────────────────────────────────
-export const PERSONAS = ["Broker", "Underwriter", "Ops", "Admin", "Finance", "Risk Analyst", "BDM"];
+export const PERSONAS = ["Broker", "Underwriter", "Ops", "Admin", "Finance", "Risk Analyst", "BDM", "Customer"];
 
 export const STATUS_COLORS = {
   Draft: { bg: "#E8E8E8", text: "#555" }, DIP_Approved: { bg: "#D1FAE5", text: "#065F46" },

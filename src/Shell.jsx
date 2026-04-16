@@ -95,6 +95,10 @@ import UWWorkstation from "./underwriting/UWWorkstation";
 // ComparisonEngine, PolicyChecker now embedded as tabs inside UWWorkstation
 import UWPerformance from "./underwriting/UWPerformance";
 // IncomeAnalysis now embedded as a tab inside UWWorkstation
+// Customer Portal
+import CustomerDashboard from "./customers/CustomerDashboard";
+import CustomerApply from "./customers/CustomerApply";
+import CustomerTracker from "./customers/CustomerTracker";
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -336,6 +340,21 @@ export default function Shell({ userType }) {
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
       ]
+    : persona === "Customer"
+    ? [
+        { group:"MY BANKING", items:[
+          { id:"customerdashboard", label:"Dashboard",          icon:"dashboard" },
+          { id:"customerapply",     label:"Apply",              icon:"plus" },
+          { id:"customertracker",   label:"My Applications",    icon:"clock" },
+        ]},
+        { group:"MY PRODUCTS", items:[
+          { id:"customerproducts",  label:"My Products",        icon:"wallet" },
+          { id:"messages",          label:"Messages",           icon:"messages", badge:1 },
+        ]},
+        { group:null, items:[
+          { id:"settings",          label:"Settings",           icon:"settings" },
+        ]},
+      ]
     : [
         // Ops & Admin — shared base, Admin gets extra sections
         { group:"MY CUSTOMERS", items:[
@@ -479,7 +498,7 @@ export default function Shell({ userType }) {
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
                 const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
-                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : "needsattention"));
+                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Customer" ? "customerdashboard" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -760,6 +779,13 @@ export default function Shell({ userType }) {
       case "complaints":      return <ComplaintsScreen />;
       case "consumerduty":    return <ConsumerDutyScreen />;
       case "regulatory":      return <RegulatoryReportingScreen />;
+      // Customer Portal
+      case "customerdashboard": return <CustomerDashboard onNavigate={(screen) => setScreen(screen)} />;
+      case "customerapply":     return <CustomerApply onSubmitted={() => setScreen("customertracker")} />;
+      case "customertracker":   return <CustomerTracker />;
+      case "customerproducts":  return contextCustomer
+        ? <CustomerHub customerId={contextCustomer.id} onBack={() => { setContextCustomer(null); setScreen("customerdashboard"); }} />
+        : (() => { setContextCustomer(CUSTOMERS[0]); return <CustomerHub customerId="CUS-001" onBack={() => { setContextCustomer(null); setScreen("customerdashboard"); }} />; })();
       // Game-changer enhancements (v2.14)
       // DecisionEngine + DocumentIntelligence are now tabs inside UWWorkstation
       // lifecyclepredictor is now a tab inside UWWorkstation
@@ -801,7 +827,7 @@ export default function Shell({ userType }) {
     );
   }
 
-  const errorResetScreen = isBroker ? "brokerdashboard" : persona === "BDM" ? "bdmdashboard" : "needsattention";
+  const errorResetScreen = isBroker ? "brokerdashboard" : persona === "BDM" ? "bdmdashboard" : persona === "Customer" ? "customerdashboard" : "needsattention";
 
   return (
     <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
