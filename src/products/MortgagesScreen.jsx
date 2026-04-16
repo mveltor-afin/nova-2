@@ -112,99 +112,87 @@ export default function MortgagesScreen({ onViewCustomer, onViewCase, onViewServ
             <tbody>
               {mortgages.map((m) => {
                 const ss = statusStyle(m.status);
+                const isOpen = selected === m.id;
+                const cust = isOpen ? CUSTOMERS.find((c) => c.id === m.customerId) : null;
                 return (
-                  <tr
-                    key={m.id}
-                    onClick={() => setSelected(selected === m.id ? null : m.id)}
-                    style={{ borderBottom: `1px solid ${T.borderLight}`, cursor: "pointer", background: selected === m.id ? T.primaryLight : "transparent", transition: "background 0.15s" }}
-                    onMouseEnter={(e) => { if (selected !== m.id) e.currentTarget.style.background = T.primaryLight; }}
-                    onMouseLeave={(e) => { if (selected !== m.id) e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <td style={{ padding: "12px 14px", fontWeight: 600, color: T.primary }}>{m.id}</td>
-                    <td style={{ padding: "12px 14px" }}>{custName(m.customerId)}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: T.textMuted }}>{m.product}</td>
-                    <td style={{ padding: "12px 14px", fontWeight: 600 }}>{m.balance}</td>
-                    <td style={{ padding: "12px 14px" }}>{m.rate}</td>
-                    <td style={{ padding: "12px 14px" }}>{m.ltv}</td>
-                    <td style={{ padding: "12px 14px" }}>{m.payment}</td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <span style={{ background: ss.bg, color: ss.color, border: `1px solid ${ss.border}`, padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{m.status}</span>
-                    </td>
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: m.nextPayment === "OVERDUE" || m.nextPayment === "SUSPENDED" ? T.danger : T.text, fontWeight: m.nextPayment === "OVERDUE" || m.nextPayment === "SUSPENDED" ? 700 : 400 }}>{m.nextPayment}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 12 }}>{m.rateEnd}</td>
-                  </tr>
+                  <React.Fragment key={m.id}>
+                    <tr
+                      onClick={() => setSelected(isOpen ? null : m.id)}
+                      style={{ borderBottom: isOpen ? "none" : `1px solid ${T.borderLight}`, cursor: "pointer", background: isOpen ? T.primaryLight : "transparent", transition: "background 0.15s" }}
+                      onMouseEnter={(e) => { if (!isOpen) e.currentTarget.style.background = T.primaryLight; }}
+                      onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <td style={{ padding: "12px 14px", fontWeight: 600, color: T.primary }}>{m.id}</td>
+                      <td style={{ padding: "12px 14px" }}>{custName(m.customerId)}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: T.textMuted }}>{m.product}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 600 }}>{m.balance}</td>
+                      <td style={{ padding: "12px 14px" }}>{m.rate}</td>
+                      <td style={{ padding: "12px 14px" }}>{m.ltv}</td>
+                      <td style={{ padding: "12px 14px" }}>{m.payment}</td>
+                      <td style={{ padding: "12px 14px" }}>
+                        <span style={{ background: ss.bg, color: ss.color, border: `1px solid ${ss.border}`, padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{m.status}</span>
+                      </td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: m.nextPayment === "OVERDUE" || m.nextPayment === "SUSPENDED" ? T.danger : T.text, fontWeight: m.nextPayment === "OVERDUE" || m.nextPayment === "SUSPENDED" ? 700 : 400 }}>{m.nextPayment}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12 }}>
+                        {m.rateEnd}
+                        <span style={{ marginLeft: 8, color: T.textMuted, fontSize: 11 }}>{isOpen ? "▲" : "▼"}</span>
+                      </td>
+                    </tr>
+                    {/* Inline expanded detail */}
+                    {isOpen && (
+                      <tr>
+                        <td colSpan={10} style={{ padding: 0 }}>
+                          <div style={{ padding: "18px 20px", background: T.bg, borderBottom: `2px solid ${T.primary}30` }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14, marginBottom: 16 }}>
+                              {[
+                                ["Balance", m.balance], ["Rate", m.rate], ["LTV", m.ltv], ["Term", m.term],
+                                ["Monthly Payment", m.payment], ["Next Payment", m.nextPayment], ["Rate End", m.rateEnd], ["Orig Ref", m.origRef],
+                              ].map(([l, v]) => (
+                                <div key={l}>
+                                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, fontWeight: 700 }}>{l}</div>
+                                  <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>{v}</div>
+                                </div>
+                              ))}
+                              {m.arrears && (
+                                <div>
+                                  <div style={{ fontSize: 10, color: T.danger, textTransform: "uppercase", letterSpacing: 0.3, fontWeight: 700 }}>Arrears</div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: T.danger, marginTop: 2 }}>{m.arrears}</div>
+                                </div>
+                              )}
+                            </div>
+                            {/* AI Insight */}
+                            <div style={{ background: T.primaryLight, borderRadius: 8, padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 14 }}>
+                              <div style={{ color: T.primary, flexShrink: 0, marginTop: 1 }}>{Ico.sparkle(14)}</div>
+                              <div style={{ fontSize: 12, color: T.text, lineHeight: 1.5 }}>
+                                {m.status === "Active in Arrears"
+                                  ? `${custName(m.customerId)} has ${m.arrears} in arrears. ${cust?.vuln ? "Vulnerability flag active — follow protocol." : "Consider proactive outreach."}`
+                                  : m.status === "Locked"
+                                  ? `Account locked with ${m.arrears} outstanding. Recommend escalation.`
+                                  : m.status === "Application"
+                                  ? `Application in progress. KYC: ${cust?.kyc || "Unknown"}.`
+                                  : rateExpiring.find((r) => r.id === m.id)
+                                  ? `Rate expires ${m.rateEnd}. Initiate retention conversation.`
+                                  : `Performing well. ${cust?.gamification?.streak || 0} on-time payments. Consider cross-sell.`}
+                              </div>
+                            </div>
+                            {/* Actions */}
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {cust && <Btn small primary icon="customers" onClick={(e) => { e.stopPropagation(); onViewCustomer?.(cust); }}>View Customer</Btn>}
+                              {m.origRef && <Btn small icon="shield" onClick={(e) => { e.stopPropagation(); onViewCase?.(m.origRef); }}>View Case</Btn>}
+                              {m.status !== "Application" && <Btn small icon="wallet" onClick={(e) => { e.stopPropagation(); onViewServicing?.(m.origRef); }}>View Servicing</Btn>}
+                              <Btn small ghost icon="x" onClick={(e) => { e.stopPropagation(); setSelected(null); }}>Close</Btn>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
           </table>
         </div>
       </Card>
-
-      {/* Quick-view Panel */}
-      {selected && (() => {
-        const m = mortgages.find((x) => x.id === selected);
-        if (!m) return null;
-        const cust = CUSTOMERS.find((c) => c.id === m.customerId);
-        return (
-          <Card style={{ marginTop: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>{m.id} — {custName(m.customerId)}</div>
-                <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>{m.product} | Ref: {m.origRef}</div>
-              </div>
-              <Btn small ghost onClick={() => setSelected(null)} icon="x">Close</Btn>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16, marginBottom: 20 }}>
-              {[
-                ["Balance", m.balance],
-                ["Rate", m.rate],
-                ["LTV", m.ltv],
-                ["Term", m.term],
-                ["Monthly Payment", m.payment],
-                ["Next Payment", m.nextPayment],
-                ["Rate End", m.rateEnd],
-                ["Status", m.status],
-              ].map(([l, v]) => (
-                <div key={l}>
-                  <div style={{ fontSize: 11, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3 }}>{l}</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>{v}</div>
-                </div>
-              ))}
-              {m.arrears && (
-                <div>
-                  <div style={{ fontSize: 11, color: T.danger, textTransform: "uppercase", letterSpacing: 0.3 }}>Arrears</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.danger, marginTop: 2 }}>{m.arrears}</div>
-                </div>
-              )}
-            </div>
-            {/* AI Insight */}
-            <div style={{ background: T.primaryLight, borderRadius: 10, padding: "14px 18px", display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <div style={{ color: T.primary, flexShrink: 0, marginTop: 2 }}>{Ico.sparkle(16)}</div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: T.primary, marginBottom: 4 }}>AI Insight</div>
-                <div style={{ fontSize: 12, color: T.text, lineHeight: 1.5 }}>
-                  {m.status === "Active in Arrears"
-                    ? `Customer ${custName(m.customerId)} has ${m.arrears} in arrears. ${cust?.vuln ? "Vulnerability flag is active — follow vulnerability protocol." : "Consider proactive outreach to discuss repayment options."}`
-                    : m.status === "Locked"
-                    ? `Account locked with ${m.arrears} outstanding. No contact in 60 days. Recommend escalation to collections manager.`
-                    : m.status === "Application"
-                    ? `New mortgage application in progress for ${custName(m.customerId)}. KYC status: ${cust?.kyc || "Unknown"}. Ensure onboarding workflow is progressing.`
-                    : rateExpiring.find((r) => r.id === m.id)
-                    ? `Rate expires ${m.rateEnd}. Current rate ${m.rate} will revert to SVR. Initiate retention conversation to retain this relationship.`
-                    : `Account performing well. LTV at ${m.ltv}, ${cust?.gamification?.streak || 0} consecutive on-time payments. Consider cross-sell opportunities.`
-                  }
-                </div>
-              </div>
-            </div>
-            {/* Navigation actions */}
-            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-              {cust && <Btn small primary icon="customers" onClick={() => onViewCustomer?.(cust)}>View Customer</Btn>}
-              {m.origRef && <Btn small icon="shield" onClick={() => onViewCase?.(m.origRef)}>View Case</Btn>}
-              {m.status !== "Application" && <Btn small icon="wallet" onClick={() => onViewServicing?.(m.origRef)}>View Servicing</Btn>}
-            </div>
-          </Card>
-        );
-      })()}
     </div>
   );
 }
