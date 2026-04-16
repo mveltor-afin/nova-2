@@ -22,7 +22,7 @@ const maturityColor = (days) => {
   return { bg: T.successBg, color: T.success };
 };
 
-export default function SavingsScreen() {
+export default function SavingsScreen({ onViewCustomer }) {
   const [selected, setSelected] = useState(null);
 
   const savings = useMemo(() => PRODUCTS.filter((p) => p.type === "Fixed Term Deposit" || p.type === "Notice Account"), []);
@@ -122,45 +122,87 @@ export default function SavingsScreen() {
               {savings.map((s) => {
                 const mc = maturityColor(s.daysToMaturity);
                 const isFixed = s.type === "Fixed Term Deposit";
+                const isOpen = selected === s.id;
+                const cust = isOpen ? CUSTOMERS.find(c => c.id === s.customerId) : null;
                 return (
-                  <tr
-                    key={s.id}
-                    onClick={() => setSelected(selected === s.id ? null : s.id)}
-                    style={{ borderBottom: `1px solid ${T.borderLight}`, cursor: "pointer", background: selected === s.id ? T.primaryLight : "transparent", transition: "background 0.15s" }}
-                    onMouseEnter={(e) => { if (selected !== s.id) e.currentTarget.style.background = T.primaryLight; }}
-                    onMouseLeave={(e) => { if (selected !== s.id) e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <td style={{ padding: "12px 14px", fontWeight: 600, color: T.primary }}>{s.id}</td>
-                    <td style={{ padding: "12px 14px" }}>{custName(s.customerId)}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: T.textMuted }}>{s.product}</td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <span style={{ background: isFixed ? "#FFF8E0" : T.successBg, color: isFixed ? "#92400E" : T.success, padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
-                        {isFixed ? "Fixed Term" : "Notice"}
-                      </span>
-                    </td>
-                    <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.balance}</td>
-                    <td style={{ padding: "12px 14px" }}>{s.rate}</td>
-                    <td style={{ padding: "12px 14px" }}>
-                      {isFixed ? (
-                        <span>
-                          <span style={{ fontSize: 12 }}>{s.maturity}</span>
-                          {s.daysToMaturity != null && (
-                            <span style={{ marginLeft: 8, background: mc.bg, color: mc.color, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>
-                              {s.daysToMaturity}d
-                            </span>
-                          )}
+                  <React.Fragment key={s.id}>
+                    <tr
+                      onClick={() => setSelected(isOpen ? null : s.id)}
+                      style={{ borderBottom: isOpen ? "none" : `1px solid ${T.borderLight}`, cursor: "pointer", background: isOpen ? T.primaryLight : "transparent", transition: "background 0.15s" }}
+                      onMouseEnter={(e) => { if (!isOpen) e.currentTarget.style.background = T.primaryLight; }}
+                      onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <td style={{ padding: "12px 14px", fontWeight: 600, color: T.primary }}>{s.id}</td>
+                      <td style={{ padding: "12px 14px" }}>{custName(s.customerId)}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: T.textMuted }}>{s.product}</td>
+                      <td style={{ padding: "12px 14px" }}>
+                        <span style={{ background: isFixed ? "#FFF8E0" : T.successBg, color: isFixed ? "#92400E" : T.success, padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                          {isFixed ? "Fixed Term" : "Notice"}
                         </span>
-                      ) : (
-                        <span style={{ fontSize: 12 }}>{s.noticePeriod}</span>
-                      )}
-                    </td>
-                    <td style={{ padding: "12px 14px", fontSize: 12 }}>{s.interestEarned || "—"}</td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <span style={{ background: s.status === "Active" ? T.successBg : s.status === "Pending" ? "#DBEAFE" : "#E5E7EB", color: s.status === "Active" ? T.success : s.status === "Pending" ? "#1E40AF" : "#374151", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
-                        {s.status}
-                      </span>
-                    </td>
-                  </tr>
+                      </td>
+                      <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.balance}</td>
+                      <td style={{ padding: "12px 14px" }}>{s.rate}</td>
+                      <td style={{ padding: "12px 14px" }}>
+                        {isFixed ? (
+                          <span>
+                            <span style={{ fontSize: 12 }}>{s.maturity}</span>
+                            {s.daysToMaturity != null && (
+                              <span style={{ marginLeft: 8, background: mc.bg, color: mc.color, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>
+                                {s.daysToMaturity}d
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12 }}>{s.noticePeriod}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: "12px 14px", fontSize: 12 }}>{s.interestEarned || "—"}</td>
+                      <td style={{ padding: "12px 14px" }}>
+                        <span style={{ background: s.status === "Active" ? T.successBg : s.status === "Pending" ? "#DBEAFE" : "#E5E7EB", color: s.status === "Active" ? T.success : s.status === "Pending" ? "#1E40AF" : "#374151", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                          {s.status}
+                        </span>
+                        <span style={{ marginLeft: 6, color: T.textMuted, fontSize: 11 }}>{isOpen ? "▲" : "▼"}</span>
+                      </td>
+                    </tr>
+                    {/* Inline expanded detail */}
+                    {isOpen && (
+                      <tr>
+                        <td colSpan={9} style={{ padding: 0 }}>
+                          <div style={{ padding: "18px 20px", background: T.bg, borderBottom: `2px solid ${T.primary}30` }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14, marginBottom: 16 }}>
+                              {[
+                                ["Account", s.id], ["Customer", custName(s.customerId)], ["Product", s.product],
+                                ["Type", isFixed ? "Fixed Term Deposit" : "Notice Account"],
+                                ["Balance", s.balance], ["Rate", s.rate], ["Status", s.status],
+                                ...(isFixed ? [["Principal", s.principal], ["Maturity", s.maturity], ["Interest Earned", s.interestEarned], ["Days to Maturity", s.daysToMaturity != null ? `${s.daysToMaturity} days` : "—"]] : [["Notice Period", s.noticePeriod]]),
+                              ].map(([l, v]) => (
+                                <div key={l}>
+                                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, fontWeight: 700 }}>{l}</div>
+                                  <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>{v}</div>
+                                </div>
+                              ))}
+                            </div>
+                            {/* AI Insight */}
+                            <div style={{ background: T.primaryLight, borderRadius: 8, padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 14 }}>
+                              <div style={{ color: T.primary, flexShrink: 0, marginTop: 1 }}>{Ico.sparkle(14)}</div>
+                              <div style={{ fontSize: 12, color: T.text, lineHeight: 1.5 }}>
+                                {isFixed && s.daysToMaturity != null && s.daysToMaturity <= 60
+                                  ? `Fixed deposit matures in ${s.daysToMaturity} days. Contact ${custName(s.customerId)} to discuss renewal options — retention opportunity.`
+                                  : isFixed
+                                  ? `Fixed deposit performing well at ${s.rate}. Interest earned: ${s.interestEarned}. No action required until maturity.`
+                                  : `Notice account at ${s.rate} with ${s.noticePeriod} notice period. Balance: ${s.balance}. Consider rate review if market has moved.`}
+                              </div>
+                            </div>
+                            {/* Actions */}
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {cust && <Btn small primary icon="customers" onClick={(e) => { e.stopPropagation(); onViewCustomer?.(cust); }}>View Customer</Btn>}
+                              <Btn small ghost icon="x" onClick={(e) => { e.stopPropagation(); setSelected(null); }}>Close</Btn>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>

@@ -666,7 +666,7 @@ export default function Shell({ userType }) {
               setServicingAccountId(svcAcc?.id || null);
               setShowServicingModal(true);
             }} />;
-      case "savings":         return <SavingsScreen />;
+      case "savings":         return <SavingsScreen onViewCustomer={(cust) => { setContextCustomer(cust); setScreen("customerhub"); }} />;
       case "savingsdashboard":return <SavingsDashboard />;
       case "currentaccounts": return <CurrentAccountsScreen />;
       case "insurance":       return <InsuranceScreen />;
