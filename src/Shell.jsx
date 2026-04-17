@@ -97,13 +97,7 @@ import UWWorkstation from "./underwriting/UWWorkstation";
 // ComparisonEngine, PolicyChecker now embedded as tabs inside UWWorkstation
 import UWPerformance from "./underwriting/UWPerformance";
 // IncomeAnalysis now embedded as a tab inside UWWorkstation
-// Customer Portal
-import SmartMoneyFlow from "./customers/SmartMoneyFlow";
-import CustomerApplyChat from "./customers/CustomerApplyChat";
-import CustomerTracker from "./customers/CustomerTracker";
-import MortgageExplorer from "./customers/MortgageExplorer";
-import RateSwitchSimulator from "./customers/RateSwitchSimulator";
-import SavingsGoal from "./customers/SavingsGoal";
+// Customer Portal screens removed — customer app is a separate standalone app
 // Round 3 enhancements
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
@@ -363,23 +357,6 @@ export default function Shell({ userType }) {
           { id:"settings",          label:"Settings",            icon:"settings" },
         ]},
       ]
-    : persona === "Customer"
-    ? [
-        { group:"MY BANKING", items:[
-          { id:"customerdashboard", label:"Dashboard",          icon:"dashboard" },
-          { id:"customerapply",     label:"Apply",              icon:"plus" },
-          { id:"customertracker",   label:"My Applications",    icon:"clock" },
-        ]},
-        { group:"MY PRODUCTS", items:[
-          { id:"mortgageexplorer",  label:"My Mortgage",        icon:"loans" },
-          { id:"savingsgoal",       label:"My Savings",         icon:"dollar" },
-          { id:"rateswitchsim",     label:"Rate Options",       icon:"arrow" },
-          { id:"messages",          label:"Messages",           icon:"messages", badge:1 },
-        ]},
-        { group:null, items:[
-          { id:"settings",          label:"Settings",           icon:"settings" },
-        ]},
-      ]
     : [
         // Ops & Admin — shared base, Admin gets extra sections
         { group:"MY CUSTOMERS", items:[
@@ -523,7 +500,7 @@ export default function Shell({ userType }) {
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
                 const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
-                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : p === "Customer" ? "customerdashboard" : "needsattention"));
+                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -806,13 +783,7 @@ export default function Shell({ userType }) {
       case "complaints":      return <ComplaintsScreen />;
       case "consumerduty":    return <ConsumerDutyScreen />;
       case "regulatory":      return <RegulatoryReportingScreen />;
-      // Customer Portal
-      case "customerdashboard": return <SmartMoneyFlow onNavigate={(screen) => setScreen(screen)} />;
-      case "customerapply":     return <CustomerApplyChat onSubmitted={() => setScreen("customertracker")} />;
-      case "customertracker":   return <CustomerTracker />;
-      case "mortgageexplorer":  return <MortgageExplorer />;
-      case "savingsgoal":       return <SavingsGoal />;
-      case "rateswitchsim":     return <RateSwitchSimulator />;
+      // Customer Portal removed — separate standalone app
       // Game-changer enhancements (v2.14)
       // DecisionEngine + DocumentIntelligence are now tabs inside UWWorkstation
       // lifecyclepredictor is now a tab inside UWWorkstation
@@ -854,7 +825,7 @@ export default function Shell({ userType }) {
     );
   }
 
-  const errorResetScreen = isBroker ? "brokerdashboard" : persona === "BDM" ? "bdmdashboard" : persona === "Customer" ? "customerdashboard" : "needsattention";
+  const errorResetScreen = isBroker ? "brokerdashboard" : persona === "BDM" ? "bdmdashboard" : "needsattention";
 
   return (
     <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
