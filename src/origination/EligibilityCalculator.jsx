@@ -3,30 +3,14 @@ import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import FairValueAssessment from "../shared/FairValueAssessment";
 import InlineHelp from "../shared/InlineHelp";
+import { getEligibleProducts, getRateBreakdown, CREDIT_PROFILES, PRODUCTS_PRICING, calcMonthlyPayment } from "../data/pricing";
 
 const fmt = (n) => n != null ? "£" + Number(n).toLocaleString("en-GB", { maximumFractionDigits: 0 }) : "—";
 const pct = (n) => n != null ? n.toFixed(1) + "%" : "—";
 
-const PRODUCTS = [
-  { name: "Afin Fix 2yr 75%", rate: 4.29, maxLtv: 75, type: "Residential", repayment: "Capital & Interest", erc: "3% yr1, 2% yr2" },
-  { name: "Afin Fix 5yr 80%", rate: 4.59, maxLtv: 80, type: "Residential", repayment: "Capital & Interest", erc: "5% yr1-3, 3% yr4-5" },
-  { name: "Afin Tracker +1.25%", rate: 5.50, maxLtv: 75, type: "Residential", repayment: "Capital & Interest", erc: "None" },
-  { name: "Afin Fix 2yr 90%", rate: 5.19, maxLtv: 90, type: "Residential", repayment: "Capital & Interest", erc: "4% yr1, 2% yr2" },
-  { name: "Afin BTL Fix 2yr", rate: 5.49, maxLtv: 75, type: "BTL", repayment: "Interest Only", erc: "3% yr1, 2% yr2" },
-  { name: "Afin IO 60% LTV", rate: 4.89, maxLtv: 60, type: "Residential", repayment: "Interest Only", erc: "2% yr1" },
-  { name: "Afin Holiday Let Fix 3yr", rate: 5.99, maxLtv: 70, type: "Holiday Let", repayment: "Capital & Interest", erc: "4% yr1-2, 2% yr3" },
-  { name: "Afin Green Fix 5yr", rate: 4.39, maxLtv: 80, type: "Residential", repayment: "Capital & Interest", erc: "5% yr1-3, 2% yr4-5" },
-];
-
-function calcMonthly(loan, rate, termYears, interestOnly) {
-  const r = rate / 100 / 12;
-  const n = termYears * 12;
-  if (interestOnly) return loan * r;
-  return loan * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-}
-
 function EligibilityCalculator() {
   const [employment, setEmployment] = useState("Employed");
+  const [creditProfile, setCreditProfile] = useState("clean");
   const [income, setIncome] = useState("70000");
   const [partnerIncome, setPartnerIncome] = useState("");
   const [propertyValue, setPropertyValue] = useState("485000");
@@ -34,9 +18,11 @@ function EligibilityCalculator() {
   const [term, setTerm] = useState("25");
   const [repaymentType, setRepaymentType] = useState("Capital & Interest");
   const [propertyType, setPropertyType] = useState("Residential");
+  const [epcRating, setEpcRating] = useState("D");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState(null);
 
   const loanAmount = (Number(propertyValue) || 0) - (Number(deposit) || 0);
   const ltv = propertyValue ? (loanAmount / Number(propertyValue)) * 100 : 0;
@@ -52,43 +38,39 @@ function EligibilityCalculator() {
   const handleCheck = () => {
     setLoading(true);
     setShowResults(false);
+    setExpandedProduct(null);
     setTimeout(() => {
-      const matched = PRODUCTS.map((p) => {
-        const isIO = p.repayment === "Interest Only";
-        const monthly = calcMonthly(loanAmount, p.rate, Number(term), isIO);
+      const eligible = getEligibleProducts({
+        ltv, credit: creditProfile, employment, property: propertyType === "Residential" ? "Standard" : propertyType,
+        epc: epcRating, loyalty: "New", purpose: propertyType === "BTL" ? "BTL" : "Purchase",
+      });
+
+      const matched = eligible.map(p => {
+        const monthly = p.available ? calcMonthlyPayment(loanAmount, p.rate, Number(term)) : 0;
         const totalCost = monthly * Number(term) * 12;
+        let status = p.available ? "eligible" : "ineligible";
+        let reason = p.available ? "" : p.reason;
 
-        let status = "eligible";
-        let reason = "";
-
-        if (ltv > p.maxLtv) {
-          status = "ineligible";
-          reason = `LTV ${pct(ltv)} exceeds max ${p.maxLtv}%`;
-        } else if (p.type !== propertyType && p.type !== "Residential") {
-          status = "ineligible";
-          reason = `Product is for ${p.type} only`;
-        } else if (propertyType !== "Residential" && p.type === "Residential") {
-          status = "ineligible";
-          reason = `Not available for ${propertyType} properties`;
-        } else if (employment === "Self-Employed" && ltv > p.maxLtv - 5) {
+        if (p.available && employment === "Self-Employed" && ltv > (p.product?.maxLTV || 75) - 5) {
           status = "conditional";
           reason = "Self-employed: requires 2 years SA302 + accountant cert";
-        } else if (employment === "Contract" && ltv > 70) {
+        } else if (p.available && employment === "Contractor" && ltv > 70) {
           status = "conditional";
           reason = "Contractor: 12-month contract history required";
-        } else if (ltv > p.maxLtv - 3) {
-          status = "conditional";
-          reason = "Near max LTV — subject to valuation";
         }
 
-        return { ...p, monthly, totalCost, status, reason };
+        return { name: p.product, rate: p.rate, monthly, totalCost, status, reason, breakdown: p.breakdown, maxLtv: p.product ? PRODUCTS_PRICING_MAX[p.product] : 75 };
       });
 
       setResults(matched);
       setLoading(false);
       setShowResults(true);
-    }, 1500);
+    }, 1200);
   };
+
+  const PRODUCTS_PRICING_MAX = Object.fromEntries(
+    Object.entries(PRODUCTS_PRICING).map(([k, v]) => [k, v.maxLTV])
+  );
 
   const maxBorrowing = totalIncome * 4.5;
   const bestEligible = results?.filter((r) => r.status === "eligible").sort((a, b) => a.rate - b.rate)[0];
@@ -158,6 +140,13 @@ function EligibilityCalculator() {
 
           <Select label="Property Type" value={propertyType} onChange={setPropertyType} required
             options={["Residential", "BTL", "Holiday Let"]} />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+            <Select label="Credit Profile" value={creditProfile} onChange={setCreditProfile} required
+              options={CREDIT_PROFILES.map(c => ({ value: c.id, label: `${c.label} — ${c.desc}` }))} />
+            <Select label="EPC Rating" value={epcRating} onChange={setEpcRating} required
+              options={["A", "B", "C", "D", "E", "F", "G"].map(r => ({ value: r, label: `EPC ${r}` }))} />
+          </div>
 
           {/* Auto-calculated summary */}
           <div style={{ background: T.primaryLight, borderRadius: 10, padding: 16, marginBottom: 20, display: "flex", gap: 24 }}>
