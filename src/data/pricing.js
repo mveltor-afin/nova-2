@@ -145,7 +145,7 @@ export function getRate({
       loyalty: { tier: loyalty, adj: loyaltyAdj },
       purpose: { type: purpose, adj: purposeAdj },
     },
-    product: prod,
+    productData: prod,
   };
 }
 

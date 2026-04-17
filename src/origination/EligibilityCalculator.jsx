@@ -51,7 +51,7 @@ function EligibilityCalculator() {
         let status = p.available ? "eligible" : "ineligible";
         let reason = p.available ? "" : p.reason;
 
-        if (p.available && employment === "Self-Employed" && ltv > (p.product?.maxLTV || 75) - 5) {
+        if (p.available && employment === "Self-Employed" && ltv > (p.productData?.maxLTV || 75) - 5) {
           status = "conditional";
           reason = "Self-employed: requires 2 years SA302 + accountant cert";
         } else if (p.available && employment === "Contractor" && ltv > 70) {
@@ -59,7 +59,7 @@ function EligibilityCalculator() {
           reason = "Contractor: 12-month contract history required";
         }
 
-        return { name: p.product, rate: p.rate, monthly, totalCost, status, reason, breakdown: p.breakdown, maxLtv: p.product ? PRODUCTS_PRICING_MAX[p.product] : 75 };
+        return { name: p.product, rate: p.rate, monthly, totalCost, status, reason, breakdown: p.breakdown, maxLtv: p.productData?.maxLTV || 75 };
       });
 
       setResults(matched);
@@ -67,10 +67,6 @@ function EligibilityCalculator() {
       setShowResults(true);
     }, 1200);
   };
-
-  const PRODUCTS_PRICING_MAX = Object.fromEntries(
-    Object.entries(PRODUCTS_PRICING).map(([k, v]) => [k, v.maxLTV])
-  );
 
   const maxBorrowing = totalIncome * 4.5;
   const bestEligible = results?.filter((r) => r.status === "eligible").sort((a, b) => a.rate - b.rate)[0];
