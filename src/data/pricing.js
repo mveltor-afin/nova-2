@@ -207,3 +207,201 @@ export function calcMonthlyPayment(principal, annualRate, termYears) {
   if (r === 0) return principal / n;
   return Math.round(principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
 }
+
+// ─────────────────────────────────────────────
+// BUCKET-AWARE ELIGIBILITY
+//
+// Reads Product Buckets from localStorage and returns
+// eligible products with rates, enforcing bucket-level criteria.
+// ─────────────────────────────────────────────
+
+function loadBuckets() {
+  try {
+    const s = localStorage.getItem("product_buckets");
+    return s ? JSON.parse(s) : null;
+  } catch { return null; }
+}
+
+const LTV_BAND_MAX = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+
+function ltvToBand(ltv) {
+  if (ltv <= 60) return "≤60%";
+  if (ltv <= 75) return "60-75%";
+  if (ltv <= 85) return "75-85%";
+  if (ltv <= 90) return "85-90%";
+  return "90-95%";
+}
+
+/**
+ * Get eligible products from product buckets.
+ * Enforces: maxLTV, acceptedCreditProfiles, acceptedEmployments,
+ * acceptedProperties, acceptedEpc, loan size limits, age limits.
+ *
+ * Returns array of { bucket, product, rate, available, reason, erc, tier, tierAdj }
+ */
+export function getBucketEligibleProducts({
+  ltv = 60,
+  credit = "clean",
+  employment = "Employed",
+  property = "Standard",
+  epc = "D",
+  loanAmount = 0,
+  age = 0,
+  termYears = 25,
+}) {
+  const buckets = loadBuckets();
+  if (!buckets || buckets.length === 0) return [];
+
+  const results = [];
+  const band = ltvToBand(ltv);
+
+  for (const bucket of buckets) {
+    // Check bucket-level LTV
+    if (ltv > (bucket.maxLTV || 75)) {
+      bucket.products?.forEach(p => results.push({
+        bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+        rate: null, available: false, reason: `LTV ${ltv.toFixed(0)}% exceeds ${bucket.name} max ${bucket.maxLTV}%`,
+        erc: p.erc,
+      }));
+      continue;
+    }
+
+    // Check accepted credit profile
+    if (bucket.acceptedCreditProfiles && !bucket.acceptedCreditProfiles.includes(credit)) {
+      const profile = CREDIT_PROFILES.find(c => c.id === credit);
+      bucket.products?.forEach(p => results.push({
+        bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+        rate: null, available: false, reason: `${profile?.label || credit} not accepted by ${bucket.name}`,
+        erc: p.erc,
+      }));
+      continue;
+    }
+
+    // Check accepted employment
+    if (bucket.acceptedEmployments && !bucket.acceptedEmployments.includes(employment)) {
+      bucket.products?.forEach(p => results.push({
+        bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+        rate: null, available: false, reason: `${employment} not accepted by ${bucket.name}`,
+        erc: p.erc,
+      }));
+      continue;
+    }
+
+    // Check accepted property type
+    if (bucket.acceptedProperties && !bucket.acceptedProperties.includes(property)) {
+      bucket.products?.forEach(p => results.push({
+        bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+        rate: null, available: false, reason: `${property} not accepted by ${bucket.name}`,
+        erc: p.erc,
+      }));
+      continue;
+    }
+
+    // Check accepted EPC
+    if (bucket.acceptedEpc && !bucket.acceptedEpc.includes(epc)) {
+      bucket.products?.forEach(p => results.push({
+        bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+        rate: null, available: false, reason: `EPC ${epc} not accepted by ${bucket.name}`,
+        erc: p.erc,
+      }));
+      continue;
+    }
+
+    // Check loan size limits
+    if (loanAmount > 0 && bucket.criteria?.loanSize) {
+      const parseAmount = (s) => Number(String(s).replace(/[^0-9.]/g, "")) || 0;
+      const minLoan = parseAmount(bucket.criteria.loanSize.min);
+      const maxLoan = parseAmount(bucket.criteria.loanSize.max);
+      if (minLoan && loanAmount < minLoan) {
+        bucket.products?.forEach(p => results.push({
+          bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+          rate: null, available: false, reason: `Loan £${loanAmount.toLocaleString()} below ${bucket.name} minimum £${minLoan.toLocaleString()}`,
+          erc: p.erc,
+        }));
+        continue;
+      }
+      if (maxLoan && loanAmount > maxLoan) {
+        bucket.products?.forEach(p => results.push({
+          bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+          rate: null, available: false, reason: `Loan £${loanAmount.toLocaleString()} exceeds ${bucket.name} maximum £${maxLoan.toLocaleString()}`,
+          erc: p.erc,
+        }));
+        continue;
+      }
+    }
+
+    // Check age limits
+    if (age > 0 && bucket.criteria?.age) {
+      if (age < (bucket.criteria.age.min || 0)) {
+        bucket.products?.forEach(p => results.push({
+          bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+          rate: null, available: false, reason: `Age ${age} below ${bucket.name} minimum ${bucket.criteria.age.min}`,
+          erc: p.erc,
+        }));
+        continue;
+      }
+      const ageAtEnd = age + termYears;
+      if (ageAtEnd > (bucket.criteria.age.maxAtEnd || 999)) {
+        bucket.products?.forEach(p => results.push({
+          bucket: bucket.name, bucketColor: bucket.color, product: p.type, code: p.code,
+          rate: null, available: false, reason: `Age ${ageAtEnd} at end of term exceeds ${bucket.name} max ${bucket.criteria.age.maxAtEnd}`,
+          erc: p.erc,
+        }));
+        continue;
+      }
+    }
+
+    // Bucket is eligible — find matching tier and calculate rates for each product
+    const tiers = bucket.tiers || [];
+    let matchedTier = null;
+    let matchedTierIdx = -1;
+    for (let tIdx = tiers.length - 1; tIdx >= 0; tIdx--) {
+      const tier = tiers[tIdx];
+      const conds = tier.conditions || {};
+      let match = true;
+      if (conds.credit?.length && !conds.credit.includes(credit)) match = false;
+      if (conds.employment?.length && !conds.employment.includes(employment)) match = false;
+      if (conds.property?.length && !conds.property.includes(property)) match = false;
+      if (conds.epc?.length && !conds.epc.includes(epc)) match = false;
+      if (match) { matchedTier = tier; matchedTierIdx = tIdx; break; }
+    }
+
+    for (const prod of (bucket.products || [])) {
+      const baseRate = prod.rates?.[band];
+      if (baseRate == null) {
+        results.push({
+          bucket: bucket.name, bucketColor: bucket.color, product: prod.type, code: prod.code,
+          rate: null, available: false, reason: `${prod.type} not offered at ${band} LTV`,
+          erc: prod.erc,
+        });
+        continue;
+      }
+
+      let tierAdj = 0;
+      if (matchedTier) {
+        if (matchedTier.adjustmentType === "flat") {
+          tierAdj = parseFloat(matchedTier.flatAdj) || 0;
+        } else {
+          tierAdj = parseFloat(matchedTier.gridAdj?.[prod.type]?.[band]) || parseFloat(matchedTier.flatAdj) || 0;
+        }
+      }
+
+      const finalRate = Math.round((baseRate + tierAdj) * 100) / 100;
+      results.push({
+        bucket: bucket.name, bucketColor: bucket.color, product: prod.type, code: prod.code,
+        rate: finalRate, available: true, erc: prod.erc,
+        tier: matchedTier?.name || "Base", tierAdj,
+        baseRate, maxLTV: bucket.maxLTV,
+        incomeMultiple: bucket.criteria?.incomeMultiple,
+        fees: bucket.fees,
+      });
+    }
+  }
+
+  // Sort: available first, then by rate
+  return results.sort((a, b) => {
+    if (a.available && !b.available) return -1;
+    if (!a.available && b.available) return 1;
+    return (a.rate || 99) - (b.rate || 99);
+  });
+}

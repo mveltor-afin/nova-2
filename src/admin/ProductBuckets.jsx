@@ -60,7 +60,7 @@ const ALL_ACCEPTED_EPC = ["A", "B", "C", "D", "E", "F", "G"];
 // ─────────────────────────────────────────────
 // ALL LTV BANDS (used for rate grids)
 // ─────────────────────────────────────────────
-const ALL_LTV_BANDS = ["\u226460%", "60-75%", "75-85%", "85-90%", "90-95%"];
+const ALL_LTV_BANDS = ["≤60%", "60-75%", "75-85%", "85-90%", "90-95%"];
 
 // ─────────────────────────────────────────────
 // DEFAULT BUCKETS — Unified hierarchy
@@ -69,7 +69,7 @@ const DEFAULT_BUCKETS = [
   {
     name: "Prime",
     color: "#059669",
-    desc: "Clean credit \u00b7 Standard criteria \u00b7 Purchase & remortgage",
+    desc: "Clean credit · Standard criteria · Purchase & remortgage",
     maxLTV: 75,
     acceptedCreditProfiles: ["clean", "near_prime"],
     acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
@@ -81,9 +81,9 @@ const DEFAULT_BUCKETS = [
         adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
       { name: "Self-Employed", conditions: { credit: ["clean"], employment: ["Self-Employed", "Contractor"] },
         adjustmentType: "grid", flatAdj: 0.15, gridAdj: {
-          "2-Year Fixed": { "\u226460%": 0.15, "60-75%": 0.20 },
-          "5-Year Fixed": { "\u226460%": 0.15, "60-75%": 0.20 },
-          "2-Year Tracker": { "\u226460%": 0.15, "60-75%": 0.20 },
+          "2-Year Fixed": { "≤60%": 0.15, "60-75%": 0.20 },
+          "5-Year Fixed": { "≤60%": 0.15, "60-75%": 0.20 },
+          "2-Year Tracker": { "≤60%": 0.15, "60-75%": 0.20 },
         }},
       { name: "Near Prime", conditions: { credit: ["near_prime"] },
         adjustmentType: "flat", flatAdj: 0.25, gridAdj: {} },
@@ -93,7 +93,7 @@ const DEFAULT_BUCKETS = [
         adjustmentType: "flat", flatAdj: -0.15, gridAdj: {} },
     ],
     criteria: {
-      loanSize: { min: "\u00a325,000", max: "\u00a31,000,000" },
+      loanSize: { min: "£25,000", max: "£1,000,000" },
       maxApplicants: 2,
       age: { min: 21, maxAtEnd: 75 },
       residency: "UK citizen / Settled / Pre-settled status",
@@ -107,32 +107,32 @@ const DEFAULT_BUCKETS = [
       },
       employment: ["Employed (min 6 months)", "Self-employed (min 2 years)", "Contractors (12 months history)", "Retired (with pension income)"],
       property: {
-        minValue: "\u00a375,000",
+        minValue: "£75,000",
         acceptable: ["Houses", "Flats (up to 6 floors)", "Bungalows", "New build", "Ex-local authority"],
         unacceptable: ["Above commercial", "Freehold flats", "Mobile homes", "Houseboats"],
-        valuation: "Full valuation required. AVM accepted for \u226460% LTV remortgages.",
+        valuation: "Full valuation required. AVM accepted for ≤60% LTV remortgages.",
       },
     },
     fees: {
-      productFee: "\u00a31,495",
+      productFee: "£1,495",
       reversion: "BBR + 3.99%",
       termRange: "2-40 years",
       valuationFees: [
-        { upTo: "\u00a3100,000", fee: "\u00a3150" }, { upTo: "\u00a3200,000", fee: "\u00a3225" },
-        { upTo: "\u00a3350,000", fee: "\u00a3295" }, { upTo: "\u00a3500,000", fee: "\u00a3395" },
-        { upTo: "\u00a31,000,000", fee: "\u00a3595" },
+        { upTo: "£100,000", fee: "£150" }, { upTo: "£200,000", fee: "£225" },
+        { upTo: "£350,000", fee: "£295" }, { upTo: "£500,000", fee: "£395" },
+        { upTo: "£1,000,000", fee: "£595" },
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "P2F", erc: "3%, 2%", rates: { "\u226460%": 4.19, "60-75%": 4.49 } },
-      { type: "5-Year Fixed", code: "P5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 4.59, "60-75%": 4.89 } },
-      { type: "2-Year Tracker", code: "PTR", erc: "No ERCs", rates: { "\u226460%": 4.84, "60-75%": 5.14 } },
+      { type: "2-Year Fixed", code: "P2F", erc: "3%, 2%", rates: { "≤60%": 4.19, "60-75%": 4.49 } },
+      { type: "5-Year Fixed", code: "P5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "≤60%": 4.59, "60-75%": 4.89 } },
+      { type: "2-Year Tracker", code: "PTR", erc: "No ERCs", rates: { "≤60%": 4.84, "60-75%": 5.14 } },
     ],
   },
   {
     name: "Prime High LTV",
     color: "#31B897",
-    desc: "Clean credit \u00b7 Extended LTV range up to 95%",
+    desc: "Clean credit · Extended LTV range up to 95%",
     maxLTV: 95,
     acceptedCreditProfiles: ["clean", "near_prime"],
     acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
@@ -150,7 +150,7 @@ const DEFAULT_BUCKETS = [
         adjustmentType: "flat", flatAdj: 0.40, gridAdj: {} },
     ],
     criteria: {
-      loanSize: { min: "\u00a325,000", max: "\u00a3500,000" },
+      loanSize: { min: "£25,000", max: "£500,000" },
       maxApplicants: 2,
       age: { min: 21, maxAtEnd: 70 },
       residency: "UK citizen / Settled / Pre-settled status",
@@ -164,33 +164,33 @@ const DEFAULT_BUCKETS = [
       },
       employment: ["Employed (min 6 months)", "Self-employed (min 2 years)", "Contractors (12 months history)", "Retired (with pension income)"],
       property: {
-        minValue: "\u00a375,000",
+        minValue: "£75,000",
         acceptable: ["Houses", "Flats (up to 6 floors)", "Bungalows", "New build", "Ex-local authority"],
         unacceptable: ["Above commercial", "Freehold flats", "Mobile homes", "Houseboats"],
-        valuation: "Full valuation required. AVM accepted for \u226460% LTV remortgages.",
+        valuation: "Full valuation required. AVM accepted for ≤60% LTV remortgages.",
       },
-      additionalNotes: "\u226495% purchase only",
+      additionalNotes: "≤95% purchase only",
     },
     fees: {
-      productFee: "\u00a31,495",
+      productFee: "£1,495",
       reversion: "BBR + 3.99%",
       termRange: "2-40 years",
       valuationFees: [
-        { upTo: "\u00a3100,000", fee: "\u00a3150" }, { upTo: "\u00a3200,000", fee: "\u00a3225" },
-        { upTo: "\u00a3350,000", fee: "\u00a3295" }, { upTo: "\u00a3500,000", fee: "\u00a3395" },
-        { upTo: "\u00a31,000,000", fee: "\u00a3595" },
+        { upTo: "£100,000", fee: "£150" }, { upTo: "£200,000", fee: "£225" },
+        { upTo: "£350,000", fee: "£295" }, { upTo: "£500,000", fee: "£395" },
+        { upTo: "£1,000,000", fee: "£595" },
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "H2F", erc: "4%, 3%", rates: { "\u226460%": 4.49, "60-75%": 4.79, "75-85%": 5.29, "85-90%": 5.59, "90-95%": 5.99 } },
-      { type: "5-Year Fixed", code: "H5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 4.89, "60-75%": 5.19, "75-85%": 5.69, "85-90%": 5.99, "90-95%": 6.39 } },
-      { type: "2-Year Tracker", code: "HTR", erc: "No ERCs", rates: { "\u226460%": 5.14, "60-75%": 5.44, "75-85%": 5.94, "85-90%": 6.24, "90-95%": 6.64 } },
+      { type: "2-Year Fixed", code: "H2F", erc: "4%, 3%", rates: { "≤60%": 4.49, "60-75%": 4.79, "75-85%": 5.29, "85-90%": 5.59, "90-95%": 5.99 } },
+      { type: "5-Year Fixed", code: "H5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "≤60%": 4.89, "60-75%": 5.19, "75-85%": 5.69, "85-90%": 5.99, "90-95%": 6.39 } },
+      { type: "2-Year Tracker", code: "HTR", erc: "No ERCs", rates: { "≤60%": 5.14, "60-75%": 5.44, "75-85%": 5.94, "85-90%": 6.24, "90-95%": 6.64 } },
     ],
   },
   {
     name: "Professional",
     color: "#3B82F6",
-    desc: "Qualified professionals \u00b7 Enhanced income multiples \u00b7 Reduced rates",
+    desc: "Qualified professionals · Enhanced income multiples · Reduced rates",
     maxLTV: 90,
     acceptedCreditProfiles: ["clean", "near_prime", "light_adverse"],
     acceptedEmployments: ["Employed", "Self-Employed", "Contractor", "Retired"],
@@ -208,7 +208,7 @@ const DEFAULT_BUCKETS = [
         adjustmentType: "flat", flatAdj: 0.45, gridAdj: {} },
     ],
     criteria: {
-      loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
+      loanSize: { min: "£25,000", max: "£2,000,000" },
       maxApplicants: 2,
       age: { min: 21, maxAtEnd: 80 },
       residency: "UK citizen / Settled / Pre-settled status",
@@ -222,38 +222,38 @@ const DEFAULT_BUCKETS = [
       },
       employment: ["Employed (min 6 months)", "Self-employed (min 2 years)", "Contractors (12 months history)", "Retired (with pension income)", "Specified professionals / qualifications"],
       property: {
-        minValue: "\u00a3100,000",
+        minValue: "£100,000",
         acceptable: ["Houses", "Flats (up to 6 floors)", "Bungalows", "New build", "Ex-local authority"],
         unacceptable: ["Above commercial", "Freehold flats", "Mobile homes", "Houseboats"],
-        valuation: "Full valuation required. AVM accepted for \u226460% LTV remortgages.",
+        valuation: "Full valuation required. AVM accepted for ≤60% LTV remortgages.",
       },
     },
     fees: {
-      productFee: "\u00a31,495",
+      productFee: "£1,495",
       reversion: "BBR + 2.99%",
       termRange: "2-40 years",
       valuationFees: [
-        { upTo: "\u00a3100,000", fee: "\u00a3150" }, { upTo: "\u00a3200,000", fee: "\u00a3225" },
-        { upTo: "\u00a3350,000", fee: "\u00a3295" }, { upTo: "\u00a3500,000", fee: "\u00a3395" },
-        { upTo: "\u00a31,000,000", fee: "\u00a3595" },
+        { upTo: "£100,000", fee: "£150" }, { upTo: "£200,000", fee: "£225" },
+        { upTo: "£350,000", fee: "£295" }, { upTo: "£500,000", fee: "£395" },
+        { upTo: "£1,000,000", fee: "£595" },
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "D2F", erc: "2%, 1%", rates: { "\u226460%": 3.69, "60-75%": 3.99, "75-85%": 4.49, "85-90%": 4.79 } },
-      { type: "5-Year Fixed", code: "D5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 4.09, "60-75%": 4.39, "75-85%": 4.89, "85-90%": 5.19 } },
-      { type: "2-Year Tracker", code: "DTR", erc: "No ERCs", rates: { "\u226460%": 4.34, "60-75%": 4.64, "75-85%": 5.14, "85-90%": 5.44 } },
+      { type: "2-Year Fixed", code: "D2F", erc: "2%, 1%", rates: { "≤60%": 3.69, "60-75%": 3.99, "75-85%": 4.49, "85-90%": 4.79 } },
+      { type: "5-Year Fixed", code: "D5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "≤60%": 4.09, "60-75%": 4.39, "75-85%": 4.89, "85-90%": 5.19 } },
+      { type: "2-Year Tracker", code: "DTR", erc: "No ERCs", rates: { "≤60%": 4.34, "60-75%": 4.64, "75-85%": 5.14, "85-90%": 5.44 } },
     ],
   },
   {
     name: "High-Net-Worth",
     color: "#8B5CF6",
-    desc: "\u00a3300k+ income or \u00a33M+ net assets \u00b7 Bespoke pricing",
+    desc: "£300k+ income or £3M+ net assets · Bespoke pricing",
     maxLTV: 75,
     acceptedCreditProfiles: ["clean"],
     acceptedEmployments: ["Employed", "Self-Employed"],
     acceptedProperties: ["Standard", "New Build"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
-    tierOverrides: { ltv: [{ band: "\u226460%", adj: -0.10 }, { band: "60-75%", adj: 0.15 }] },
+    tierOverrides: { ltv: [{ band: "≤60%", adj: -0.10 }, { band: "60-75%", adj: 0.15 }] },
     tiers: [
       { name: "Standard", conditions: { credit: ["clean"], employment: ["Employed"] },
         adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
@@ -261,7 +261,7 @@ const DEFAULT_BUCKETS = [
         adjustmentType: "flat", flatAdj: 0.15, gridAdj: {} },
     ],
     criteria: {
-      loanSize: { min: "\u00a3150,000", max: "\u00a35,000,000" },
+      loanSize: { min: "£150,000", max: "£5,000,000" },
       maxApplicants: 2,
       age: { min: 21, maxAtEnd: 85 },
       residency: "UK citizen / Settled / Pre-settled status",
@@ -275,39 +275,39 @@ const DEFAULT_BUCKETS = [
       },
       employment: ["Employed (min 6 months)", "Self-employed (min 2 years)", "Contractors (12 months history)", "Retired (with pension income)"],
       property: {
-        minValue: "\u00a3250,000",
+        minValue: "£250,000",
         acceptable: ["Houses", "Flats (up to 6 floors)", "Bungalows", "New build", "Ex-local authority"],
         unacceptable: ["Above commercial", "Freehold flats", "Mobile homes", "Houseboats"],
-        valuation: "Full valuation required. AVM accepted for \u226460% LTV remortgages.",
+        valuation: "Full valuation required. AVM accepted for ≤60% LTV remortgages.",
       },
-      additionalNotes: "\u00a3300k+ income or \u00a33M+ net assets required",
+      additionalNotes: "£300k+ income or £3M+ net assets required",
     },
     fees: {
-      productFee: "\u00a31,495",
+      productFee: "£1,495",
       reversion: "BBR + 2.49%",
       termRange: "2-40 years",
       valuationFees: [
-        { upTo: "\u00a3100,000", fee: "\u00a3150" }, { upTo: "\u00a3200,000", fee: "\u00a3225" },
-        { upTo: "\u00a3350,000", fee: "\u00a3295" }, { upTo: "\u00a3500,000", fee: "\u00a3395" },
-        { upTo: "\u00a31,000,000", fee: "\u00a3595" },
+        { upTo: "£100,000", fee: "£150" }, { upTo: "£200,000", fee: "£225" },
+        { upTo: "£350,000", fee: "£295" }, { upTo: "£500,000", fee: "£395" },
+        { upTo: "£1,000,000", fee: "£595" },
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "M2F", erc: "2%, 1%", rates: { "\u226460%": 3.49, "60-75%": 3.79 } },
-      { type: "5-Year Fixed", code: "M5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 3.89, "60-75%": 4.19 } },
-      { type: "2-Year Tracker", code: "MTR", erc: "No ERCs", rates: { "\u226460%": 4.04, "60-75%": 4.34 } },
+      { type: "2-Year Fixed", code: "M2F", erc: "2%, 1%", rates: { "≤60%": 3.49, "60-75%": 3.79 } },
+      { type: "5-Year Fixed", code: "M5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "≤60%": 3.89, "60-75%": 4.19 } },
+      { type: "2-Year Tracker", code: "MTR", erc: "No ERCs", rates: { "≤60%": 4.04, "60-75%": 4.34 } },
     ],
   },
   {
     name: "Buy-to-Let",
     color: "#F59E0B",
-    desc: "Investment properties \u00b7 ICR 145% \u00b7 Portfolio landlords accepted",
+    desc: "Investment properties · ICR 145% · Portfolio landlords accepted",
     maxLTV: 75,
     acceptedCreditProfiles: ["clean", "near_prime", "light_adverse", "adverse", "heavy_adverse"],
     acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
     acceptedProperties: ["Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
-    tierOverrides: { ltv: [{ band: "\u226460%", adj: 0.00 }, { band: "60-75%", adj: 0.50 }], employment: {} },
+    tierOverrides: { ltv: [{ band: "≤60%", adj: 0.00 }, { band: "60-75%", adj: 0.50 }], employment: {} },
     tiers: [
       { name: "Standard", conditions: { credit: ["clean"], property: ["Standard"] },
         adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
@@ -321,12 +321,12 @@ const DEFAULT_BUCKETS = [
         adjustmentType: "flat", flatAdj: 0.35, gridAdj: {} },
     ],
     criteria: {
-      loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
+      loanSize: { min: "£25,000", max: "£2,000,000" },
       maxApplicants: 4,
       age: { min: 21, maxAtEnd: 85 },
       residency: "UK citizen / Settled / Pre-settled status / Ltd companies / SPVs accepted",
       minUKResidency: "3 years",
-      incomeMultiple: "N/A \u2014 rental coverage assessed instead",
+      incomeMultiple: "N/A — rental coverage assessed instead",
       stressRate: "5.50% stress rate, ICR 145%",
       credit: {
         maxCCJs: "2 (satisfied, >12 months)",
@@ -336,30 +336,30 @@ const DEFAULT_BUCKETS = [
         bankruptcy: "Discharged >6 years",
         dmp: "Not accepted",
       },
-      employment: ["Any \u2014 income not assessed for standard BTL", "Portfolio landlords accepted", "First-time landlords accepted (max 75% LTV)"],
+      employment: ["Any — income not assessed for standard BTL", "Portfolio landlords accepted", "First-time landlords accepted (max 75% LTV)"],
       property: {
-        minValue: "\u00a375,000",
+        minValue: "£75,000",
         acceptable: ["Houses", "Flats (up to 6 floors)", "Bungalows", "New build", "Ex-local authority", "HMO subject to criteria"],
         unacceptable: ["Above commercial", "Freehold flats", "Mobile homes", "Houseboats", "Holiday lets not accepted"],
-        valuation: "Full valuation required. AVM accepted for \u226460% LTV remortgages.",
+        valuation: "Full valuation required. AVM accepted for ≤60% LTV remortgages.",
       },
       tenancy: "AST only (min 6 months)",
       experience: "No experience required for first property",
     },
     fees: {
-      productFee: "\u00a31,995",
+      productFee: "£1,995",
       reversion: "BBR + 4.49%",
       termRange: "5-25 years",
       valuationFees: [
-        { upTo: "\u00a3100,000", fee: "\u00a3150" }, { upTo: "\u00a3200,000", fee: "\u00a3225" },
-        { upTo: "\u00a3350,000", fee: "\u00a3295" }, { upTo: "\u00a3500,000", fee: "\u00a3395" },
-        { upTo: "\u00a31,000,000", fee: "\u00a3595" },
+        { upTo: "£100,000", fee: "£150" }, { upTo: "£200,000", fee: "£225" },
+        { upTo: "£350,000", fee: "£295" }, { upTo: "£500,000", fee: "£395" },
+        { upTo: "£1,000,000", fee: "£595" },
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "B2F", erc: "3%, 2%", rates: { "\u226460%": 5.19, "60-75%": 5.49 } },
-      { type: "5-Year Fixed", code: "B5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 5.49, "60-75%": 5.79 } },
-      { type: "Tracker", code: "BTR", erc: "No ERCs", rates: { "\u226460%": 5.49, "60-75%": 5.79 } },
+      { type: "2-Year Fixed", code: "B2F", erc: "3%, 2%", rates: { "≤60%": 5.19, "60-75%": 5.49 } },
+      { type: "5-Year Fixed", code: "B5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "≤60%": 5.49, "60-75%": 5.79 } },
+      { type: "Tracker", code: "BTR", erc: "No ERCs", rates: { "≤60%": 5.49, "60-75%": 5.79 } },
     ],
   },
 ];
@@ -404,7 +404,7 @@ const emptyBucket = () => ({
     property: { minValue: "", acceptable: [], unacceptable: [], valuation: "" },
   },
   fees: {
-    productFee: "\u00a31,495",
+    productFee: "£1,495",
     reversion: "BBR + 3.99%",
     termRange: "2-40 years",
     valuationFees: [],
@@ -565,11 +565,11 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
         <div style={row2}>
           <div style={fieldWrap}>
             <label style={labelSt}>Loan Size Min</label>
-            <input style={inputSt} value={form.criteria.loanSize.min} onChange={(e) => set("criteria.loanSize.min", e.target.value)} placeholder="\u00a325,000" />
+            <input style={inputSt} value={form.criteria.loanSize.min} onChange={(e) => set("criteria.loanSize.min", e.target.value)} placeholder="£25,000" />
           </div>
           <div style={fieldWrap}>
             <label style={labelSt}>Loan Size Max</label>
-            <input style={inputSt} value={form.criteria.loanSize.max} onChange={(e) => set("criteria.loanSize.max", e.target.value)} placeholder="\u00a31,000,000" />
+            <input style={inputSt} value={form.criteria.loanSize.max} onChange={(e) => set("criteria.loanSize.max", e.target.value)} placeholder="£1,000,000" />
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
@@ -726,7 +726,7 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
         <div style={sectionTitleSt}>5. Property</div>
         <div style={fieldWrap}>
           <label style={labelSt}>Min Value</label>
-          <input style={{ ...inputSt, maxWidth: 200 }} value={form.criteria.property.minValue} onChange={(e) => set("criteria.property.minValue", e.target.value)} placeholder="\u00a375,000" />
+          <input style={{ ...inputSt, maxWidth: 200 }} value={form.criteria.property.minValue} onChange={(e) => set("criteria.property.minValue", e.target.value)} placeholder="£75,000" />
         </div>
         <div style={{ marginBottom: 12 }}>
           <label style={labelSt}>Acceptable Types</label>
@@ -758,7 +758,7 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
         <div style={row3}>
           <div style={fieldWrap}>
             <label style={labelSt}>Product Fee</label>
-            <input style={inputSt} value={form.fees.productFee} onChange={(e) => set("fees.productFee", e.target.value)} placeholder="\u00a31,495" />
+            <input style={inputSt} value={form.fees.productFee} onChange={(e) => set("fees.productFee", e.target.value)} placeholder="£1,495" />
           </div>
           <div style={fieldWrap}>
             <label style={labelSt}>Term Range</label>
@@ -917,12 +917,19 @@ function CriteriaTable({ bucket }) {
     );
   };
 
+  // Derive accepted/rejected profiles
+  const acceptedProfiles = CREDIT_PROFILES.filter(cp => (bucket.acceptedCreditProfiles || []).includes(cp.id));
+  const rejectedProfiles = CREDIT_PROFILES.filter(cp => !(bucket.acceptedCreditProfiles || []).includes(cp.id));
+  const rejectedEmployments = ["Employed", "Self-Employed", "Contractor", "Retired"].filter(e => !(bucket.acceptedEmployments || []).includes(e));
+  const rejectedProperties = Object.keys(PROPERTY_ADJUSTMENTS).filter(p => !(bucket.acceptedProperties || []).includes(p));
+  const rejectedEpc = ["A","B","C","D","E","F","G"].filter(e => !(bucket.acceptedEpc || []).includes(e));
+
   return (
     <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
       <div style={sectionHeaderSt}>Applicant</div>
-      <Row label="Loan Size" value={`${c.loanSize.min} \u2013 ${c.loanSize.max}`} />
+      <Row label="Loan Size" value={`${c.loanSize.min} – ${c.loanSize.max}`} />
       <Row label="Max Applicants" value={`${c.maxApplicants}${c.maxApplicants === 4 ? " (for SPV/Ltd)" : ""}`} />
-      <Row label="Age Range" value={`${c.age.min} \u2013 ${c.age.maxAtEnd} (at end of term)`} />
+      <Row label="Age Range" value={`${c.age.min} – ${c.age.maxAtEnd} (at end of term)`} />
       <Row label="Max LTV" value={`${bucket.maxLTV}%`} />
       <Row label="UK Residency" value={c.residency} />
       <Row label="Min UK Residency" value={c.minUKResidency} />
@@ -930,58 +937,54 @@ function CriteriaTable({ bucket }) {
       <div style={sectionHeaderSt}>Income & Affordability</div>
       <Row label="Income Multiple" value={c.incomeMultiple} />
       <Row label="Stress Rate" value={c.stressRate} />
-      <PillRow label="Employment" items={c.employment || []} pillStyle={bluePill} />
+      <PillRow label="Accepted Employment" items={(bucket.acceptedEmployments || []).map(e => {
+        const desc = (c.employment || []).find(d => d.toLowerCase().startsWith(e.toLowerCase()));
+        return desc ? `${e} — ${desc.replace(/^[^(]*/, "").trim() || desc}` : e;
+      })} pillStyle={greenPill} />
+      {rejectedEmployments.length > 0 && (
+        <PillRow label="Rejected Employment" items={rejectedEmployments} pillStyle={redPill} />
+      )}
       {c.tenancy && <Row label="Tenancy" value={c.tenancy} />}
       {c.experience && <Row label="Experience" value={c.experience} />}
 
-      <div style={sectionHeaderSt}>Credit History</div>
-      {bucket.acceptedCreditProfiles && bucket.acceptedCreditProfiles.length > 0 ? (
-        <>
-          <PillRow
-            label="Accepted Profiles"
-            items={CREDIT_PROFILES.filter(cp => (bucket.acceptedCreditProfiles || []).includes(cp.id)).map(cp => `${cp.label} (${cp.adj >= 0 ? "+" : ""}${cp.adj.toFixed(2)}%)`)}
-            pillStyle={greenPill}
-          />
-          <PillRow
-            label="Rejected Profiles"
-            items={CREDIT_PROFILES.filter(cp => !(bucket.acceptedCreditProfiles || []).includes(cp.id)).map(cp => cp.label)}
-            pillStyle={redPill}
-          />
-        </>
-      ) : (
-        <>
-          <Row label="CCJs" value={c.credit.maxCCJs === "0" ? "None accepted" : c.credit.maxCCJs} valueColor={creditColor(c.credit.maxCCJs)} />
-          <Row label="Defaults" value={c.credit.maxDefaults === "0" ? "None accepted" : c.credit.maxDefaults} valueColor={creditColor(c.credit.maxDefaults)} />
-          <Row label="Missed Payments" value={c.credit.missedPayments} valueColor={creditColor(c.credit.missedPayments)} />
-          <Row label="IVA" value={c.credit.iva} valueColor={creditColor(c.credit.iva)} />
-          <Row label="Bankruptcy" value={c.credit.bankruptcy} valueColor={creditColor(c.credit.bankruptcy)} />
-          <Row label="DMP" value={c.credit.dmp} valueColor={creditColor(c.credit.dmp)} />
-        </>
+      <div style={sectionHeaderSt}>Credit</div>
+      {acceptedProfiles.length > 0 && (
+        <PillRow
+          label="Accepted Profiles"
+          items={acceptedProfiles.map(cp => `${cp.label} (${cp.adj >= 0 ? "+" : ""}${cp.adj.toFixed(2)}%)`)}
+          pillStyle={greenPill}
+        />
       )}
+      {rejectedProfiles.length > 0 && (
+        <PillRow label="Rejected Profiles" items={rejectedProfiles.map(cp => cp.label)} pillStyle={redPill} />
+      )}
+      {acceptedProfiles.length > 0 && (() => {
+        const worstProfile = acceptedProfiles[acceptedProfiles.length - 1];
+        return (
+          <Row label="Maximum Accepted" value={
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontWeight: 600 }}>{worstProfile.label}</span>
+              <span style={{ fontSize: 10, color: T.textMuted }}>— {worstProfile.desc}</span>
+              {worstProfile.maxLTV && <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 8, background: "#FEF3C7", color: "#92400E", fontWeight: 600 }}>Max LTV {worstProfile.maxLTV}%</span>}
+            </span>
+          } />
+        );
+      })()}
 
-      {/* Accepted Dimensions */}
-      <div style={sectionHeaderSt}>Accepted Dimensions (Pricing)</div>
-      {bucket.acceptedEmployments && bucket.acceptedEmployments.length > 0 && (
-        <PillRow label="Accepted Employment" items={bucket.acceptedEmployments} pillStyle={greenPill} />
-      )}
-      {bucket.acceptedProperties && bucket.acceptedProperties.length > 0 && (
-        <>
-          <PillRow label="Accepted Property Types" items={bucket.acceptedProperties} pillStyle={greenPill} />
-          <PillRow
-            label="Rejected Property Types"
-            items={Object.keys(PROPERTY_ADJUSTMENTS).filter(p => !(bucket.acceptedProperties || []).includes(p))}
-            pillStyle={redPill}
-          />
-        </>
-      )}
-      {bucket.acceptedEpc && bucket.acceptedEpc.length > 0 && (
-        <PillRow label="Accepted EPC Ratings" items={bucket.acceptedEpc} pillStyle={greenPill} />
-      )}
-
-      <div style={sectionHeaderSt}>Property</div>
+      <div style={sectionHeaderSt}>Property & EPC</div>
       <Row label="Min Property Value" value={c.property.minValue} />
-      <PillRow label="Acceptable Types" items={c.property.acceptable || []} pillStyle={greenPill} />
+      <PillRow label="Accepted Property" items={bucket.acceptedProperties || []} pillStyle={greenPill} />
+      {rejectedProperties.length > 0 && (
+        <PillRow label="Rejected Property" items={rejectedProperties} pillStyle={redPill} />
+      )}
+      <PillRow label="Acceptable Build Types" items={c.property.acceptable || []} pillStyle={bluePill} />
       <PillRow label="Unacceptable Types" items={c.property.unacceptable || []} pillStyle={redPill} />
+      {bucket.acceptedEpc && bucket.acceptedEpc.length > 0 && (
+        <PillRow label="Accepted EPC" items={bucket.acceptedEpc.map(e => `EPC ${e}`)} pillStyle={greenPill} />
+      )}
+      {rejectedEpc.length > 0 && (
+        <PillRow label="Rejected EPC" items={rejectedEpc.map(e => `EPC ${e}`)} pillStyle={redPill} />
+      )}
       <Row label="Valuation" value={c.property.valuation} valueStyle={{ fontStyle: "italic", color: T.textMuted }} />
 
       {c.additionalNotes && (
@@ -1021,7 +1024,7 @@ function ProductsTab({ bucket, onUpdateProducts }) {
   const removeProduct = (idx) => commit(products.filter((_, i) => i !== idx));
 
   const maxLTV = bucket.maxLTV || 75;
-  const ltvBandMax = { "\u226460%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+  const ltvBandMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
   const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
 
   const inputSt = {
@@ -1153,7 +1156,7 @@ function FeesTab({ bucket, onUpdateFees }) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
         <div style={cardSt}>
           <div style={cardLabelSt}>Product Fee</div>
-          <input style={inputSt} value={fees.productFee} onChange={(e) => updateField("productFee", e.target.value)} placeholder="\u00a31,495" />
+          <input style={inputSt} value={fees.productFee} onChange={(e) => updateField("productFee", e.target.value)} placeholder="£1,495" />
         </div>
         <div style={cardSt}>
           <div style={cardLabelSt}>Loan Term</div>
@@ -1196,8 +1199,8 @@ function FeesTab({ bucket, onUpdateFees }) {
         )}
         {(fees.valuationFees || []).map((tier, idx) => (
           <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 32px", gap: 8, marginBottom: 6, alignItems: "center" }}>
-            <input style={inputSt} value={tier.upTo} onChange={(e) => updateTier(idx, "upTo", e.target.value)} placeholder="\u00a3100,000" />
-            <input style={inputSt} value={tier.fee} onChange={(e) => updateTier(idx, "fee", e.target.value)} placeholder="\u00a3150" />
+            <input style={inputSt} value={tier.upTo} onChange={(e) => updateTier(idx, "upTo", e.target.value)} placeholder="£100,000" />
+            <input style={inputSt} value={tier.fee} onChange={(e) => updateTier(idx, "fee", e.target.value)} placeholder="£150" />
             <span
               onClick={() => removeTier(idx)}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", transition: "background 0.15s" }}
@@ -1233,7 +1236,7 @@ function RatesTab({ bucket }) {
   }
 
   const maxLTV = bucket.maxLTV || 75;
-  const ltvBandMax = { "\u226460%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+  const ltvBandMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
   const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
 
   const activeTier = selectedTier !== "base" ? tiers[parseInt(selectedTier)] : null;
@@ -1340,17 +1343,57 @@ function RatesTab({ bucket }) {
 
       {/* Tier summary */}
       {tiers.length > 0 && (
-        <div style={{ marginTop: 16, padding: "12px 16px", background: T.bg, borderRadius: 8, border: `1px solid ${T.borderLight}` }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Pricing Tiers</div>
-          {tiers.map((tier, tIdx) => (
-            <div key={tIdx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 12 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 4, background: TIER_COLORS[tIdx % 5], flexShrink: 0 }} />
-              <span style={{ fontWeight: 600, color: T.text, minWidth: 140 }}>{tier.name}</span>
-              <span style={{ color: T.textMuted, fontSize: 11 }}>
-                {Object.entries(tier.conditions || {}).filter(([,v]) => v?.length).map(([k,v]) => `${k}: ${v.join(", ")}`).join(" · ")}
-              </span>
-            </div>
-          ))}
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+            Pricing Tiers ({tiers.length})
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(tiers.length, 3)}, 1fr)`, gap: 10 }}>
+            {tiers.map((tier, tIdx) => {
+              const tc = TIER_COLORS[tIdx % 5];
+              const adj = tier.adjustmentType === "flat" ? tier.flatAdj : null;
+              const condEntries = Object.entries(tier.conditions || {}).filter(([,v]) => v?.length);
+              const DIMENSION_LABELS = { credit: "Credit", employment: "Employment", property: "Property", epc: "EPC" };
+              return (
+                <div key={tIdx} style={{
+                  borderRadius: 10, border: `1px solid ${T.borderLight}`, borderTop: `3px solid ${tc}`,
+                  background: T.card, padding: "12px 14px", fontFamily: T.font,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{tier.name}</span>
+                    </div>
+                    <span style={{
+                      padding: "2px 8px", borderRadius: 10, fontSize: 10, fontWeight: 700,
+                      background: adj != null ? (adj > 0 ? "#FEF3C7" : adj < 0 ? "#D1FAE5" : "#F1F5F9") : "#EDE9FE",
+                      color: adj != null ? (adj > 0 ? "#92400E" : adj < 0 ? "#065F46" : "#475569") : "#6D28D9",
+                    }}>
+                      {adj != null ? `${adj >= 0 ? "+" : ""}${Number(adj).toFixed(2)}%` : "Per cell"}
+                    </span>
+                  </div>
+                  {condEntries.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {condEntries.map(([dim, vals]) => (
+                        <div key={dim} style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, minWidth: 58 }}>
+                            {DIMENSION_LABELS[dim] || dim}
+                          </span>
+                          {vals.map(v => (
+                            <span key={v} style={{
+                              display: "inline-block", padding: "1px 7px", borderRadius: 8,
+                              fontSize: 9, fontWeight: 600, background: tc + "14", color: tc,
+                              border: `1px solid ${tc}30`,
+                            }}>{v}</span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 10, color: T.textMuted, fontStyle: "italic" }}>No conditions — applies to all</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -20,13 +20,13 @@ const MORTGAGE_DATA = Object.entries(PRODUCTS_PRICING).map(([name, prod]) => ({
   note: prod.eligibility || null,
 }));
 
-const SAVINGS_BANDS = ["\u00a31k-\u00a39.9k", "\u00a310k-\u00a349.9k", "\u00a350k-\u00a3249.9k", "\u00a3250k+"];
+const SAVINGS_BANDS = ["£1k-£9.9k", "£10k-£49.9k", "£50k-£249.9k", "£250k+"];
 
 const SAVINGS_DATA = [
-  { name: "1yr Fixed", rates: [4.25, 4.50, 4.65, 4.80], minDeposit: "\u00a31,000", term: "12 months" },
-  { name: "2yr Fixed", rates: [4.60, 4.85, 5.00, 5.15], minDeposit: "\u00a31,000", term: "24 months" },
-  { name: "3yr Fixed", rates: [4.85, 5.10, 5.25, 5.40], minDeposit: "\u00a35,000", term: "36 months" },
-  { name: "90-Day Notice", rates: [2.95, 3.20, 3.45, 3.60], minDeposit: "\u00a31,000", term: "Notice" },
+  { name: "1yr Fixed", rates: [4.25, 4.50, 4.65, 4.80], minDeposit: "£1,000", term: "12 months" },
+  { name: "2yr Fixed", rates: [4.60, 4.85, 5.00, 5.15], minDeposit: "£1,000", term: "24 months" },
+  { name: "3yr Fixed", rates: [4.85, 5.10, 5.25, 5.40], minDeposit: "£5,000", term: "36 months" },
+  { name: "90-Day Notice", rates: [2.95, 3.20, 3.45, 3.60], minDeposit: "£1,000", term: "Notice" },
 ];
 
 const MARKET_COMPARE = [

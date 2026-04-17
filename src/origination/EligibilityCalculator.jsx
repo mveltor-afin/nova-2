@@ -3,7 +3,7 @@ import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import FairValueAssessment from "../shared/FairValueAssessment";
 import InlineHelp from "../shared/InlineHelp";
-import { getEligibleProducts, getRateBreakdown, CREDIT_PROFILES, PRODUCTS_PRICING, calcMonthlyPayment } from "../data/pricing";
+import { getEligibleProducts, getRateBreakdown, CREDIT_PROFILES, PRODUCTS_PRICING, calcMonthlyPayment, getBucketEligibleProducts } from "../data/pricing";
 
 const fmt = (n) => n != null ? "£" + Number(n).toLocaleString("en-GB", { maximumFractionDigits: 0 }) : "—";
 const pct = (n) => n != null ? n.toFixed(1) + "%" : "—";
@@ -40,27 +40,57 @@ function EligibilityCalculator() {
     setShowResults(false);
     setExpandedProduct(null);
     setTimeout(() => {
-      const eligible = getEligibleProducts({
-        ltv, credit: creditProfile, employment, property: propertyType === "Residential" ? "Standard" : propertyType,
-        epc: epcRating, loyalty: "New", purpose: propertyType === "BTL" ? "BTL" : "Purchase",
+      const propDimension = propertyType === "Residential" ? "Standard" : propertyType;
+
+      // Query bucket products (the primary source)
+      const bucketProducts = getBucketEligibleProducts({
+        ltv, credit: creditProfile, employment,
+        property: propDimension, epc: epcRating,
+        loanAmount, termYears: Number(term),
       });
 
-      const matched = eligible.map(p => {
-        const monthly = p.available ? calcMonthlyPayment(loanAmount, p.rate, Number(term)) : 0;
-        const totalCost = monthly * Number(term) * 12;
-        let status = p.available ? "eligible" : "ineligible";
-        let reason = p.available ? "" : p.reason;
+      let matched;
+      if (bucketProducts.length > 0) {
+        matched = bucketProducts.map(bp => {
+          const monthly = bp.available ? calcMonthlyPayment(loanAmount, bp.rate, Number(term)) : 0;
+          const totalCost = monthly * Number(term) * 12;
+          let status = bp.available ? "eligible" : "ineligible";
+          let reason = bp.available ? "" : bp.reason;
 
-        if (p.available && employment === "Self-Employed" && ltv > (p.productData?.maxLTV || 75) - 5) {
-          status = "conditional";
-          reason = "Self-employed: requires 2 years SA302 + accountant cert";
-        } else if (p.available && employment === "Contractor" && ltv > 70) {
-          status = "conditional";
-          reason = "Contractor: 12-month contract history required";
-        }
+          if (bp.available && employment === "Self-Employed" && ltv > (bp.maxLTV || 75) - 5) {
+            status = "conditional";
+            reason = "Self-employed: requires 2 years SA302 + accountant cert";
+          } else if (bp.available && employment === "Contractor" && ltv > 70) {
+            status = "conditional";
+            reason = "Contractor: 12-month contract history required";
+          }
 
-        return { name: p.product, rate: p.rate, monthly, totalCost, status, reason, breakdown: p.breakdown, maxLtv: p.productData?.maxLTV || 75 };
-      });
+          return {
+            name: `${bp.product}`, rate: bp.rate, monthly, totalCost, status, reason,
+            maxLtv: bp.maxLTV || 75, bucket: bp.bucket, bucketColor: bp.bucketColor,
+            tier: bp.tier, tierAdj: bp.tierAdj, erc: bp.erc, code: bp.code,
+            fees: bp.fees,
+          };
+        });
+      } else {
+        // Fallback to legacy pricing engine if no buckets configured
+        const eligible = getEligibleProducts({
+          ltv, credit: creditProfile, employment, property: propDimension,
+          epc: epcRating, loyalty: "New", purpose: propertyType === "BTL" ? "BTL" : "Purchase",
+        });
+        matched = eligible.map(p => {
+          const monthly = p.available ? calcMonthlyPayment(loanAmount, p.rate, Number(term)) : 0;
+          const totalCost = monthly * Number(term) * 12;
+          let status = p.available ? "eligible" : "ineligible";
+          let reason = p.available ? "" : p.reason;
+          if (p.available && employment === "Self-Employed" && ltv > (p.productData?.maxLTV || 75) - 5) {
+            status = "conditional"; reason = "Self-employed: requires 2 years SA302 + accountant cert";
+          } else if (p.available && employment === "Contractor" && ltv > 70) {
+            status = "conditional"; reason = "Contractor: 12-month contract history required";
+          }
+          return { name: p.product, rate: p.rate, monthly, totalCost, status, reason, breakdown: p.breakdown, maxLtv: p.productData?.maxLTV || 75 };
+        });
+      }
 
       setResults(matched);
       setLoading(false);
@@ -102,7 +132,7 @@ function EligibilityCalculator() {
           </div>
 
           <Select label="Employment Status" value={employment} onChange={setEmployment} required
-            options={["Employed", "Self-Employed", "Contract", "Retired"]} />
+            options={["Employed", "Self-Employed", "Contractor", "Retired"]} />
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
             <Input
@@ -135,7 +165,14 @@ function EligibilityCalculator() {
           </div>
 
           <Select label="Property Type" value={propertyType} onChange={setPropertyType} required
-            options={["Residential", "BTL", "Holiday Let"]} />
+            options={[
+              { value: "Residential", label: "Standard Residential" },
+              { value: "Non-Standard", label: "Non-Standard" },
+              { value: "New Build", label: "New Build" },
+              { value: "Ex-Local Authority", label: "Ex-Local Authority" },
+              { value: "High-Rise (>6 floors)", label: "High-Rise (>6 floors)" },
+              { value: "BTL", label: "Buy-to-Let" },
+            ]} />
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
             <Select label="Credit Profile" value={creditProfile} onChange={setCreditProfile} required
@@ -197,13 +234,23 @@ function EligibilityCalculator() {
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             {statusIcon(p.status)}
                             <span style={{ fontWeight: 700, fontSize: 14 }}>{p.name}</span>
+                            {p.bucket && (
+                              <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: (p.bucketColor || T.primary) + "18", color: p.bucketColor || T.primary, border: `1px solid ${(p.bucketColor || T.primary)}30` }}>
+                                {p.bucket}
+                              </span>
+                            )}
+                            {p.code && <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>{p.code}</span>}
                           </div>
                           <span style={{ fontSize: 12, fontWeight: 600, color: sc.text, textTransform: "capitalize" }}>{p.status}</span>
                         </div>
                         <div style={{ display: "flex", gap: 20, fontSize: 12, color: T.textSecondary, marginBottom: p.reason ? 6 : 0 }}>
-                          <span>Rate: <strong>{p.rate}%</strong></span>
-                          <span>Monthly: <strong>{fmt(Math.round(p.monthly))}</strong></span>
+                          {p.rate != null && <span>Rate: <strong>{p.rate}%</strong></span>}
+                          {p.monthly > 0 && <span>Monthly: <strong>{fmt(Math.round(p.monthly))}</strong></span>}
                           <span>Max LTV: <strong>{p.maxLtv}%</strong></span>
+                          {p.tier && p.tier !== "Base" && (
+                            <span>Tier: <strong>{p.tier}</strong> ({p.tierAdj >= 0 ? "+" : ""}{(p.tierAdj || 0).toFixed(2)}%)</span>
+                          )}
+                          {p.fees?.productFee && <span>Fee: <strong>{p.fees.productFee}</strong></span>}
                         </div>
                         {p.reason && <div style={{ fontSize: 11, color: sc.text, marginTop: 4 }}>{p.reason}</div>}
                         {p.status === "eligible" && (
@@ -244,7 +291,7 @@ function EligibilityCalculator() {
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                     <thead>
                       <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-                        {["Product", "Rate", "Monthly", "Total Cost Over Term", "ERC"].map((h) => (
+                        {["Product", "Bucket", "Rate", "Monthly", "Total Cost", "ERC", "Fee"].map((h) => (
                           <th key={h} style={{ textAlign: "left", padding: "8px 10px", fontWeight: 700, color: T.textSecondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>{h}</th>
                         ))}
                       </tr>
@@ -253,10 +300,14 @@ function EligibilityCalculator() {
                       {results.filter((r) => r.status !== "ineligible").map((p, i) => (
                         <tr key={i} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
                           <td style={{ padding: "8px 10px", fontWeight: 600 }}>{p.name}</td>
-                          <td style={{ padding: "8px 10px" }}>{p.rate}%</td>
-                          <td style={{ padding: "8px 10px" }}>{fmt(Math.round(p.monthly))}</td>
-                          <td style={{ padding: "8px 10px" }}>{fmt(Math.round(p.totalCost))}</td>
-                          <td style={{ padding: "8px 10px", fontSize: 11 }}>{p.erc}</td>
+                          <td style={{ padding: "8px 10px", fontSize: 11 }}>
+                            {p.bucket ? <span style={{ padding: "2px 6px", borderRadius: 6, background: (p.bucketColor || T.primary) + "14", color: p.bucketColor || T.primary, fontWeight: 600 }}>{p.bucket}</span> : "—"}
+                          </td>
+                          <td style={{ padding: "8px 10px" }}>{p.rate != null ? p.rate + "%" : "—"}</td>
+                          <td style={{ padding: "8px 10px" }}>{p.monthly > 0 ? fmt(Math.round(p.monthly)) : "—"}</td>
+                          <td style={{ padding: "8px 10px" }}>{p.totalCost > 0 ? fmt(Math.round(p.totalCost)) : "—"}</td>
+                          <td style={{ padding: "8px 10px", fontSize: 11 }}>{p.erc || "—"}</td>
+                          <td style={{ padding: "8px 10px", fontSize: 11 }}>{p.fees?.productFee || "—"}</td>
                         </tr>
                       ))}
                     </tbody>

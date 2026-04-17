@@ -66,8 +66,8 @@ export const WIZARD_STEPS = [
 // Kept as a static fallback for screens that don't yet pass profile data.
 import { getEligibleProducts, calcMonthlyPayment, PRODUCTS_PRICING } from "./pricing";
 
-export function getWizardProducts({ ltv = 72, credit = "clean", employment = "Employed", loanAmount = 350000, term = 25 } = {}) {
-  const eligible = getEligibleProducts({ ltv, credit, employment });
+export function getWizardProducts({ ltv = 72, credit = "clean", employment = "Employed", property = "Standard", epc = "D", loanAmount = 350000, term = 25 } = {}) {
+  const eligible = getEligibleProducts({ ltv, credit, employment, property, epc });
   return eligible.map(p => {
     const prod = PRODUCTS_PRICING[p.product];
     const monthly = p.available ? calcMonthlyPayment(loanAmount, p.rate, term) : 0;

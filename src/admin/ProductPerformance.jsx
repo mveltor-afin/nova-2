@@ -10,18 +10,18 @@ const KPIS = [
   { label: "Applications This Month", value: "47", sub: "+12% vs last month", color: "#6366F1" },
   { label: "Completions", value: "23", sub: "48.9% conversion", color: T.success },
   { label: "Avg Margin", value: "1.52%", sub: "target 1.50%", color: T.warning },
-  { label: "Book Value", value: "\u00a34.2M", sub: "+\u00a3620k this month", color: T.primary },
+  { label: "Book Value", value: "£4.2M", sub: "+£620k this month", color: T.primary },
 ];
 
 const LEADERBOARD = [
-  { product: "Afin Fix 2yr 75%", apps: 14, completions: 9, conversion: 64.3, avgDeal: "\u00a3287k", margin: "1.42%", revenue: "\u00a336.7k" },
-  { product: "Afin Fix 2yr 90%", apps: 8, completions: 5, conversion: 62.5, avgDeal: "\u00a3198k", margin: "1.58%", revenue: "\u00a315.6k" },
-  { product: "2yr Fixed Savings", apps: 6, completions: 4, conversion: 66.7, avgDeal: "\u00a345k", margin: "0.85%", revenue: "\u00a31.5k" },
-  { product: "Afin Pro Fix 2yr", apps: 5, completions: 3, conversion: 60.0, avgDeal: "\u00a3512k", margin: "1.24%", revenue: "\u00a319.0k" },
-  { product: "Afin HNW Fix 5yr", apps: 4, completions: 2, conversion: 50.0, avgDeal: "\u00a3745k", margin: "1.68%", revenue: "\u00a325.0k" },
-  { product: "Afin BTL Tracker", apps: 4, completions: 2, conversion: 50.0, avgDeal: "\u00a3320k", margin: "2.04%", revenue: "\u00a313.1k" },
-  { product: "1yr Fixed Savings", apps: 3, completions: 1, conversion: 33.3, avgDeal: "\u00a328k", margin: "0.78%", revenue: "\u00a3218" },
-  { product: "Afin Shared Ownership", apps: 3, completions: 1, conversion: 33.3, avgDeal: "\u00a3165k", margin: "1.35%", revenue: "\u00a32.2k" },
+  { product: "Afin Fix 2yr 75%", apps: 14, completions: 9, conversion: 64.3, avgDeal: "£287k", margin: "1.42%", revenue: "£36.7k" },
+  { product: "Afin Fix 2yr 90%", apps: 8, completions: 5, conversion: 62.5, avgDeal: "£198k", margin: "1.58%", revenue: "£15.6k" },
+  { product: "2yr Fixed Savings", apps: 6, completions: 4, conversion: 66.7, avgDeal: "£45k", margin: "0.85%", revenue: "£1.5k" },
+  { product: "Afin Pro Fix 2yr", apps: 5, completions: 3, conversion: 60.0, avgDeal: "£512k", margin: "1.24%", revenue: "£19.0k" },
+  { product: "Afin HNW Fix 5yr", apps: 4, completions: 2, conversion: 50.0, avgDeal: "£745k", margin: "1.68%", revenue: "£25.0k" },
+  { product: "Afin BTL Tracker", apps: 4, completions: 2, conversion: 50.0, avgDeal: "£320k", margin: "2.04%", revenue: "£13.1k" },
+  { product: "1yr Fixed Savings", apps: 3, completions: 1, conversion: 33.3, avgDeal: "£28k", margin: "0.78%", revenue: "£218" },
+  { product: "Afin Shared Ownership", apps: 3, completions: 1, conversion: 33.3, avgDeal: "£165k", margin: "1.35%", revenue: "£2.2k" },
 ];
 
 const MEDAL_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];

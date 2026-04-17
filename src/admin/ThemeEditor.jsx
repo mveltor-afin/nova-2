@@ -102,7 +102,7 @@ const SectionTitle = ({ icon, title }) => (
 // ─────────────────────────────────────────────
 const DEFAULTS = {
   bankName: "Afin Bank",
-  logoUrl: "\u2014",
+  logoUrl: "—",
   tagline: "Intelligent Lending",
   favicon: "",
   primary: "#1A4A54",
@@ -155,7 +155,7 @@ const LivePreview = ({ cfg }) => {
             {/* KPI cards row */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               {[
-                { label: "PIPELINE", value: "\u00A3142M", colour: cfg.primary },
+                { label: "PIPELINE", value: "£142M", colour: cfg.primary },
                 { label: "APPROVED", value: "84", colour: cfg.accent },
                 { label: "COMPLETION", value: "92%", colour: cfg.success },
               ].map((k, i) => (

@@ -25,8 +25,8 @@ function LoanWizard({ onCancel, onComplete }) {
 
   // Dynamic products from pricing engine
   const dynamicProducts = useMemo(() =>
-    getWizardProducts({ ltv: 72, credit: applicantCredit, employment: applicantEmployment, loanAmount: 350000, term: 25 }),
-    [applicantCredit, applicantEmployment]
+    getWizardProducts({ ltv: 72, credit: applicantCredit, employment: applicantEmployment, property: applicantPropertyType, epc: applicantEpc, loanAmount: 350000, term: 25 }),
+    [applicantCredit, applicantEmployment, applicantPropertyType, applicantEpc]
   );
   const scrollRef = useRef(null);
 

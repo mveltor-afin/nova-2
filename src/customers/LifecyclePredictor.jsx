@@ -281,7 +281,7 @@ export default function LifecyclePredictor({ customerId }) {
         />
         <KPICard
           label="Predicted LTV Growth"
-          value={`+\u00A3${kpis.ltvGrowth.toLocaleString()}`}
+          value={`+£${kpis.ltvGrowth.toLocaleString()}`}
           sub="over 12 months"
           color={COL.green}
         />
@@ -554,10 +554,10 @@ export default function LifecyclePredictor({ customerId }) {
 
                     {/* Y axis labels */}
                     <text x={chartL - 5} y={yScale(affordability[0].income) + 3} textAnchor="end" fontSize={8} fill={T.textMuted} fontFamily={T.font}>
-                      {`\u00A3${(affordability[0].income / 1000).toFixed(1)}k`}
+                      {`£${(affordability[0].income / 1000).toFixed(1)}k`}
                     </text>
                     <text x={chartL - 5} y={paymentY + 3} textAnchor="end" fontSize={8} fill={T.textMuted} fontFamily={T.font}>
-                      {`\u00A3${(affordability[0].payment / 1000).toFixed(1)}k`}
+                      {`£${(affordability[0].payment / 1000).toFixed(1)}k`}
                     </text>
 
                     {/* Labels at right */}
@@ -581,14 +581,14 @@ export default function LifecyclePredictor({ customerId }) {
             <div style={{ background: T.successBg, borderRadius: 8, padding: 10, textAlign: "center" }}>
               <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 2 }}>Current buffer</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: COL.green }}>
-                {`\u00A3${(affordability[0].income - affordability[0].payment).toLocaleString()}`}
+                {`£${(affordability[0].income - affordability[0].payment).toLocaleString()}`}
               </div>
               <div style={{ fontSize: 10, color: T.textMuted }}>per month</div>
             </div>
             <div style={{ background: T.successBg, borderRadius: 8, padding: 10, textAlign: "center" }}>
               <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 2 }}>Year 4 buffer</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: COL.green }}>
-                {`\u00A3${(affordability[4].income - affordability[4].payment).toLocaleString()}`}
+                {`£${(affordability[4].income - affordability[4].payment).toLocaleString()}`}
               </div>
               <div style={{ fontSize: 10, color: T.textMuted }}>per month</div>
             </div>
