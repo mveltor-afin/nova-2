@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import {
   PRODUCTS_PRICING, LTV_ADJUSTMENTS, CREDIT_PROFILES as CREDIT_PROFILES_DATA,
-  EMPLOYMENT_ADJUSTMENTS, PURPOSE_ADJUSTMENTS, getRate,
+  EMPLOYMENT_ADJUSTMENTS, LOYALTY_ADJUSTMENTS, PURPOSE_ADJUSTMENTS, getRate,
+  saveDimension, resetAllDimensions,
 } from "../data/pricing";
 
 const PRODUCTS = Object.keys(PRODUCTS_PRICING);
@@ -90,6 +91,44 @@ export default function PricingMatrix() {
     { label: "Premier/Platinum", value: -0.15 },
     { label: "Product Switcher (retention)", value: -0.20 },
   ]);
+
+  // --- Core Dimension state ---
+  const [ltvDims, setLtvDims] = useState(() => LTV_ADJUSTMENTS.map(l => ({ ...l })));
+  const [creditDims, setCreditDims] = useState(() => CREDIT_PROFILES_DATA.map(c => ({ ...c })));
+  const [empDims, setEmpDims] = useState(() =>
+    Object.entries(EMPLOYMENT_ADJUSTMENTS).map(([k, v]) => ({ label: k, value: v }))
+  );
+  const [loyaltyDims, setLoyaltyDims] = useState(() =>
+    Object.entries(LOYALTY_ADJUSTMENTS).map(([k, v]) => ({ label: k, value: v }))
+  );
+
+  // --- Persist property mods ---
+  useEffect(() => {
+    const obj = {};
+    propertyMods.forEach(m => { obj[m.label] = m.value; });
+    saveDimension("property", obj);
+  }, [propertyMods]);
+
+  // --- Persist EPC mods ---
+  useEffect(() => {
+    const obj = {};
+    epcMods.forEach(m => { obj[m.label.replace("EPC ", "")] = m.value; });
+    saveDimension("epc", obj);
+  }, [epcMods]);
+
+  // --- Persist core dimensions ---
+  useEffect(() => { saveDimension("ltv", ltvDims); }, [ltvDims]);
+  useEffect(() => { saveDimension("credit", creditDims); }, [creditDims]);
+  useEffect(() => {
+    const obj = {};
+    empDims.forEach(m => { obj[m.label] = m.value; });
+    saveDimension("employment", obj);
+  }, [empDims]);
+  useEffect(() => {
+    const obj = {};
+    loyaltyDims.forEach(m => { obj[m.label] = m.value; });
+    saveDimension("loyalty", obj);
+  }, [loyaltyDims]);
 
   const totalModifier = useMemo(
     () => (PRODUCT_MODIFIERS[product] || 0) + (PURPOSE_MODIFIERS[purpose] || 0) + (EMPLOYMENT_MODIFIERS[employment] || 0) + appliedAdjust,
@@ -363,6 +402,191 @@ export default function PricingMatrix() {
         </div>
       </Card>
 
+      {/* ── Core Dimension Editor ── */}
+      <div style={{ fontSize: 17, fontWeight: 700, color: T.text, marginBottom: 12 }}>Core Dimension Editor</div>
+
+      {/* LTV Band Adjustments */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>LTV Band Adjustments</div>
+        <table style={{ borderCollapse: "collapse", width: "100%", maxWidth: 400 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Band</th>
+              <th style={{ textAlign: "right", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Adjustment %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ltvDims.map((row, i) => (
+              <tr key={row.band}>
+                <td style={{ fontSize: 13, fontWeight: 500, padding: "4px 8px" }}>{row.band}</td>
+                <td style={{ textAlign: "right", padding: "4px 8px" }}>
+                  <input
+                    type="number"
+                    step="0.05"
+                    value={row.adj}
+                    onChange={(e) => {
+                      const next = [...ltvDims];
+                      next[i] = { ...row, adj: parseFloat(e.target.value) || 0 };
+                      setLtvDims(next);
+                    }}
+                    style={{
+                      width: 66, padding: "4px 6px", borderRadius: 6,
+                      border: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600,
+                      fontFamily: T.font, textAlign: "right", outline: "none",
+                      color: row.adj > 0 ? "#92400E" : row.adj < 0 ? "#065F46" : T.text,
+                      background: row.adj > 0 ? "#FFF8E0" : row.adj < 0 ? "#E6F7F3" : T.card,
+                    }}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+
+      {/* Credit Profile Adjustments */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Credit Profile Adjustments</div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Profile</th>
+                <th style={{ textAlign: "left", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Description</th>
+                <th style={{ textAlign: "right", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Rate Adj %</th>
+                <th style={{ textAlign: "right", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Max LTV</th>
+              </tr>
+            </thead>
+            <tbody>
+              {creditDims.map((row, i) => (
+                <tr key={row.id}>
+                  <td style={{ fontSize: 13, fontWeight: 500, padding: "4px 8px", whiteSpace: "nowrap" }}>{row.label}</td>
+                  <td style={{ fontSize: 12, color: T.textMuted, padding: "4px 8px" }}>{row.desc}</td>
+                  <td style={{ textAlign: "right", padding: "4px 8px" }}>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={row.adj}
+                      onChange={(e) => {
+                        const next = [...creditDims];
+                        next[i] = { ...row, adj: parseFloat(e.target.value) || 0 };
+                        setCreditDims(next);
+                      }}
+                      style={{
+                        width: 66, padding: "4px 6px", borderRadius: 6,
+                        border: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600,
+                        fontFamily: T.font, textAlign: "right", outline: "none",
+                        color: row.adj > 0 ? "#92400E" : row.adj < 0 ? "#065F46" : T.text,
+                        background: row.adj > 0 ? "#FFF8E0" : row.adj < 0 ? "#E6F7F3" : T.card,
+                      }}
+                    />
+                  </td>
+                  <td style={{ textAlign: "right", padding: "4px 8px" }}>
+                    <input
+                      type="number"
+                      step="5"
+                      value={row.maxLTV || 95}
+                      onChange={(e) => {
+                        const next = [...creditDims];
+                        next[i] = { ...row, maxLTV: parseInt(e.target.value) || 95 };
+                        setCreditDims(next);
+                      }}
+                      style={{
+                        width: 60, padding: "4px 6px", borderRadius: 6,
+                        border: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600,
+                        fontFamily: T.font, textAlign: "right", outline: "none",
+                        color: T.text, background: T.card,
+                      }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Employment & Loyalty Adjustments side by side */}
+      <div style={{ display: "flex", gap: 20, marginBottom: 20, flexWrap: "wrap" }}>
+        {/* Employment Adjustments */}
+        <Card style={{ flex: 1, minWidth: 280 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Employment Adjustments</div>
+          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Type</th>
+                <th style={{ textAlign: "right", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Adjustment %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {empDims.map((row, i) => (
+                <tr key={row.label}>
+                  <td style={{ fontSize: 13, fontWeight: 500, padding: "4px 8px" }}>{row.label}</td>
+                  <td style={{ textAlign: "right", padding: "4px 8px" }}>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={row.value}
+                      onChange={(e) => {
+                        const next = [...empDims];
+                        next[i] = { ...row, value: parseFloat(e.target.value) || 0 };
+                        setEmpDims(next);
+                      }}
+                      style={{
+                        width: 66, padding: "4px 6px", borderRadius: 6,
+                        border: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600,
+                        fontFamily: T.font, textAlign: "right", outline: "none",
+                        color: row.value > 0 ? "#92400E" : row.value < 0 ? "#065F46" : T.text,
+                        background: row.value > 0 ? "#FFF8E0" : row.value < 0 ? "#E6F7F3" : T.card,
+                      }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+
+        {/* Loyalty Adjustments */}
+        <Card style={{ flex: 1, minWidth: 280 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Loyalty Adjustments</div>
+          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Tier</th>
+                <th style={{ textAlign: "right", fontSize: 11, fontWeight: 600, color: T.textMuted, padding: "4px 8px" }}>Adjustment %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loyaltyDims.map((row, i) => (
+                <tr key={row.label}>
+                  <td style={{ fontSize: 13, fontWeight: 500, padding: "4px 8px" }}>{row.label}</td>
+                  <td style={{ textAlign: "right", padding: "4px 8px" }}>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={row.value}
+                      onChange={(e) => {
+                        const next = [...loyaltyDims];
+                        next[i] = { ...row, value: parseFloat(e.target.value) || 0 };
+                        setLoyaltyDims(next);
+                      }}
+                      style={{
+                        width: 66, padding: "4px 6px", borderRadius: 6,
+                        border: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600,
+                        fontFamily: T.font, textAlign: "right", outline: "none",
+                        color: row.value < 0 ? "#065F46" : row.value > 0 ? "#92400E" : T.text,
+                        background: row.value < 0 ? "#E6F7F3" : row.value > 0 ? "#FFF8E0" : T.card,
+                      }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      </div>
+
       {/* Additional Dimension Cards */}
       <div style={{ display: "flex", gap: 20, marginBottom: 20, flexWrap: "wrap" }}>
         {/* Property Type Modifiers */}
@@ -533,6 +757,22 @@ export default function PricingMatrix() {
           </div>
         </div>
       </Card>
+
+      {/* Action Buttons */}
+      <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
+        <Btn
+          ghost
+          onClick={() => { resetAllDimensions(); window.location.reload(); }}
+        >
+          Reset All to Defaults
+        </Btn>
+        <Btn
+          primary
+          onClick={() => { window.location.reload(); }}
+        >
+          Save &amp; Apply
+        </Btn>
+      </div>
     </div>
   );
 }

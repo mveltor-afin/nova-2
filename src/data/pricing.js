@@ -2,16 +2,28 @@
 // NOVA — Shared Pricing Engine
 //
 // Single source of truth for all rate calculations.
-// Called by: Eligibility Calculator, Product Catalogue,
-// UW Workstation, Broker Dashboard, Pricing Matrix.
+// Dimensions are CONFIGURABLE — edited via Pricing Matrix UI,
+// persisted in localStorage, with hardcoded defaults as fallback.
 //
-// getRate({ product, ltv, credit, employment, property, epc, loyalty })
-// getEligibleProducts({ ltv, credit, employment, property, epc, loyalty })
-// getRateBreakdown(...) — itemised breakdown for UW
+// To edit: Product Manager → Pricing Matrix → Dimension Editor
+// Changes propagate to: Eligibility Calculator, Broker Smart Apply,
+// Product Catalogue, Rate Matrix, UW Workstation.
 // ─────────────────────────────────────────────
 
-// ── Product base rates (at ≤60% LTV, Clean credit) ──
-export const PRODUCTS_PRICING = {
+// ── localStorage helpers ──
+function loadDimension(key, fallback) {
+  try {
+    const stored = localStorage.getItem(`pricing_${key}`);
+    return stored ? JSON.parse(stored) : fallback;
+  } catch { return fallback; }
+}
+
+export function saveDimension(key, value) {
+  try { localStorage.setItem(`pricing_${key}`, JSON.stringify(value)); } catch {}
+}
+
+// ── Defaults (used if localStorage is empty) ──
+const DEFAULT_PRODUCTS_PRICING = {
   "Afin Fix 2yr 75%":  { baseRate: 4.19, maxLTV: 75,  category: "Lending", ercSchedule: "3% / 2%" },
   "Afin Fix 5yr 75%":  { baseRate: 4.59, maxLTV: 75,  category: "Lending", ercSchedule: "5/4/3/2/1%" },
   "Afin Track SVR 75%":{ baseRate: 4.84, maxLTV: 75,  category: "Lending", ercSchedule: "None" },
@@ -22,8 +34,7 @@ export const PRODUCTS_PRICING = {
   "Afin Shared Ownership":{ baseRate: 4.99, maxLTV: 95, category: "Lending", ercSchedule: "3% / 2%" },
 };
 
-// ── LTV adjustments (added to base) ──
-export const LTV_ADJUSTMENTS = [
+const DEFAULT_LTV = [
   { band: "≤60%",  min: 0,  max: 60,  adj: 0.00 },
   { band: "60-75%", min: 60, max: 75,  adj: 0.30 },
   { band: "75-85%", min: 75, max: 85,  adj: 0.80 },
@@ -31,8 +42,7 @@ export const LTV_ADJUSTMENTS = [
   { band: "90-95%", min: 90, max: 95,  adj: 1.50 },
 ];
 
-// ── Credit profile adjustments ──
-export const CREDIT_PROFILES = [
+const DEFAULT_CREDIT = [
   { id: "clean",         label: "Clean",          desc: "No adverse ever",                          adj: 0.00 },
   { id: "near_prime",    label: "Near Prime",     desc: "1 missed payment >12 months ago",          adj: 0.25 },
   { id: "light_adverse", label: "Light Adverse",  desc: "1 CCJ <£500, satisfied >12 months",       adj: 0.50, maxLTV: 85 },
@@ -42,48 +52,30 @@ export const CREDIT_PROFILES = [
   { id: "fresh_start",   label: "Fresh Start",    desc: "Bankruptcy discharged >6 years",           adj: 2.50, maxLTV: 60 },
 ];
 
-// ── Employment adjustments ──
-export const EMPLOYMENT_ADJUSTMENTS = {
-  "Employed":       0.00,
-  "Self-Employed":  0.20,
-  "Contractor":     0.15,
-};
+const DEFAULT_EMPLOYMENT = { "Employed": 0.00, "Self-Employed": 0.20, "Contractor": 0.15 };
+const DEFAULT_PROPERTY = { "Standard": 0.00, "Non-Standard": 0.25, "New Build": 0.10, "Ex-Local Authority": 0.15, "High-Rise (>6 floors)": 0.30 };
+const DEFAULT_EPC = { "A": -0.15, "B": -0.10, "C": -0.05, "D": 0.00, "E": 0.10, "F": 0.10, "G": 0.10 };
+const DEFAULT_LOYALTY = { "New": 0.00, "Existing": -0.05, "Multi-Product": -0.10, "Premier": -0.15, "Switcher": -0.20 };
+const DEFAULT_PURPOSE = { "Purchase": 0.00, "Remortgage": -0.10, "BTL": 0.50 };
 
-// ── Property type adjustments ──
-export const PROPERTY_ADJUSTMENTS = {
-  "Standard":              0.00,
-  "Non-Standard":          0.25,
-  "New Build":             0.10,
-  "Ex-Local Authority":    0.15,
-  "High-Rise (>6 floors)": 0.30,
-};
+// ── Live exports — read from localStorage, fallback to defaults ──
+export const PRODUCTS_PRICING    = loadDimension("products", DEFAULT_PRODUCTS_PRICING);
+export const LTV_ADJUSTMENTS     = loadDimension("ltv", DEFAULT_LTV);
+export const CREDIT_PROFILES     = loadDimension("credit", DEFAULT_CREDIT);
+export const EMPLOYMENT_ADJUSTMENTS = loadDimension("employment", DEFAULT_EMPLOYMENT);
+export const PROPERTY_ADJUSTMENTS   = loadDimension("property", DEFAULT_PROPERTY);
+export const EPC_ADJUSTMENTS        = loadDimension("epc", DEFAULT_EPC);
+export const LOYALTY_ADJUSTMENTS    = loadDimension("loyalty", DEFAULT_LOYALTY);
+export const PURPOSE_ADJUSTMENTS    = loadDimension("purpose", DEFAULT_PURPOSE);
 
-// ── EPC / Green incentive ──
-export const EPC_ADJUSTMENTS = {
-  "A": -0.15,
-  "B": -0.10,
-  "C": -0.05,
-  "D":  0.00,
-  "E": +0.10,
-  "F": +0.10,
-  "G": +0.10,
-};
-
-// ── Customer loyalty ──
-export const LOYALTY_ADJUSTMENTS = {
-  "New":            0.00,
-  "Existing":      -0.05,
-  "Multi-Product": -0.10,
-  "Premier":       -0.15,
-  "Switcher":      -0.20,
-};
-
-// ── Loan purpose ──
-export const PURPOSE_ADJUSTMENTS = {
-  "Purchase":    0.00,
-  "Remortgage": -0.10,
-  "BTL":        +0.50,
-};
+/**
+ * Reset all dimensions to defaults (clears localStorage overrides).
+ */
+export function resetAllDimensions() {
+  ["products","ltv","credit","employment","property","epc","loyalty","purpose"].forEach(k => {
+    try { localStorage.removeItem(`pricing_${k}`); } catch {}
+  });
+}
 
 // ─────────────────────────────────────────────
 // QUERY FUNCTIONS
