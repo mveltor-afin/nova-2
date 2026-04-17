@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card } from "../shared/primitives";
-import { LTV_ADJUSTMENTS, CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, getRate } from "../data/pricing";
+import { LTV_ADJUSTMENTS, CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, PROPERTY_ADJUSTMENTS, EPC_ADJUSTMENTS, LOYALTY_ADJUSTMENTS, getRate } from "../data/pricing";
 
 // ─────────────────────────────────────────────
 // PERSISTENCE
@@ -52,6 +52,11 @@ const ALL_UNACCEPTABLE_TYPES = [
   "Houseboats", "Holiday lets not accepted",
 ];
 
+// Dimension options for accepted-dimension selectors
+const ALL_ACCEPTED_EMPLOYMENT = ["Employed", "Self-Employed", "Contractor", "Retired"];
+const ALL_ACCEPTED_PROPERTY = ["Standard", "Non-Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"];
+const ALL_ACCEPTED_EPC = ["A", "B", "C", "D", "E", "F", "G"];
+
 // ─────────────────────────────────────────────
 // RATE GENERATION FROM PRICING ENGINE
 // ─────────────────────────────────────────────
@@ -80,6 +85,9 @@ const DEFAULT_BUCKETS = [
     desc: "Clean credit \u00b7 Standard criteria \u00b7 Purchase & remortgage",
     maxLTV: 75,
     acceptedCreditProfiles: ["clean", "near_prime"],
+    acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
+    acceptedProperties: ["Standard", "New Build", "Ex-Local Authority"],
+    acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: {},
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a31,000,000" },
@@ -124,6 +132,9 @@ const DEFAULT_BUCKETS = [
     desc: "Clean credit \u00b7 Extended LTV range up to 95%",
     maxLTV: 95,
     acceptedCreditProfiles: ["clean", "near_prime"],
+    acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
+    acceptedProperties: ["Standard", "New Build", "Ex-Local Authority"],
+    acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: {},
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a3500,000" },
@@ -169,6 +180,9 @@ const DEFAULT_BUCKETS = [
     desc: "Qualified professionals \u00b7 Enhanced income multiples \u00b7 Reduced rates",
     maxLTV: 90,
     acceptedCreditProfiles: ["clean", "near_prime", "light_adverse"],
+    acceptedEmployments: ["Employed", "Self-Employed", "Contractor", "Retired"],
+    acceptedProperties: ["Standard", "New Build"],
+    acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: { employment: { "Self-Employed": 0.10 } },
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
@@ -213,6 +227,9 @@ const DEFAULT_BUCKETS = [
     desc: "\u00a3300k+ income or \u00a33M+ net assets \u00b7 Bespoke pricing",
     maxLTV: 75,
     acceptedCreditProfiles: ["clean"],
+    acceptedEmployments: ["Employed", "Self-Employed"],
+    acceptedProperties: ["Standard", "New Build"],
+    acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: { ltv: [{ band: "\u226460%", adj: -0.10 }, { band: "60-75%", adj: 0.15 }] },
     criteria: {
       loanSize: { min: "\u00a3150,000", max: "\u00a35,000,000" },
@@ -258,6 +275,9 @@ const DEFAULT_BUCKETS = [
     desc: "Investment properties \u00b7 ICR 145% \u00b7 Portfolio landlords accepted",
     maxLTV: 75,
     acceptedCreditProfiles: ["clean", "near_prime", "light_adverse", "adverse", "heavy_adverse"],
+    acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
+    acceptedProperties: ["Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"],
+    acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: { ltv: [{ band: "\u226460%", adj: 0.00 }, { band: "60-75%", adj: 0.50 }], employment: {} },
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
@@ -322,6 +342,9 @@ const emptyBucket = () => ({
   desc: "",
   maxLTV: 75,
   acceptedCreditProfiles: ["clean"],
+  acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
+  acceptedProperties: ["Standard", "New Build"],
+  acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
   tierOverrides: {},
   criteria: {
     loanSize: { min: "", max: "" },
@@ -572,14 +595,89 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
           ))}
         </div>
 
-        {/* SECTION 4: EMPLOYMENT */}
-        <div style={sectionTitleSt}>4. Employment</div>
-        <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
-          {ALL_EMPLOYMENT.map((emp) => (
-            <span key={emp} style={chipSt((form.criteria.employment || []).includes(emp), "#4338CA")} onClick={() => toggleInArray("criteria.employment", emp)}>
-              {emp}
-            </span>
-          ))}
+        {/* SECTION 4: EMPLOYMENT & DIMENSIONS */}
+        <div style={sectionTitleSt}>4. Employment & Accepted Dimensions</div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelSt}>Employment Criteria (descriptive)</label>
+          <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
+            {ALL_EMPLOYMENT.map((emp) => (
+              <span key={emp} style={chipSt((form.criteria.employment || []).includes(emp), "#4338CA")} onClick={() => toggleInArray("criteria.employment", emp)}>
+                {emp}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelSt}>Accepted Employment Types (pricing dimension)</label>
+          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 6 }}>Controls which employment types are accepted for pricing. Unselected types will be rejected at application.</div>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {ALL_ACCEPTED_EMPLOYMENT.map((emp) => (
+              <span
+                key={emp}
+                style={chipSt((form.acceptedEmployments || []).includes(emp), "#059669")}
+                onClick={() => {
+                  setForm((prev) => {
+                    const next = JSON.parse(JSON.stringify(prev));
+                    if (!next.acceptedEmployments) next.acceptedEmployments = [];
+                    const idx = next.acceptedEmployments.indexOf(emp);
+                    if (idx >= 0) next.acceptedEmployments.splice(idx, 1);
+                    else next.acceptedEmployments.push(emp);
+                    return next;
+                  });
+                }}
+              >
+                {emp}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelSt}>Accepted Property Types (pricing dimension)</label>
+          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 6 }}>Controls which property types are accepted for pricing adjustments.</div>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {ALL_ACCEPTED_PROPERTY.map((pt) => (
+              <span
+                key={pt}
+                style={chipSt((form.acceptedProperties || []).includes(pt), "#059669")}
+                onClick={() => {
+                  setForm((prev) => {
+                    const next = JSON.parse(JSON.stringify(prev));
+                    if (!next.acceptedProperties) next.acceptedProperties = [];
+                    const idx = next.acceptedProperties.indexOf(pt);
+                    if (idx >= 0) next.acceptedProperties.splice(idx, 1);
+                    else next.acceptedProperties.push(pt);
+                    return next;
+                  });
+                }}
+              >
+                {pt}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelSt}>Accepted EPC Ratings (pricing dimension)</label>
+          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 6 }}>Controls which EPC ratings are accepted. All selected by default.</div>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {ALL_ACCEPTED_EPC.map((epc) => (
+              <span
+                key={epc}
+                style={chipSt((form.acceptedEpc || []).includes(epc), "#059669")}
+                onClick={() => {
+                  setForm((prev) => {
+                    const next = JSON.parse(JSON.stringify(prev));
+                    if (!next.acceptedEpc) next.acceptedEpc = [];
+                    const idx = next.acceptedEpc.indexOf(epc);
+                    if (idx >= 0) next.acceptedEpc.splice(idx, 1);
+                    else next.acceptedEpc.push(epc);
+                    return next;
+                  });
+                }}
+              >
+                EPC {epc}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* SECTION 5: PROPERTY */}
@@ -795,6 +893,25 @@ function CriteriaTable({ bucket }) {
           <Row label="Bankruptcy" value={c.credit.bankruptcy} valueColor={creditColor(c.credit.bankruptcy)} />
           <Row label="DMP" value={c.credit.dmp} valueColor={creditColor(c.credit.dmp)} />
         </>
+      )}
+
+      {/* Accepted Dimensions */}
+      <div style={sectionHeaderSt}>Accepted Dimensions (Pricing)</div>
+      {bucket.acceptedEmployments && bucket.acceptedEmployments.length > 0 && (
+        <PillRow label="Accepted Employment" items={bucket.acceptedEmployments} pillStyle={greenPill} />
+      )}
+      {bucket.acceptedProperties && bucket.acceptedProperties.length > 0 && (
+        <>
+          <PillRow label="Accepted Property Types" items={bucket.acceptedProperties} pillStyle={greenPill} />
+          <PillRow
+            label="Rejected Property Types"
+            items={Object.keys(PROPERTY_ADJUSTMENTS).filter(p => !(bucket.acceptedProperties || []).includes(p))}
+            pillStyle={redPill}
+          />
+        </>
+      )}
+      {bucket.acceptedEpc && bucket.acceptedEpc.length > 0 && (
+        <PillRow label="Accepted EPC Ratings" items={bucket.acceptedEpc} pillStyle={greenPill} />
       )}
 
       <div style={sectionHeaderSt}>Property</div>
@@ -1122,6 +1239,94 @@ function RatesTab({ bucket }) {
           Rate = base + LTV adj + credit adj. Max LTV: {maxLTV}%
         </span>
       </div>
+
+      {/* Dimension Loadings */}
+      {(() => {
+        const acceptedEmployments = bucket.acceptedEmployments || ["Employed", "Self-Employed", "Contractor"];
+        const acceptedProperties = bucket.acceptedProperties || ["Standard", "New Build"];
+        const acceptedEpc = bucket.acceptedEpc || ["A", "B", "C", "D", "E", "F", "G"];
+        const tierOverrides = bucket.tierOverrides || {};
+        return (
+          <div style={{ marginTop: 16, padding: "14px 16px", background: T.bg, borderRadius: 10, border: `1px solid ${T.borderLight}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: T.textMuted, marginBottom: 10 }}>
+              Additional Loadings (applied on top of displayed rates at application time)
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+              {/* Employment */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>EMPLOYMENT</div>
+                {acceptedEmployments.map(emp => {
+                  const globalAdj = EMPLOYMENT_ADJUSTMENTS[emp] || 0;
+                  const override = tierOverrides?.employment?.[emp];
+                  const effective = override != null ? override : globalAdj;
+                  return (
+                    <div key={emp} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "2px 0" }}>
+                      <span>{emp}</span>
+                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
+                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Property */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>PROPERTY</div>
+                {acceptedProperties.map(prop => {
+                  const globalAdj = PROPERTY_ADJUSTMENTS[prop] || 0;
+                  const override = tierOverrides?.property?.[prop];
+                  const effective = override != null ? override : globalAdj;
+                  return (
+                    <div key={prop} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "2px 0" }}>
+                      <span>{prop}</span>
+                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
+                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* EPC */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>EPC</div>
+                {acceptedEpc.map(rating => {
+                  const globalAdj = EPC_ADJUSTMENTS[rating] || 0;
+                  const override = tierOverrides?.epc?.[rating];
+                  const effective = override != null ? override : globalAdj;
+                  return (
+                    <div key={rating} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "2px 0" }}>
+                      <span>{rating}</span>
+                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
+                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>LOYALTY</div>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                {Object.entries(LOYALTY_ADJUSTMENTS).map(([tier, adj]) => {
+                  const override = tierOverrides?.loyalty?.[tier];
+                  const effective = override != null ? override : adj;
+                  return (
+                    <div key={tier} style={{ fontSize: 11 }}>
+                      <span>{tier}: </span>
+                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
+                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ fontSize: 10, color: T.textMuted, marginTop: 10, fontStyle: "italic" }}>
+              Rate range for any cell: displayed rate (best case) to displayed rate + max combined loading
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -1276,17 +1481,146 @@ function TiersTab({ bucket, onUpdateTierOverrides }) {
               const ov = overrides.employment && overrides.employment[type];
               const hasOv = ov != null;
               const effective = hasOv ? ov : adj;
+              const rejected = !(bucket.acceptedEmployments || []).includes(type);
               return (
-                <tr key={type} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{type}</td>
+                <tr key={type} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF", opacity: rejected ? 0.45 : 1 }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>
+                    {type}
+                    {rejected && <span style={{ marginLeft: 8, fontSize: 9, color: "#DC2626", fontWeight: 700 }}>Not accepted</span>}
+                  </td>
                   <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
                   <td style={tdSt}>
                     <input
                       style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
                       type="number" step="0.01"
                       value={hasOv ? ov : ""}
-                      placeholder="\u2014"
+                      placeholder={"\u2014"}
+                      disabled={rejected}
                       onChange={(e) => setOverride("employment", type, e.target.value)}
+                    />
+                  </td>
+                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
+                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Property Type Adjustments */}
+        <div style={sectionSt}>Property Type Adjustments</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={thSt}>Property Type</th>
+              <th style={thSt}>Global Default</th>
+              <th style={thSt}>Override</th>
+              <th style={thSt}>Effective</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(PROPERTY_ADJUSTMENTS).map(([type, adj], i) => {
+              const ov = overrides.property && overrides.property[type];
+              const hasOv = ov != null;
+              const effective = hasOv ? ov : adj;
+              const rejected = !(bucket.acceptedProperties || []).includes(type);
+              return (
+                <tr key={type} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF", opacity: rejected ? 0.45 : 1 }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>
+                    {type}
+                    {rejected && <span style={{ marginLeft: 8, fontSize: 9, color: "#DC2626", fontWeight: 700 }}>Not accepted</span>}
+                  </td>
+                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
+                  <td style={tdSt}>
+                    <input
+                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      type="number" step="0.01"
+                      value={hasOv ? ov : ""}
+                      placeholder={"\u2014"}
+                      disabled={rejected}
+                      onChange={(e) => setOverride("property", type, e.target.value)}
+                    />
+                  </td>
+                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
+                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* EPC Adjustments */}
+        <div style={sectionSt}>EPC Adjustments</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={thSt}>EPC Rating</th>
+              <th style={thSt}>Global Default</th>
+              <th style={thSt}>Override</th>
+              <th style={thSt}>Effective</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(EPC_ADJUSTMENTS).map(([rating, adj], i) => {
+              const ov = overrides.epc && overrides.epc[rating];
+              const hasOv = ov != null;
+              const effective = hasOv ? ov : adj;
+              const rejected = !(bucket.acceptedEpc || []).includes(rating);
+              return (
+                <tr key={rating} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF", opacity: rejected ? 0.45 : 1 }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>
+                    {rating}
+                    {rejected && <span style={{ marginLeft: 8, fontSize: 9, color: "#DC2626", fontWeight: 700 }}>Not accepted</span>}
+                  </td>
+                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
+                  <td style={tdSt}>
+                    <input
+                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      type="number" step="0.01"
+                      value={hasOv ? ov : ""}
+                      placeholder={"\u2014"}
+                      disabled={rejected}
+                      onChange={(e) => setOverride("epc", rating, e.target.value)}
+                    />
+                  </td>
+                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
+                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Loyalty Adjustments */}
+        <div style={sectionSt}>Loyalty Adjustments</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={thSt}>Loyalty Tier</th>
+              <th style={thSt}>Global Default</th>
+              <th style={thSt}>Override</th>
+              <th style={thSt}>Effective</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(LOYALTY_ADJUSTMENTS).map(([tier, adj], i) => {
+              const ov = overrides.loyalty && overrides.loyalty[tier];
+              const hasOv = ov != null;
+              const effective = hasOv ? ov : adj;
+              return (
+                <tr key={tier} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{tier}</td>
+                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
+                  <td style={tdSt}>
+                    <input
+                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      type="number" step="0.01"
+                      value={hasOv ? ov : ""}
+                      placeholder={"\u2014"}
+                      onChange={(e) => setOverride("loyalty", tier, e.target.value)}
                     />
                   </td>
                   <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
