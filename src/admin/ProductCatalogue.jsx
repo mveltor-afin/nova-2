@@ -189,47 +189,37 @@ const CREDIT_TIERS = [
 ];
 
 const LENDING = [
-  { id: 1, name: "Afin Fix 2yr 75%", type: "Lending", rate: "4.49%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active",
+  { id: 1, name: "Afin Fix 2yr 75%", type: "Lending", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active",
     creditAccepted: ["clean", "near_prime", "light_adverse", "adverse", "heavy_adverse"], tiers: [
     { ltvBand: "≤60%", rate: "4.19%", margin: "1.24%", status: "Active" },
     { ltvBand: "60-75%", rate: "4.49%", margin: "1.54%", status: "Active" },
-    { ltvBand: "75-85%", rate: "4.99%", margin: "2.04%", status: "Active" },
-    { ltvBand: "85-90%", rate: "5.29%", margin: "2.34%", status: "Active" },
-    { ltvBand: "90-95%", rate: "5.69%", margin: "2.74%", status: "FTB Only" },
   ]},
-  { id: 2, name: "Afin Fix 5yr 75%", creditAccepted: ["clean", "near_prime", "light_adverse", "adverse"], type: "Lending", rate: "4.89%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "All", status: "Active", tiers: [
+  { id: 2, name: "Afin Fix 5yr 75%", creditAccepted: ["clean", "near_prime", "light_adverse", "adverse"], type: "Lending", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "All", status: "Active", tiers: [
     { ltvBand: "≤60%", rate: "4.59%", margin: "1.64%", status: "Active" },
     { ltvBand: "60-75%", rate: "4.89%", margin: "1.94%", status: "Active" },
-    { ltvBand: "75-85%", rate: "5.39%", margin: "2.44%", status: "Active" },
-    { ltvBand: "85-90%", rate: "5.69%", margin: "2.74%", status: "Paused" },
   ]},
-  { id: 3, name: "Afin Track SVR 75%", creditAccepted: ["clean", "near_prime", "light_adverse"], type: "Lending", rate: "5.14%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "None", eligibility: "All", status: "Active", tiers: [
+  { id: 3, name: "Afin Track SVR 75%", creditAccepted: ["clean", "near_prime", "light_adverse"], type: "Lending", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "None", eligibility: "All", status: "Active", tiers: [
     { ltvBand: "≤60%", rate: "4.84%", margin: "0.59%", status: "Active" },
     { ltvBand: "60-75%", rate: "5.14%", margin: "0.89%", status: "Active" },
-    { ltvBand: "75-85%", rate: "5.64%", margin: "1.39%", status: "Active" },
   ]},
-  { id: 4, name: "Afin Fix 2yr 90%", creditAccepted: ["clean", "near_prime"], type: "Lending", rate: "5.29%", maxLTV: "90%", minTerm: "5yr", maxTerm: "35yr", erc: "4% / 3%", eligibility: "All", status: "Active", tiers: [
+  { id: 4, name: "Afin Fix 2yr 90%", creditAccepted: ["clean", "near_prime"], type: "Lending", maxLTV: "90%", minTerm: "5yr", maxTerm: "35yr", erc: "4% / 3%", eligibility: "All", status: "Active", tiers: [
     { ltvBand: "≤60%", rate: "4.49%", margin: "1.54%", status: "Active" },
     { ltvBand: "60-75%", rate: "4.79%", margin: "1.84%", status: "Active" },
     { ltvBand: "75-85%", rate: "5.09%", margin: "2.14%", status: "Active" },
     { ltvBand: "85-90%", rate: "5.29%", margin: "2.34%", status: "Active" },
-    { ltvBand: "90-95%", rate: "5.89%", margin: "2.94%", status: "FTB Only" },
   ]},
-  { id: 5, name: "Afin Pro Fix 2yr", creditAccepted: ["clean"], type: "Lending", rate: "3.99%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "Professional only", status: "Active", tiers: [
+  { id: 5, name: "Afin Pro Fix 2yr", creditAccepted: ["clean"], type: "Lending", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "Professional only", status: "Active", tiers: [
     { ltvBand: "≤60%", rate: "3.69%", margin: "0.74%", status: "Active" },
     { ltvBand: "60-75%", rate: "3.99%", margin: "1.04%", status: "Active" },
-    { ltvBand: "75-85%", rate: "4.49%", margin: "1.54%", status: "Active" },
   ]},
-  { id: 6, name: "Afin HNW Fix 5yr", creditAccepted: ["clean", "near_prime"], type: "Lending", rate: "4.29%", maxLTV: "85%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "HNW only", status: "Active", tiers: [
+  { id: 6, name: "Afin HNW Fix 5yr", creditAccepted: ["clean", "near_prime"], type: "Lending", maxLTV: "85%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "HNW only", status: "Active", tiers: [
     { ltvBand: "≤60%", rate: "3.99%", margin: "1.04%", status: "Active" },
     { ltvBand: "60-75%", rate: "4.29%", margin: "1.34%", status: "Active" },
     { ltvBand: "75-85%", rate: "4.69%", margin: "1.74%", status: "Active" },
-    { ltvBand: "85-90%", rate: "5.09%", margin: "2.14%", status: "Active" },
   ]},
-  { id: 7, name: "Afin BTL Tracker", creditAccepted: ["clean", "near_prime", "light_adverse"], type: "Lending", rate: "5.99%", maxLTV: "75%", minTerm: "5yr", maxTerm: "25yr", erc: "3%", eligibility: "BTL only", status: "Active", tiers: [
+  { id: 7, name: "Afin BTL Tracker", creditAccepted: ["clean", "near_prime", "light_adverse"], type: "Lending", maxLTV: "75%", minTerm: "5yr", maxTerm: "25yr", erc: "3%", eligibility: "BTL only", status: "Active", tiers: [
     { ltvBand: "≤60%", rate: "5.49%", margin: "1.24%", status: "Active" },
-    { ltvBand: "60-70%", rate: "5.79%", margin: "1.54%", status: "Active" },
-    { ltvBand: "70-75%", rate: "5.99%", margin: "1.74%", status: "Active" },
+    { ltvBand: "60-75%", rate: "5.99%", margin: "1.74%", status: "Active" },
   ]},
   { id: 8, name: "Afin Shared Ownership", creditAccepted: ["clean", "near_prime", "light_adverse", "adverse", "heavy_adverse", "specialist", "fresh_start"], type: "Lending", rate: "5.49%", maxLTV: "95% of share", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active", tiers: [
     { ltvBand: "≤75%", rate: "5.19%", margin: "2.24%", status: "Active" },
@@ -640,7 +630,9 @@ function ProductCatalogue() {
                 <tr key={p.id} onClick={() => setExpanded(expanded === p.id ? null : p.id)} style={{ cursor: "pointer", background: expanded === p.id ? T.primaryLight : "transparent" }}>
                   <td style={{ ...tdStyle, fontWeight: 600 }}>{p.name}</td>
                   <td style={tdStyle}>{typeBadge(p.type)}</td>
-                  <td style={{ ...tdStyle, fontWeight: 600 }}>{p.rate}</td>
+                  <td style={{ ...tdStyle, fontWeight: 600 }}>{p.tiers?.length
+                    ? `${p.tiers[0].rate} – ${p.tiers[p.tiers.length - 1].rate}`
+                    : p.rate || "—"}</td>
                   <td style={{ ...tdStyle, fontSize: 12 }}>{p.maxLTV || "—"}</td>
                   <td style={{ ...tdStyle, fontSize: 12, whiteSpace: "nowrap" }}>{p.type === "Lending" ? `${p.minTerm}–${p.maxTerm}` : p.keyTerms?.split("—")[0]?.trim() || "—"}</td>
                   <td style={{ ...tdStyle, fontSize: 11 }}>{p.erc || "—"}</td>
