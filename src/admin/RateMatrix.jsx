@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
+import { PRODUCTS_PRICING, LTV_ADJUSTMENTS, getRate } from "../data/pricing";
 
 const FILTERS = ["All", "Lending", "Savings", "Insurance"];
 
-const LTV_BANDS = ["\u226460%", "60-75%", "75-85%", "85-90%", "90-95%"];
+const LTV_BANDS = LTV_ADJUSTMENTS.map(l => l.band);
+const LTV_MIDS = LTV_ADJUSTMENTS.map(l => Math.round((l.min + l.max) / 2) || 30);
 
-const MORTGAGE_DATA = [
-  { name: "Afin Fix 2yr 75%", rates: [4.19, 4.49, null, null, null], maxLtv: "75%", erc: "2%/1%", note: null },
-  { name: "Afin Fix 5yr 75%", rates: [4.59, 4.89, null, null, null], maxLtv: "75%", erc: "5%\u20261%", note: null },
-  { name: "Afin Track SVR 75%", rates: [4.84, 5.14, null, null, null], maxLtv: "75%", erc: "None", note: null },
-  { name: "Afin Fix 2yr 90%", rates: [4.49, 4.79, 4.99, 5.29, null], maxLtv: "90%", erc: "2%/1%", note: null },
-  { name: "Afin Pro Fix 2yr", rates: [3.69, 3.99, 4.29, null, null], maxLtv: "85%", erc: "2%/1%", note: "Professional only" },
-  { name: "Afin HNW Fix 5yr", rates: [3.99, 4.29, 4.59, 4.89, null], maxLtv: "85%", erc: "3%\u20261%", note: "HNW only" },
-  { name: "Afin BTL Tracker", rates: [5.49, 5.99, 6.29, null, null], maxLtv: "75%", erc: "1%", note: "BTL only" },
-  { name: "Afin Shared Ownership", rates: [4.99, 5.49, 5.79, 5.99, 5.69], maxLtv: "95%", erc: "2%/1%", note: "of share" },
-];
+// Generate mortgage rate grid from the pricing engine
+const MORTGAGE_DATA = Object.entries(PRODUCTS_PRICING).map(([name, prod]) => ({
+  name,
+  rates: LTV_MIDS.map(ltv => {
+    const r = getRate({ product: name, ltv, credit: "clean" });
+    return r.available ? r.rate : null;
+  }),
+  maxLtv: prod.maxLTV + "%",
+  erc: prod.ercSchedule,
+  note: prod.eligibility || null,
+}));
 
 const SAVINGS_BANDS = ["\u00a31k-\u00a39.9k", "\u00a310k-\u00a349.9k", "\u00a350k-\u00a3249.9k", "\u00a3250k+"];
 

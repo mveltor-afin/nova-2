@@ -61,13 +61,29 @@ export const WIZARD_STEPS = [
   { id: "consent", label: "Consents" }, { id: "submit", label: "Submit" },
 ];
 
-export const WIZARD_PRODUCTS = [
-  { name: "Afin Fix 2yr 75%", type: "Fixed", repay: "C&I", rate: "4.49%", monthly: "£1,948", erc: "3% yr1, 2% yr2", elig: "green" },
-  { name: "Afin Fix 5yr 75%", type: "Fixed", repay: "C&I", rate: "4.89%", monthly: "£2,019", erc: "5/4/3/2/1%", elig: "green" },
-  { name: "Afin Track SVR 75%", type: "Tracker", repay: "C&I", rate: "5.14%", monthly: "£2,063", erc: "None", elig: "green" },
-  { name: "Afin Fix 2yr 90%", type: "Fixed", repay: "C&I", rate: "5.29%", monthly: "£2,090", erc: "4% yr1, 3% yr2", elig: "green" },
-  { name: "Afin Pro Fix 2yr", type: "Fixed", repay: "Both", rate: "3.99%", monthly: "£1,860", erc: "3% yr1, 2% yr2", elig: "yellow", note: "Professional qualification required" },
-  { name: "Afin HNW Fix 5yr", type: "Fixed", repay: "Both", rate: "4.29%", monthly: "£1,912", erc: "5/4/3/2/1%", elig: "yellow", note: "HNW: £300k income or £3m assets" },
-  { name: "Afin Fix 2yr 60%", type: "Fixed", repay: "C&I", rate: "4.19%", monthly: "£1,896", erc: "2% yr1, 1% yr2", elig: "red", note: "LTV 72% exceeds max 60%" },
-  { name: "Afin BTL Tracker", type: "Tracker", repay: "IO", rate: "5.99%", monthly: "£1,747", erc: "3% yr1", elig: "red", note: "BTL only; property type not accepted" },
-];
+// WIZARD_PRODUCTS now generated dynamically from pricing engine.
+// Import getEligibleProducts from ../data/pricing and call it with the applicant's profile.
+// Kept as a static fallback for screens that don't yet pass profile data.
+import { getEligibleProducts, calcMonthlyPayment, PRODUCTS_PRICING } from "./pricing";
+
+export function getWizardProducts({ ltv = 72, credit = "clean", employment = "Employed", loanAmount = 350000, term = 25 } = {}) {
+  const eligible = getEligibleProducts({ ltv, credit, employment });
+  return eligible.map(p => {
+    const prod = PRODUCTS_PRICING[p.product];
+    const monthly = p.available ? calcMonthlyPayment(loanAmount, p.rate, term) : 0;
+    return {
+      name: p.product,
+      type: p.product.includes("Track") ? "Tracker" : "Fixed",
+      repay: p.product.includes("BTL") || p.product.includes("IO") ? "IO" : "C&I",
+      rate: p.available ? p.rate + "%" : "—",
+      monthly: p.available ? "£" + monthly.toLocaleString("en-GB") : "—",
+      erc: prod?.ercSchedule || "—",
+      elig: p.available ? "green" : "red",
+      note: p.available ? (prod?.eligibility || null) : p.reason,
+      available: p.available,
+    };
+  });
+}
+
+// Static fallback (default profile: Clean, 72% LTV, Employed)
+export const WIZARD_PRODUCTS = getWizardProducts();

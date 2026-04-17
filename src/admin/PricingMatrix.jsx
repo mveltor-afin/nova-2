@@ -1,43 +1,35 @@
 import { useState, useMemo } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
+import {
+  PRODUCTS_PRICING, LTV_ADJUSTMENTS, CREDIT_PROFILES as CREDIT_PROFILES_DATA,
+  EMPLOYMENT_ADJUSTMENTS, PURPOSE_ADJUSTMENTS, getRate,
+} from "../data/pricing";
 
-const PRODUCTS = ["Afin Fix 2yr", "Afin Fix 5yr", "Afin Track SVR", "Afin BTL", "Afin Pro Fix"];
-const PURPOSES = ["Purchase", "Remortgage", "BTL"];
-const EMPLOYMENTS = ["All", "Employed", "Self-Employed", "Contractor"];
+const PRODUCTS = Object.keys(PRODUCTS_PRICING);
+const PURPOSES = Object.keys(PURPOSE_ADJUSTMENTS);
+const EMPLOYMENTS = ["All", ...Object.keys(EMPLOYMENT_ADJUSTMENTS)];
 
-const LTV_BANDS = ["≤60%", "60-75%", "75-85%", "85-90%", "90-95%"];
+const LTV_BANDS = LTV_ADJUSTMENTS.map(l => l.band);
+const LTV_MIDS = LTV_ADJUSTMENTS.map(l => Math.round((l.min + l.max) / 2) || 30); // midpoint for calculation
 
-const CREDIT_PROFILES = [
-  "Clean (no adverse)",
-  "Near Prime (1 missed payment >12mo)",
-  "Light Adverse (1 CCJ <£500 satisfied >12mo)",
-  "Adverse (1-2 CCJs <£1k satisfied >6mo)",
-  "Heavy Adverse (defaults satisfied >24mo)",
-  "Specialist (IVA/DMP discharged >3yr)",
-  "Fresh Start (bankruptcy discharged >6yr)",
-];
+const CREDIT_PROFILES = CREDIT_PROFILES_DATA.map(c => `${c.label} (${c.desc})`);
 
-const BASE_RATES = [
-  [4.19, 4.49, 4.99, 5.29, 5.69],
-  [4.44, 4.74, 5.24, 5.54, 5.94],
-  [4.69, 4.99, 5.49, 5.79, null],
-  [4.94, 5.24, 5.74, null, null],
-  [5.44, 5.74, 6.24, null, null],
-  [5.94, 6.24, null, null, null],
-  [6.69, 6.99, null, null, null],
-];
+// Generate the base rate grid from the pricing engine (Afin Fix 2yr as reference)
+const BASE_RATES = CREDIT_PROFILES_DATA.map(credit =>
+  LTV_ADJUSTMENTS.map(ltv => {
+    const r = getRate({ product: "Afin Fix 2yr 75%", ltv: LTV_MIDS[LTV_ADJUSTMENTS.indexOf(ltv)], credit: credit.id });
+    return r.available ? r.rate : null;
+  })
+);
 
-const PRODUCT_MODIFIERS = {
-  "Afin Fix 2yr": 0,
-  "Afin Fix 5yr": 0.40,
-  "Afin Track SVR": 0.65,
-  "Afin BTL": 0,
-  "Afin Pro Fix": -0.50,
-};
+// Product modifiers derived from base rates vs Afin Fix 2yr
+const PRODUCT_MODIFIERS = Object.fromEntries(
+  PRODUCTS.map(p => [p, Math.round((PRODUCTS_PRICING[p].baseRate - PRODUCTS_PRICING["Afin Fix 2yr 75%"].baseRate) * 100) / 100])
+);
 
-const PURPOSE_MODIFIERS = { Purchase: 0, Remortgage: -0.10, BTL: 0.50 };
-const EMPLOYMENT_MODIFIERS = { All: 0, Employed: 0, "Self-Employed": 0.20, Contractor: 0.15 };
+const PURPOSE_MODIFIERS = PURPOSE_ADJUSTMENTS;
+const EMPLOYMENT_MODIFIERS = { All: 0, ...EMPLOYMENT_ADJUSTMENTS };
 
 function cellColor(rate) {
   if (rate === null) return { bg: "#F5F5F5", text: "#999" };
