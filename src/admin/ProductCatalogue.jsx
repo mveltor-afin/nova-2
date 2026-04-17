@@ -2,6 +2,7 @@ import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import { getRate, LTV_ADJUSTMENTS, CREDIT_PROFILES as PRICING_CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, PROPERTY_ADJUSTMENTS, EPC_ADJUSTMENTS, LOYALTY_ADJUSTMENTS } from "../data/pricing";
+import ProductBuckets from "./ProductBuckets";
 
 // ─────────────────────────────────────────────
 // PRODUCT TYPE CATALOGUE — drives the new product wizard
@@ -771,6 +772,7 @@ function ProductCatalogue() {
   const [showModal, setShowModal] = useState(false);
   const [showDimensionsInfo, setShowDimensionsInfo] = useState(false);
   const [newProducts, setNewProducts] = useState([]);
+  const [view, setView] = useState("sheet"); // "table" or "sheet"
 
   const filters = ["All", "Lending", "Savings", "Insurance", "Archived"];
   const allProducts = [...ALL_PRODUCTS, ...newProducts];
@@ -791,9 +793,26 @@ function ProductCatalogue() {
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Product Catalogue</h1>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: T.textSecondary }}>Single source of truth for all lending and savings products</p>
         </div>
-        <Btn primary iconNode={Ico.plus(16)} onClick={() => setShowModal(true)}>Create Product</Btn>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 0 }}>
+            {[{ id: "sheet", label: "Product Sheet" }, { id: "table", label: "Table View" }].map(v => (
+              <button key={v.id} onClick={() => setView(v.id)} style={{
+                padding: "6px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
+                background: view === v.id ? T.primary : T.card, color: view === v.id ? "#fff" : T.textMuted,
+                border: `1px solid ${view === v.id ? T.primary : T.border}`,
+                borderRadius: v.id === "sheet" ? "6px 0 0 6px" : "0 6px 6px 0",
+              }}>{v.label}</button>
+            ))}
+          </div>
+          <Btn primary iconNode={Ico.plus(16)} onClick={() => setShowModal(true)}>Create Product</Btn>
+        </div>
       </div>
 
+      {/* Product Sheet View */}
+      {view === "sheet" && <ProductBuckets />}
+
+      {/* Table View */}
+      {view === "table" && <>
       <div style={{ display: "flex", gap: 14, marginBottom: 20, flexWrap: "wrap" }}>
         <KPICard label="Total Products" value="14" color={T.primary} />
         <KPICard label="Lending" value="8" color="#1E40AF" />
@@ -1025,6 +1044,8 @@ function ProductCatalogue() {
           </tbody>
         </table>
       </Card>
+
+      </>}
 
       {/* AI Insight */}
       <Card style={{ marginTop: 20, background: `linear-gradient(135deg, ${T.primaryLight}, rgba(49,184,151,0.06))`, border: `1px solid ${T.accent}40` }}>
