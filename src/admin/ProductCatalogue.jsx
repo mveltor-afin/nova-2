@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
+import { getRate, LTV_ADJUSTMENTS, CREDIT_PROFILES as PRICING_CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, PROPERTY_ADJUSTMENTS, EPC_ADJUSTMENTS, LOYALTY_ADJUSTMENTS } from "../data/pricing";
 
 // ─────────────────────────────────────────────
 // PRODUCT TYPE CATALOGUE — drives the new product wizard
@@ -567,6 +568,7 @@ function ProductCatalogue() {
   const [filter, setFilter] = useState("All");
   const [expanded, setExpanded] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDimensionsInfo, setShowDimensionsInfo] = useState(false);
 
   const filters = ["All", "Lending", "Savings", "Insurance", "Archived"];
   const shown = filter === "All" ? ALL_PRODUCTS : filter === "Archived" ? [] : ALL_PRODUCTS.filter(p => p.type === filter);
@@ -698,64 +700,80 @@ function ProductCatalogue() {
                             <div style={{ fontSize: 14, color: T.text }}>{p.type === "Lending" ? "£999 arrangement, £250 valuation" : "No fees"}</div>
                           </div>
                         </div>
-                        {/* Pricing Tiers */}
-                        {p.tiers && p.tiers.length > 0 && (
+                        {/* Live Pricing Grid — generated from pricing engine */}
+                        {p.type === "Lending" && (
                           <div style={{ marginBottom: 20 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-                              {Ico.chart(16)} Pricing Tiers
-                              <span style={{ fontSize: 11, fontWeight: 500, color: T.textMuted }}>({p.tiers.length} tiers)</span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                {Ico.chart(16)}
+                                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Live Pricing Grid</span>
+                                <span style={{ fontSize: 11, color: T.textMuted }}>· from pricing engine</span>
+                              </div>
+                              <div onClick={() => setShowDimensionsInfo(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: T.primary, cursor: "pointer", padding: "4px 10px", borderRadius: 6, background: T.primaryLight }}>
+                                {Ico.eye(12)} Pricing Dimensions
+                              </div>
                             </div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 14 }}>
+                            <div style={{ overflowX: "auto" }}>
+                              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ padding: "8px 10px", textAlign: "left", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", background: T.card, borderBottom: `1px solid ${T.border}` }}>Credit \ LTV</th>
+                                    {LTV_ADJUSTMENTS.map(l => (
+                                      <th key={l.band} style={{ padding: "8px 10px", textAlign: "center", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", background: T.card, borderBottom: `1px solid ${T.border}` }}>{l.band}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {PRICING_CREDIT_PROFILES.filter(c => p.creditAccepted?.includes(c.id)).map((credit, ci) => (
+                                    <tr key={credit.id} style={{ background: ci % 2 === 0 ? "transparent" : `${T.card}60` }}>
+                                      <td style={{ padding: "7px 10px", fontWeight: 600, fontSize: 11, color: T.text, borderBottom: `1px solid ${T.borderLight}`, whiteSpace: "nowrap" }}>{credit.label}</td>
+                                      {LTV_ADJUSTMENTS.map(ltv => {
+                                        const mid = Math.round((ltv.min + ltv.max) / 2) || 30;
+                                        const r = getRate({ product: p.name, ltv: mid, credit: credit.id });
+                                        const rateColor = !r.available ? { bg: "#F5F5F5", color: "#999" }
+                                          : r.rate < 4.5 ? { bg: T.successBg, color: T.success }
+                                          : r.rate <= 5.5 ? { bg: T.warningBg, color: "#92400E" }
+                                          : { bg: T.dangerBg, color: T.danger };
+                                        return (
+                                          <td key={ltv.band} style={{ padding: "5px 6px", textAlign: "center", borderBottom: `1px solid ${T.borderLight}` }}>
+                                            {r.available ? (
+                                              <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, background: rateColor.bg, color: rateColor.color }}>{r.rate.toFixed(2)}%</span>
+                                            ) : (
+                                              <span style={{ color: T.textMuted }}>—</span>
+                                            )}
+                                          </td>
+                                        );
+                                      })}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Savings tiers (kept as-is — balance-based) */}
+                        {p.type !== "Lending" && p.tiers && p.tiers.length > 0 && (
+                          <div style={{ marginBottom: 20 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 10 }}>Balance Tiers</div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                               <thead>
                                 <tr>
-                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}`, borderRadius: "6px 0 0 0" }}>
-                                    {p.type === "Lending" ? "LTV Band" : "Balance Band"}
-                                  </th>
-                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}` }}>Rate</th>
-                                  {p.type === "Lending" && (
-                                    <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}` }}>Margin</th>
-                                  )}
-                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}`, borderRadius: "0 6px 0 0" }}>Status</th>
+                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", background: T.card, borderBottom: `1px solid ${T.border}` }}>Balance Band</th>
+                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", background: T.card, borderBottom: `1px solid ${T.border}` }}>Rate</th>
+                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", background: T.card, borderBottom: `1px solid ${T.border}` }}>Status</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {p.tiers.map((tier, idx) => (
-                                  <tr key={idx} style={{ background: idx % 2 === 0 ? "transparent" : `${T.card}80` }}>
-                                    <td style={{ padding: "8px 12px", fontWeight: 600, color: T.text, borderBottom: `1px solid ${T.borderLight}` }}>
-                                      {tier.ltvBand || tier.balanceBand}
-                                    </td>
+                                  <tr key={idx}>
+                                    <td style={{ padding: "8px 12px", fontWeight: 600, borderBottom: `1px solid ${T.borderLight}` }}>{tier.balanceBand}</td>
                                     <td style={{ padding: "8px 12px", fontWeight: 700, color: T.primary, borderBottom: `1px solid ${T.borderLight}` }}>{tier.rate}</td>
-                                    {p.type === "Lending" && (
-                                      <td style={{ padding: "8px 12px", color: T.textSecondary, borderBottom: `1px solid ${T.borderLight}` }}>{tier.margin}</td>
-                                    )}
                                     <td style={{ padding: "8px 12px", borderBottom: `1px solid ${T.borderLight}` }}>{tierStatusBadge(tier.status)}</td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
-                            {/* Mini rate bar visualization */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                              {p.tiers.map((tier, idx) => {
-                                const rateNum = parseFloat(tier.rate);
-                                const maxRate = Math.max(...p.tiers.map(t => parseFloat(t.rate)));
-                                const pct = maxRate > 0 ? (rateNum / maxRate) * 100 : 0;
-                                return (
-                                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <div style={{ width: 80, fontSize: 10, fontWeight: 600, color: T.textMuted, textAlign: "right", flexShrink: 0 }}>
-                                      {tier.ltvBand || tier.balanceBand}
-                                    </div>
-                                    <div style={{ flex: 1, height: 14, background: T.borderLight, borderRadius: 4, overflow: "hidden" }}>
-                                      <div style={{
-                                        width: `${pct}%`, height: "100%", borderRadius: 4,
-                                        background: tier.status === "Active" ? `linear-gradient(90deg, ${T.primary}, ${T.accent})` : tier.status === "FTB Only" ? "linear-gradient(90deg, #3B82F6, #60A5FA)" : "#F59E0B",
-                                        transition: "width 0.3s ease",
-                                      }} />
-                                    </div>
-                                    <div style={{ width: 44, fontSize: 10, fontWeight: 700, color: T.text, flexShrink: 0 }}>{tier.rate}</div>
-                                  </div>
-                                );
-                              })}
-                            </div>
                           </div>
                         )}
 
@@ -785,6 +803,70 @@ function ProductCatalogue() {
 
       {/* Create Product Wizard */}
       {showModal && <ProductWizard onClose={() => setShowModal(false)} />}
+
+      {/* Pricing Dimensions Info Popout */}
+      {showDimensionsInfo && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={() => setShowDimensionsInfo(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "relative", background: T.card, borderRadius: 18, padding: "28px 32px", width: 700, maxWidth: "94vw", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: T.text }}>Pricing Dimensions</div>
+                <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>Every factor that affects the final customer rate. All dimensions combine additively.</div>
+              </div>
+              <div onClick={() => setShowDimensionsInfo(false)} style={{ width: 32, height: 32, borderRadius: 8, background: T.bg, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textMuted }}>{Ico.x(16)}</div>
+            </div>
+
+            {/* How it works */}
+            <div style={{ padding: "14px 18px", background: T.primaryLight, borderRadius: 10, marginBottom: 20, borderLeft: `4px solid ${T.primary}` }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.primary, marginBottom: 4 }}>How pricing works</div>
+              <div style={{ fontSize: 12, color: T.text, lineHeight: 1.6 }}>
+                Final Rate = Base Rate + LTV Adjustment + Credit Adjustment + Employment Adjustment + Property Adjustment + EPC Adjustment + Loyalty Adjustment
+              </div>
+              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>Example: 4.19% base + 0.30% (60-75% LTV) + 0.50% (Light Adverse) + 0.20% (Self-Employed) = <strong>5.19%</strong></div>
+            </div>
+
+            {/* Dimension tables */}
+            {[
+              { title: "LTV Band", desc: "Loan-to-value ratio — higher LTV = higher rate", icon: "shield",
+                rows: LTV_ADJUSTMENTS.map(l => [l.band, `+${l.adj.toFixed(2)}%`]) },
+              { title: "Credit Profile", desc: "Customer's credit history — adverse history increases rate", icon: "user",
+                rows: PRICING_CREDIT_PROFILES.map(c => [`${c.label} — ${c.desc}`, `+${c.adj.toFixed(2)}%`, c.maxLTV ? `Max LTV ${c.maxLTV}%` : "No LTV restriction"]) },
+              { title: "Employment Type", desc: "How the customer earns — self-employed carries higher risk", icon: "products",
+                rows: Object.entries(EMPLOYMENT_ADJUSTMENTS).map(([k, v]) => [k, v === 0 ? "No adjustment" : `+${v.toFixed(2)}%`]) },
+              { title: "Property Type", desc: "Construction and property characteristics", icon: "shield",
+                rows: Object.entries(PROPERTY_ADJUSTMENTS).map(([k, v]) => [k, v === 0 ? "Standard" : `+${v.toFixed(2)}%`]) },
+              { title: "EPC / Green Incentive", desc: "Energy efficiency rating — greener homes get a discount", icon: "sparkle",
+                rows: Object.entries(EPC_ADJUSTMENTS).map(([k, v]) => [`EPC ${k}`, v < 0 ? `${v.toFixed(2)}% discount` : v === 0 ? "Standard" : `+${v.toFixed(2)}% premium`]) },
+              { title: "Customer Loyalty", desc: "Existing customers rewarded with better rates", icon: "customers",
+                rows: Object.entries(LOYALTY_ADJUSTMENTS).map(([k, v]) => [k, v < 0 ? `${v.toFixed(2)}% discount` : v === 0 ? "Standard" : `+${v.toFixed(2)}%`]) },
+            ].map(dim => (
+              <div key={dim.title} style={{ marginBottom: 18 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ color: T.primary }}>{Ico[dim.icon]?.(14)}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{dim.title}</span>
+                  <span style={{ fontSize: 11, color: T.textMuted }}>— {dim.desc}</span>
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <tbody>
+                    {dim.rows.map((row, i) => (
+                      <tr key={i} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
+                        <td style={{ padding: "6px 12px", fontWeight: 500, color: T.text }}>{row[0]}</td>
+                        <td style={{ padding: "6px 12px", fontWeight: 700, color: row[1].includes("discount") ? T.success : row[1].includes("+") ? T.warning : T.textMuted, textAlign: "right" }}>{row[1]}</td>
+                        {row[2] && <td style={{ padding: "6px 12px", fontSize: 10, color: T.textMuted }}>{row[2]}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+              <Btn primary onClick={() => setShowDimensionsInfo(false)}>Got it</Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
