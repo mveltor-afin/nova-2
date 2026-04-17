@@ -1,16 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
 import AutoSaveIndicator from "../shared/AutoSaveIndicator";
+import { getBucketEligibleProducts, calcMonthlyPayment } from "../data/pricing";
 
-/* ─── Product Data ──────────────────────────── */
-const PRODUCTS = [
-  { name: "Afin Fix 2yr 75%", rate: 4.49, monthly: 1948, status: "eligible" },
-  { name: "Afin Fix 5yr 75%", rate: 4.89, monthly: 2019, status: "eligible" },
-  { name: "Afin Track SVR 75%", rate: 5.14, monthly: 2063, status: "eligible" },
-  { name: "Afin Fix 2yr 90%", rate: 5.29, monthly: 2090, status: "eligible" },
-  { name: "Afin Pro Fix 2yr", rate: 3.99, monthly: 1860, status: "conditional", reason: "Professional qualification required" },
-  { name: "Afin Fix 2yr 60%", rate: 4.19, monthly: 1896, status: "ineligible", reason: "LTV 72% exceeds max 60%" },
+/* ─── Fallback Product Data ──────────────────── */
+const FALLBACK_PRODUCTS = [
+  { name: "2-Year Fixed", rate: 4.49, monthly: 1948, status: "eligible", bucket: "Prime", bucketColor: "#059669", tier: "Standard", code: "P2F" },
+  { name: "5-Year Fixed", rate: 4.89, monthly: 2019, status: "eligible", bucket: "Prime", bucketColor: "#059669", tier: "Standard", code: "P5F" },
+  { name: "2-Year Tracker", rate: 5.14, monthly: 2063, status: "eligible", bucket: "Prime", bucketColor: "#059669", tier: "Standard", code: "PTR" },
 ];
 
 /* ─── AI Data Pull Steps ────────────────────── */
@@ -154,6 +152,23 @@ function SmartApply({ onStartApplication }) {
   const numDeposit = parseFloat(deposit) || 0;
   const loanAmount = numProp - numDeposit;
   const ltv = numProp > 0 ? ((loanAmount / numProp) * 100) : 0;
+
+  // Dynamic products from bucket engine
+  const PRODUCTS = useMemo(() => {
+    const bucketResults = getBucketEligibleProducts({
+      ltv, credit: "clean", employment: employmentDetails.status === "Self-Employed" ? "Self-Employed" : "Employed",
+      property: "Standard", epc: propertyDetails.epc || "C", loanAmount, termYears: 25,
+    });
+    if (bucketResults.length > 0) {
+      return bucketResults.map(bp => ({
+        name: bp.product, rate: bp.rate, status: bp.available ? "eligible" : "ineligible",
+        reason: bp.reason || null, bucket: bp.bucket, bucketColor: bp.bucketColor,
+        tier: bp.tier, code: bp.code, erc: bp.erc, productFee: bp.fees?.productFee,
+        monthly: bp.available ? calcMonthlyPayment(loanAmount, bp.rate, 25) : 0,
+      }));
+    }
+    return FALLBACK_PRODUCTS;
+  }, [ltv, loanAmount, employmentDetails.status, propertyDetails.epc]);
 
   // ── Phase status ──
   const phase1Status = eligibilityDone && selectedProduct ? "complete" : "active";
@@ -370,19 +385,32 @@ function SmartApply({ onStartApplication }) {
                       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3,
                         background: p.status === "eligible" ? T.success : p.status === "conditional" ? T.warning : T.danger,
                       }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{p.name}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{p.name}</div>
+                          <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
+                            {p.bucket && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: (p.bucketColor || T.primary) + "14", color: p.bucketColor || T.primary }}>{p.bucket}</span>}
+                            {p.tier && p.tier !== "Standard" && p.tier !== "Base" && <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 5, background: "#EDE9FE", color: "#6D28D9" }}>{p.tier}</span>}
+                            {p.code && <span style={{ fontSize: 9, color: T.textMuted, fontFamily: "monospace", padding: "1px 4px" }}>{p.code}</span>}
+                          </div>
+                        </div>
                         <EligibilityBadge status={p.status} />
                       </div>
                       <div style={{ display: "flex", gap: 20, marginBottom: 12 }}>
                         <div>
                           <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Rate</div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: T.primary }}>{p.rate}%</div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: T.primary }}>{p.rate != null ? p.rate + "%" : "—"}</div>
                         </div>
                         <div>
                           <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Monthly</div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: T.text }}>{fmt(p.monthly)}</div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: T.text }}>{p.monthly ? fmt(p.monthly) : "—"}</div>
                         </div>
+                        {p.productFee && (
+                          <div>
+                            <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Fee</div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{p.productFee}</div>
+                          </div>
+                        )}
                       </div>
                       {p.reason && <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 10, fontStyle: "italic" }}>{p.reason}</div>}
                       {p.status === "eligible" && (

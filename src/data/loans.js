@@ -18,19 +18,26 @@ export const TEAM_MEMBERS = {
 };
 
 export const MOCK_LOANS = [
-  { id: "AFN-2026-00142", customerId: "CUS-002", servicingId: "M-001234", names: "James & Sarah Mitchell", product: "Afin Fix 2yr 75%", amount: "£350,000", term: "25 yrs", rate: "4.49%", type: "C&I", status: "Underwriting", updated: "2h ago", riskScore: 18, riskLevel: "Low",
+  { id: "AFN-2026-00142", customerId: "CUS-002", servicingId: "M-001234", names: "James & Sarah Mitchell", product: "2-Year Fixed", amount: "£350,000", term: "25 yrs", rate: "4.49%", type: "C&I", status: "Underwriting", updated: "2h ago", riskScore: 18, riskLevel: "Low",
+    bucket: "Prime", bucketColor: "#059669", tier: "Standard", code: "P2F", erc: "3%, 2%", productFee: "£1,495", creditProfile: "clean", propertyType: "Standard", epcRating: "C", ltv: 72,
     squad: { adviser:"ADV-01", underwriter:"UW-01", ops:"OPS-01" } },
-  { id: "AFN-2026-00139", customerId: "CUS-003", servicingId: "M-001891", names: "Priya Sharma", product: "Afin Track SVR", amount: "£275,000", term: "30 yrs", rate: "5.14%", type: "C&I", status: "Offer_Issued", updated: "1d ago", riskScore: 78, riskLevel: "High",
+  { id: "AFN-2026-00139", customerId: "CUS-003", servicingId: "M-001891", names: "Priya Sharma", product: "2-Year Tracker", amount: "£275,000", term: "30 yrs", rate: "5.14%", type: "C&I", status: "Offer_Issued", updated: "1d ago", riskScore: 78, riskLevel: "High",
+    bucket: "Prime", bucketColor: "#059669", tier: "Near Prime", code: "PTR", erc: "No ERCs", productFee: "£1,495", creditProfile: "near_prime", propertyType: "Standard", epcRating: "D", ltv: 68,
     squad: { adviser:"ADV-02", underwriter:"UW-03", ops:"OPS-02" } },
-  { id: "AFN-2026-00135", customerId: "CUS-004", servicingId: "M-002456", names: "David Chen", product: "Afin Fix 5yr 90%", amount: "£425,000", term: "25 yrs", rate: "5.29%", type: "Interest Only", status: "KYC_In_Progress", updated: "3d ago", riskScore: 12, riskLevel: "Low",
+  { id: "AFN-2026-00135", customerId: "CUS-004", servicingId: "M-002456", names: "David Chen", product: "5-Year Fixed", amount: "£425,000", term: "25 yrs", rate: "5.69%", type: "Interest Only", status: "KYC_In_Progress", updated: "3d ago", riskScore: 12, riskLevel: "Low",
+    bucket: "Prime High LTV", bucketColor: "#31B897", tier: "Standard", code: "H5F", erc: "5%, 4%, 3%, 2%, 1%", productFee: "£1,495", creditProfile: "clean", propertyType: "New Build", epcRating: "B", ltv: 85,
     squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-02" } },
-  { id: "AFN-2026-00128", customerId: "CUS-001", servicingId: "M-002891", names: "Emma Wilson", product: "Afin Fix 2yr 75%", amount: "£290,000", term: "20 yrs", rate: "4.49%", type: "C&I", status: "Disbursed", updated: "1w ago", riskScore: 14, riskLevel: "Low",
+  { id: "AFN-2026-00128", customerId: "CUS-001", servicingId: "M-002891", names: "Emma Wilson", product: "2-Year Fixed", amount: "£290,000", term: "20 yrs", rate: "4.19%", type: "C&I", status: "Disbursed", updated: "1w ago", riskScore: 14, riskLevel: "Low",
+    bucket: "Prime", bucketColor: "#059669", tier: "Green Discount", code: "P2F", erc: "3%, 2%", productFee: "£1,495", creditProfile: "clean", propertyType: "Standard", epcRating: "A", ltv: 58,
     squad: { adviser:"ADV-01", underwriter:"UW-01", ops:"OPS-01" } },
-  { id: "AFN-2026-00125", customerId: "CUS-005", servicingId: "M-003567", names: "Aisha Patel", product: "Afin Fix 5yr 75%", amount: "£510,000", term: "25 yrs", rate: "4.89%", type: "C&I", status: "Approved", updated: "4d ago", riskScore: 22, riskLevel: "Low",
+  { id: "AFN-2026-00125", customerId: "CUS-005", servicingId: "M-003567", names: "Aisha Patel", product: "2-Year Fixed", amount: "£510,000", term: "25 yrs", rate: "3.69%", type: "C&I", status: "Approved", updated: "4d ago", riskScore: 22, riskLevel: "Low",
+    bucket: "Professional", bucketColor: "#3B82F6", tier: "Standard", code: "D2F", erc: "2%, 1%", productFee: "£1,495", creditProfile: "clean", propertyType: "Standard", epcRating: "C", ltv: 65,
     squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-03" } },
   { id: "AFN-2026-00119", customerId: "CUS-006", servicingId: "M-003124", names: "Robert Hughes", product: "—", amount: "£180,000", term: "15 yrs", rate: "—", type: "C&I", status: "Referred", updated: "5d ago", riskScore: 82, riskLevel: "High",
+    bucket: null, bucketColor: null, tier: null, code: null, erc: null, productFee: null, creditProfile: "adverse", propertyType: "Non-Standard", epcRating: "F", ltv: 88,
     squad: { adviser:"ADV-02", underwriter:"UW-02", ops:"OPS-01" } },
-  { id: "AFN-2026-00115", customerId: null, servicingId: "M-003890", names: "Sophie & Jack Brown", product: "Afin Fix 2yr 90%", amount: "£320,000", term: "30 yrs", rate: "5.29%", type: "C&I", status: "DIP_Approved", updated: "6d ago", riskScore: 45, riskLevel: "Medium",
+  { id: "AFN-2026-00115", customerId: null, servicingId: "M-003890", names: "Sophie & Jack Brown", product: "2-Year Fixed", amount: "£320,000", term: "30 yrs", rate: "5.59%", type: "C&I", status: "DIP_Approved", updated: "6d ago", riskScore: 45, riskLevel: "Medium",
+    bucket: "Prime High LTV", bucketColor: "#31B897", tier: "FTB 90%+", code: "H2F", erc: "4%, 3%", productFee: "£1,495", creditProfile: "clean", propertyType: "Standard", epcRating: "D", ltv: 90,
     squad: { adviser:"ADV-01", underwriter:"UW-03", ops:"OPS-03" } },
 ];
 
@@ -61,12 +68,29 @@ export const WIZARD_STEPS = [
   { id: "consent", label: "Consents" }, { id: "submit", label: "Submit" },
 ];
 
-// WIZARD_PRODUCTS now generated dynamically from pricing engine.
-// Import getEligibleProducts from ../data/pricing and call it with the applicant's profile.
-// Kept as a static fallback for screens that don't yet pass profile data.
-import { getEligibleProducts, calcMonthlyPayment, PRODUCTS_PRICING } from "./pricing";
+// WIZARD_PRODUCTS generated dynamically — tries bucket engine first, falls back to legacy.
+import { getEligibleProducts, calcMonthlyPayment, PRODUCTS_PRICING, getBucketEligibleProducts } from "./pricing";
 
 export function getWizardProducts({ ltv = 72, credit = "clean", employment = "Employed", property = "Standard", epc = "D", loanAmount = 350000, term = 25 } = {}) {
+  // Try bucket-aware engine first
+  const bucketResults = getBucketEligibleProducts({ ltv, credit, employment, property, epc, loanAmount, termYears: term });
+  if (bucketResults.length > 0) {
+    return bucketResults.map(bp => ({
+      name: bp.product,
+      type: bp.product.includes("Track") ? "Tracker" : "Fixed",
+      repay: "C&I",
+      rate: bp.available ? bp.rate + "%" : "—",
+      monthly: bp.available ? "£" + calcMonthlyPayment(loanAmount, bp.rate, term).toLocaleString("en-GB") : "—",
+      erc: bp.erc || "—",
+      elig: bp.available ? "green" : "red",
+      note: bp.available ? null : bp.reason,
+      available: bp.available,
+      bucket: bp.bucket, bucketColor: bp.bucketColor, tier: bp.tier, code: bp.code,
+      productFee: bp.fees?.productFee,
+    }));
+  }
+
+  // Fallback to legacy pricing engine
   const eligible = getEligibleProducts({ ltv, credit, employment, property, epc });
   return eligible.map(p => {
     const prod = PRODUCTS_PRICING[p.product];

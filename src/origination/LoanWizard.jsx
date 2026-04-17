@@ -288,7 +288,7 @@ function LoanWizard({ onCancel, onComplete }) {
       <Card noPad>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead><tr style={{ background: T.navy }}>
-            {["Product","Type","Repayment","Rate","Monthly","ERC","Notes","Actions"].map(h => (
+            {["Product","Bucket","Tier","Rate","Monthly","ERC","Fee","Actions"].map(h => (
               <th key={h} style={{ textAlign: "left", padding: "10px 14px", fontSize: 11, fontWeight: 600, color: "#fff", letterSpacing: 0.5, textTransform: "uppercase" }}>{h}</th>
             ))}
           </tr></thead>
@@ -298,13 +298,18 @@ function LoanWizard({ onCancel, onComplete }) {
               const running = dipRunning === i;
               return (
                 <tr key={i} style={{ background: bg, opacity: p.elig === "red" ? 0.55 : 1, borderTop: `1px solid ${T.borderLight}` }}>
-                  <td style={{ padding: "12px 14px", fontSize: 13, fontWeight: 600 }}>{p.name}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 12 }}>{p.type}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 12 }}>{p.repay}</td>
+                  <td style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{p.name}</div>
+                    {p.code && <div style={{ fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>{p.code}</div>}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: 11 }}>
+                    {p.bucket ? <span style={{ fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: (p.bucketColor || T.primary) + "14", color: p.bucketColor || T.primary }}>{p.bucket}</span> : "—"}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: 11, color: T.textMuted }}>{p.tier || "—"}</td>
                   <td style={{ padding: "12px 14px", fontSize: 13, fontWeight: 700 }}>{p.rate}</td>
                   <td style={{ padding: "12px 14px", fontSize: 13, fontWeight: 600 }}>{p.monthly}</td>
                   <td style={{ padding: "12px 14px", fontSize: 11, color: T.textMuted }}>{p.erc}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 11, color: p.elig === "red" ? T.danger : T.warning, maxWidth: 180 }}>{p.note || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontSize: 11, color: T.text }}>{p.productFee || "—"}</td>
                   <td style={{ padding: "12px 14px" }}>
                     {p.elig !== "red"
                       ? <Btn small primary disabled={running} onClick={() => runDip(i)} iconNode={running ? null : Ico.shield(14)}>{running ? "Running…" : "Run DIP"}</Btn>

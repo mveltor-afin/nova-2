@@ -176,9 +176,19 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
                     <span onClick={() => onOpenCase?.(loan)} style={{ fontSize: 13, fontWeight: 700, color: T.primary, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>{loan.id}</span>
                     <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{loan.names}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{loan.amount}</span>
-                    <span style={{ fontSize: 12, color: T.textMuted }}>{loan.product}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{loan.product}</span>
+                    {loan.bucket && (
+                      <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: (loan.bucketColor || T.primary) + "14", color: loan.bucketColor || T.primary, border: `1px solid ${(loan.bucketColor || T.primary)}30` }}>
+                        {loan.bucket}
+                      </span>
+                    )}
+                    {loan.tier && loan.tier !== "Standard" && loan.tier !== "Base" && (
+                      <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 6, background: "#F1F5F9", color: T.textMuted }}>
+                        {loan.tier}
+                      </span>
+                    )}
                   </div>
                 </div>
 

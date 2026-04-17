@@ -244,7 +244,20 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{activeLoan.id}</h1>
           <span onClick={() => onViewCustomer?.(activeLoan.names)} style={{ fontSize: 15, fontWeight: 600, color: T.primary, cursor: "pointer", textDecoration: "underline", textDecorationColor: `${T.primary}40`, textUnderlineOffset: 2 }}>{activeLoan.names}</span>
           <span style={{ fontSize: 14, color: T.textMuted }}>{activeLoan.amount}</span>
-          <span style={{ fontSize: 13, color: T.textMuted }}>{activeLoan.product}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{activeLoan.product}</span>
+          {activeLoan.bucket && (
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: (activeLoan.bucketColor || T.primary) + "14", color: activeLoan.bucketColor || T.primary, border: `1px solid ${(activeLoan.bucketColor || T.primary)}30` }}>
+              {activeLoan.bucket}
+            </span>
+          )}
+          {activeLoan.tier && activeLoan.tier !== "Standard" && activeLoan.tier !== "Base" && (
+            <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 6, background: "#EDE9FE", color: "#6D28D9" }}>
+              {activeLoan.tier}
+            </span>
+          )}
+          {activeLoan.code && (
+            <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>{activeLoan.code}</span>
+          )}
           <StatusBadge status={activeLoan.status} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 18, marginTop: 10, flexWrap: "wrap" }}>

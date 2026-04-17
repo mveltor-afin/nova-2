@@ -124,7 +124,13 @@ export default function MortgagesScreen({ onViewCustomer, onViewCase, onViewServ
                     >
                       <td style={{ padding: "12px 14px", fontWeight: 600, color: T.primary }}>{m.id}</td>
                       <td style={{ padding: "12px 14px" }}>{custName(m.customerId)}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 12, color: T.textMuted }}>{m.product}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 600, color: T.text }}>{m.product}</span>
+                          {m.bucket && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: (m.bucketColor || T.primary) + "14", color: m.bucketColor || T.primary }}>{m.bucket}</span>}
+                          {m.tier && m.tier !== "Standard" && m.tier !== "Base" && <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 5, background: "#EDE9FE", color: "#6D28D9" }}>{m.tier}</span>}
+                        </div>
+                      </td>
                       <td style={{ padding: "12px 14px", fontWeight: 600 }}>{m.balance}</td>
                       <td style={{ padding: "12px 14px" }}>{m.rate}</td>
                       <td style={{ padding: "12px 14px" }}>{m.ltv}</td>
