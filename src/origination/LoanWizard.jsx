@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Input, Select, Card, SectionLabel, KPICard } from "../shared/primitives";
-import { WIZARD_STEPS, WIZARD_PRODUCTS } from "../data/loans";
+import { WIZARD_STEPS } from "../data/loans";
+import { getWizardProducts } from "../data/loans";
+import { CREDIT_PROFILES } from "../data/pricing";
 
 function LoanWizard({ onCancel, onComplete }) {
   const [step, setStep] = useState(0);
@@ -15,6 +17,17 @@ function LoanWizard({ onCancel, onComplete }) {
   const [showChatbot, setShowChatbot] = useState(false);
   const [expandedDip, setExpandedDip] = useState(null);
   const [docs, setDocs] = useState([]);
+  // Pricing dimensions — collected during application
+  const [applicantEmployment, setApplicantEmployment] = useState("Employed");
+  const [applicantCredit, setApplicantCredit] = useState("clean");
+  const [applicantPropertyType, setApplicantPropertyType] = useState("Standard");
+  const [applicantEpc, setApplicantEpc] = useState("D");
+
+  // Dynamic products from pricing engine
+  const dynamicProducts = useMemo(() =>
+    getWizardProducts({ ltv: 72, credit: applicantCredit, employment: applicantEmployment, loanAmount: 350000, term: 25 }),
+    [applicantCredit, applicantEmployment]
+  );
   const scrollRef = useRef(null);
 
   const activeSteps = WIZARD_STEPS.filter(s => !(s.id === "applicant2" && !joint));
@@ -35,7 +48,7 @@ function LoanWizard({ onCancel, onComplete }) {
       const outcomes = ["Approved","Approved","Approved","Approved","Approved","Approved","Declined","Declined"];
       setDipResults(prev => [{
         idx, date: "22 Feb 2026, " + (14 + Math.floor(Math.random() * 5)) + ":" + String(Math.floor(Math.random() * 60)).padStart(2, "0"),
-        product: WIZARD_PRODUCTS[idx], outcome: outcomes[idx] || "Approved",
+        product: dynamicProducts[idx], outcome: outcomes[idx] || "Approved",
         inputs: { amount: "£350,000", ltv: "72%", term: "25 yrs", income: "£122,000", expenditure: "£3,240/mo", stress: "7.49%", stressPayment: "£2,620/mo", score: "742" },
         reasons: idx >= 6 ? (idx === 6 ? "LTV 72% exceeds maximum 60%" : "Property type not accepted") : null,
       }, ...prev]);
@@ -89,13 +102,24 @@ function LoanWizard({ onCancel, onComplete }) {
         </div>
         <div style={{ fontSize: 13, fontWeight: 600, color: T.text, margin: "20px 0 12px", paddingTop: 16, borderTop: `1px solid ${T.borderLight}` }}>Employment</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
-          <Select label="Employment Status" options={["Select…","Employed","Self-Employed","Contract","Retired"]} required />
+          <Select label="Employment Status" value={applicantEmployment} onChange={setApplicantEmployment} options={["Employed","Self-Employed","Contractor","Retired"]} required />
           <Input label="Employer Name" placeholder="TechCorp Ltd" />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 16px" }}>
           <Input label="Basic Salary" placeholder="70,000" prefix="£" required />
           <Input label="Bonus / Other" placeholder="8,000" prefix="£" />
           <Input label="Employment Start" placeholder="03/2019" />
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, margin: "20px 0 12px", paddingTop: 16, borderTop: `1px solid ${T.borderLight}` }}>Credit & Property</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+          <Select label="Credit Profile" value={applicantCredit} onChange={setApplicantCredit}
+            options={CREDIT_PROFILES.map(c => ({ value: c.id, label: `${c.label} — ${c.desc}` }))} required />
+          <Select label="Property Type" value={applicantPropertyType} onChange={setApplicantPropertyType}
+            options={["Standard","Non-Standard","New Build","Ex-Local Authority","High-Rise (>6 floors)"]} required />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+          <Select label="EPC Rating" value={applicantEpc} onChange={setApplicantEpc}
+            options={["A","B","C","D","E","F","G"].map(r => ({ value: r, label: `EPC ${r}` }))} />
         </div>
       </Card>
     </div>
@@ -269,7 +293,7 @@ function LoanWizard({ onCancel, onComplete }) {
             ))}
           </tr></thead>
           <tbody>
-            {WIZARD_PRODUCTS.map((p, i) => {
+            {dynamicProducts.map((p, i) => {
               const bg = p.elig === "green" ? T.successBg : p.elig === "yellow" ? T.warningBg : "#FFF5F5";
               const running = dipRunning === i;
               return (
