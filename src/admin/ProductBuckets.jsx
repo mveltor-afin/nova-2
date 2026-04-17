@@ -1,11 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card } from "../shared/primitives";
 
 // ─────────────────────────────────────────────
-// BUCKETED PRODUCT DATA
+// PERSISTENCE
 // ─────────────────────────────────────────────
-const BUCKETS = [
+function loadBuckets() {
+  try {
+    const s = localStorage.getItem("product_buckets");
+    return s ? JSON.parse(s) : DEFAULT_BUCKETS;
+  } catch {
+    return DEFAULT_BUCKETS;
+  }
+}
+
+function saveBuckets(b) {
+  try {
+    localStorage.setItem("product_buckets", JSON.stringify(b));
+  } catch {}
+}
+
+// ─────────────────────────────────────────────
+// PRESET COLOURS
+// ─────────────────────────────────────────────
+const COLOUR_PRESETS = [
+  { label: "Green", value: "#059669" },
+  { label: "Teal", value: "#31B897" },
+  { label: "Blue", value: "#3B82F6" },
+  { label: "Purple", value: "#8B5CF6" },
+  { label: "Amber", value: "#F59E0B" },
+  { label: "Red", value: "#DC2626" },
+];
+
+// ─────────────────────────────────────────────
+// DEFAULT EMPLOYMENT OPTIONS
+// ─────────────────────────────────────────────
+const ALL_EMPLOYMENT = [
+  "Employed (min 6 months)",
+  "Self-employed (min 2 years)",
+  "Contractors (12 months history)",
+  "Retired (with pension income)",
+  "Specified professionals / qualifications",
+];
+
+// ─────────────────────────────────────────────
+// DEFAULT PROPERTY TYPES
+// ─────────────────────────────────────────────
+const ALL_ACCEPTABLE_TYPES = [
+  "Houses", "Flats (up to 6 floors)", "Bungalows", "New build",
+  "Ex-local authority", "HMO subject to criteria",
+];
+const ALL_UNACCEPTABLE_TYPES = [
+  "Above commercial", "Freehold flats", "Mobile homes",
+  "Houseboats", "Holiday lets not accepted",
+];
+
+// ─────────────────────────────────────────────
+// DEFAULT BUCKET DATA
+// ─────────────────────────────────────────────
+const DEFAULT_BUCKETS = [
   {
     name: "Prime",
     color: "#059669",
@@ -238,29 +291,737 @@ const rateColor = (r) => {
 };
 
 const extractLtvNum = (ltv) => ltv.replace(/[^0-9]/g, "");
+const buildCode = (prodCode, ltv) => `${prodCode}${extractLtvNum(ltv)}-02`;
 
-const buildCode = (prodCode, ltv) => {
-  const num = extractLtvNum(ltv);
-  return `${prodCode}${num}-02`;
-};
+const creditColor = (v) =>
+  v === "Not accepted" || v === "0" ? "#DC2626" : "#059669";
+
+const emptyBucket = () => ({
+  name: "",
+  color: "#059669",
+  desc: "",
+  reversion: "",
+  fee: "",
+  termRange: "",
+  products: [],
+  notes: "",
+  criteria: {
+    loanSize: { min: "", max: "" },
+    maxApplicants: 2,
+    age: { min: 21, maxAtEnd: 75 },
+    residency: "UK citizen / Settled / Pre-settled status",
+    minUKResidency: "3 years",
+    employment: [],
+    incomeMultiple: "",
+    stressRate: "",
+    credit: {
+      maxCCJs: "0",
+      maxDefaults: "0",
+      missedPayments: "",
+      iva: "Not accepted",
+      bankruptcy: "Not accepted",
+      dmp: "Not accepted",
+    },
+    property: {
+      minValue: "",
+      acceptable: [],
+      unacceptable: [],
+      valuation: "",
+    },
+    valuationFees: [],
+  },
+});
 
 // ─────────────────────────────────────────────
-// COMPONENT
+// BUCKET FORM MODAL
+// ─────────────────────────────────────────────
+function BucketFormModal({ bucket, onSave, onCancel }) {
+  const [form, setForm] = useState(() => {
+    if (!bucket) return emptyBucket();
+    return JSON.parse(JSON.stringify(bucket));
+  });
+
+  const set = (path, val) => {
+    setForm((prev) => {
+      const next = JSON.parse(JSON.stringify(prev));
+      const keys = path.split(".");
+      let obj = next;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      obj[keys[keys.length - 1]] = val;
+      return next;
+    });
+  };
+
+  const toggleInArray = (path, item) => {
+    setForm((prev) => {
+      const next = JSON.parse(JSON.stringify(prev));
+      const keys = path.split(".");
+      let obj = next;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      const arr = obj[keys[keys.length - 1]];
+      const idx = arr.indexOf(item);
+      if (idx >= 0) arr.splice(idx, 1);
+      else arr.push(item);
+      return next;
+    });
+  };
+
+  const labelSt = {
+    display: "block",
+    fontSize: 11,
+    fontWeight: 600,
+    color: T.textSecondary,
+    marginBottom: 4,
+  };
+  const inputSt = {
+    width: "100%",
+    padding: "8px 10px",
+    borderRadius: 7,
+    border: `1px solid ${T.border}`,
+    fontSize: 13,
+    fontFamily: T.font,
+    color: T.text,
+    background: T.card,
+    outline: "none",
+    boxSizing: "border-box",
+  };
+  const sectionTitleSt = {
+    fontSize: 13,
+    fontWeight: 700,
+    color: T.navy,
+    marginBottom: 12,
+    marginTop: 24,
+    paddingBottom: 6,
+    borderBottom: `2px solid ${T.borderLight}`,
+  };
+  const row2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 };
+  const row3 = { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 };
+  const fieldWrap = { marginBottom: 12 };
+
+  const chipSt = (active, color) => ({
+    display: "inline-block",
+    padding: "5px 12px",
+    borderRadius: 16,
+    fontSize: 11,
+    fontWeight: 600,
+    cursor: "pointer",
+    marginRight: 6,
+    marginBottom: 6,
+    border: active ? `2px solid ${color || T.primary}` : `1px solid ${T.border}`,
+    background: active ? (color ? color + "18" : T.primaryLight) : T.card,
+    color: active ? (color || T.primary) : T.textMuted,
+    transition: "all 0.15s",
+  });
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.45)",
+      }}
+      onClick={onCancel}
+    >
+      <div
+        style={{
+          width: 700,
+          maxHeight: "90vh",
+          overflow: "auto",
+          background: T.card,
+          borderRadius: 16,
+          padding: 32,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+          fontFamily: T.font,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ fontSize: 18, fontWeight: 700, color: T.navy, marginBottom: 4 }}>
+          {bucket ? "Edit Bucket" : "Create Bucket"}
+        </div>
+        <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 8 }}>
+          {bucket
+            ? "Modify the product bucket configuration below."
+            : "Fill in the details for the new product bucket."}
+        </div>
+
+        {/* SECTION 1: IDENTITY */}
+        <div style={sectionTitleSt}>1. Identity</div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Name</label>
+          <input
+            style={inputSt}
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+            placeholder="e.g. Prime"
+          />
+        </div>
+        <div style={{ ...row2, marginBottom: 12 }}>
+          <div>
+            <label style={labelSt}>Colour</label>
+            <select
+              style={inputSt}
+              value={form.color}
+              onChange={(e) => set("color", e.target.value)}
+            >
+              {COLOUR_PRESETS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={labelSt}>Preview</label>
+            <div
+              style={{
+                height: 36,
+                borderRadius: 7,
+                background: form.color,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {form.name || "Bucket"}
+            </div>
+          </div>
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Description</label>
+          <input
+            style={inputSt}
+            value={form.desc}
+            onChange={(e) => set("desc", e.target.value)}
+            placeholder="Short description of this bucket"
+          />
+        </div>
+
+        {/* SECTION 2: ELIGIBILITY CRITERIA */}
+        <div style={sectionTitleSt}>2. Eligibility Criteria</div>
+        <div style={row2}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Loan Size Min</label>
+            <input
+              style={inputSt}
+              value={form.criteria.loanSize.min}
+              onChange={(e) => set("criteria.loanSize.min", e.target.value)}
+              placeholder="\u00a325,000"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Loan Size Max</label>
+            <input
+              style={inputSt}
+              value={form.criteria.loanSize.max}
+              onChange={(e) => set("criteria.loanSize.max", e.target.value)}
+              placeholder="\u00a31,000,000"
+            />
+          </div>
+        </div>
+        <div style={row3}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Max Applicants</label>
+            <input
+              style={inputSt}
+              type="number"
+              value={form.criteria.maxApplicants}
+              onChange={(e) => set("criteria.maxApplicants", Number(e.target.value))}
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Min Age</label>
+            <input
+              style={inputSt}
+              type="number"
+              value={form.criteria.age.min}
+              onChange={(e) => set("criteria.age.min", Number(e.target.value))}
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Max Age at End of Term</label>
+            <input
+              style={inputSt}
+              type="number"
+              value={form.criteria.age.maxAtEnd}
+              onChange={(e) => set("criteria.age.maxAtEnd", Number(e.target.value))}
+            />
+          </div>
+        </div>
+        <div style={row2}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>UK Residency</label>
+            <input
+              style={inputSt}
+              value={form.criteria.residency}
+              onChange={(e) => set("criteria.residency", e.target.value)}
+              placeholder="UK citizen / Settled"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Min UK Residency</label>
+            <input
+              style={inputSt}
+              value={form.criteria.minUKResidency}
+              onChange={(e) => set("criteria.minUKResidency", e.target.value)}
+              placeholder="3 years"
+            />
+          </div>
+        </div>
+        <div style={row2}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Income Multiple</label>
+            <input
+              style={inputSt}
+              value={form.criteria.incomeMultiple}
+              onChange={(e) => set("criteria.incomeMultiple", e.target.value)}
+              placeholder="4.49x"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Stress Rate</label>
+            <input
+              style={inputSt}
+              value={form.criteria.stressRate}
+              onChange={(e) => set("criteria.stressRate", e.target.value)}
+              placeholder="SVR + 1% or 5.50%"
+            />
+          </div>
+        </div>
+
+        {/* SECTION 3: CREDIT REQUIREMENTS */}
+        <div style={sectionTitleSt}>3. Credit Requirements</div>
+        <div style={row3}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Max CCJs</label>
+            <input
+              style={inputSt}
+              value={form.criteria.credit.maxCCJs}
+              onChange={(e) => set("criteria.credit.maxCCJs", e.target.value)}
+              placeholder="0"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Max Defaults</label>
+            <input
+              style={inputSt}
+              value={form.criteria.credit.maxDefaults}
+              onChange={(e) => set("criteria.credit.maxDefaults", e.target.value)}
+              placeholder="0"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Missed Payments</label>
+            <input
+              style={inputSt}
+              value={form.criteria.credit.missedPayments}
+              onChange={(e) =>
+                set("criteria.credit.missedPayments", e.target.value)
+              }
+              placeholder="None in last 36 months"
+            />
+          </div>
+        </div>
+        <div style={row3}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>IVA Rule</label>
+            <input
+              style={inputSt}
+              value={form.criteria.credit.iva}
+              onChange={(e) => set("criteria.credit.iva", e.target.value)}
+              placeholder="Not accepted"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Bankruptcy Rule</label>
+            <input
+              style={inputSt}
+              value={form.criteria.credit.bankruptcy}
+              onChange={(e) => set("criteria.credit.bankruptcy", e.target.value)}
+              placeholder="Not accepted"
+            />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>DMP Rule</label>
+            <input
+              style={inputSt}
+              value={form.criteria.credit.dmp}
+              onChange={(e) => set("criteria.credit.dmp", e.target.value)}
+              placeholder="Not accepted"
+            />
+          </div>
+        </div>
+
+        {/* SECTION 4: EMPLOYMENT */}
+        <div style={sectionTitleSt}>4. Employment</div>
+        <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
+          {ALL_EMPLOYMENT.map((emp) => (
+            <span
+              key={emp}
+              style={chipSt(
+                (form.criteria.employment || []).includes(emp),
+                "#4338CA"
+              )}
+              onClick={() => toggleInArray("criteria.employment", emp)}
+            >
+              {emp}
+            </span>
+          ))}
+        </div>
+
+        {/* SECTION 5: PROPERTY */}
+        <div style={sectionTitleSt}>5. Property</div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Min Value</label>
+          <input
+            style={{ ...inputSt, maxWidth: 200 }}
+            value={form.criteria.property.minValue}
+            onChange={(e) => set("criteria.property.minValue", e.target.value)}
+            placeholder="\u00a375,000"
+          />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={labelSt}>Acceptable Types</label>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {ALL_ACCEPTABLE_TYPES.map((t) => (
+              <span
+                key={t}
+                style={chipSt(
+                  (form.criteria.property.acceptable || []).includes(t),
+                  "#059669"
+                )}
+                onClick={() =>
+                  toggleInArray("criteria.property.acceptable", t)
+                }
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={labelSt}>Unacceptable Types</label>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {ALL_UNACCEPTABLE_TYPES.map((t) => (
+              <span
+                key={t}
+                style={chipSt(
+                  (form.criteria.property.unacceptable || []).includes(t),
+                  "#DC2626"
+                )}
+                onClick={() =>
+                  toggleInArray("criteria.property.unacceptable", t)
+                }
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Valuation Rule</label>
+          <input
+            style={inputSt}
+            value={form.criteria.property.valuation}
+            onChange={(e) => set("criteria.property.valuation", e.target.value)}
+            placeholder="Full valuation required."
+          />
+        </div>
+
+        {/* FOOTER */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+            marginTop: 28,
+            paddingTop: 16,
+            borderTop: `1px solid ${T.borderLight}`,
+          }}
+        >
+          <Btn onClick={onCancel}>Cancel</Btn>
+          <Btn
+            primary
+            onClick={() => {
+              if (!form.name.trim()) return;
+              onSave(form);
+            }}
+          >
+            Save Bucket
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// CRITERIA TABLE
+// ─────────────────────────────────────────────
+function CriteriaTable({ bucket }) {
+  const c = bucket.criteria;
+  if (!c) return null;
+
+  const sectionHeaderSt = {
+    padding: "8px 14px",
+    fontSize: 10,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    color: bucket.color,
+    background: bucket.color + "14",
+    borderBottom: `1px solid ${T.borderLight}`,
+  };
+
+  const rowSt = (i) => ({
+    display: "flex",
+    borderBottom: `1px solid ${T.borderLight}`,
+    background: i % 2 === 0 ? "#FAFAF8" : "#FFFFFF",
+  });
+
+  const labelCellSt = {
+    width: "40%",
+    padding: "9px 14px",
+    fontSize: 12,
+    fontWeight: 600,
+    color: T.navy,
+  };
+
+  const valueCellSt = {
+    width: "60%",
+    padding: "9px 14px",
+    fontSize: 12,
+    color: T.text,
+    fontWeight: 400,
+  };
+
+  const pillBase = {
+    display: "inline-block",
+    fontSize: 10,
+    fontWeight: 600,
+    padding: "3px 10px",
+    borderRadius: 12,
+    marginRight: 5,
+    marginBottom: 3,
+  };
+
+  const greenPill = {
+    ...pillBase,
+    background: "#ECFDF5",
+    color: "#065F46",
+    border: "1px solid #A7F3D0",
+  };
+  const redPill = {
+    ...pillBase,
+    background: "#FEF2F2",
+    color: "#991B1B",
+    border: "1px solid #FECACA",
+  };
+  const bluePill = {
+    ...pillBase,
+    background: "#EEF2FF",
+    color: "#4338CA",
+    border: "1px solid #C7D2FE",
+  };
+
+  let rowIdx = 0;
+
+  const Row = ({ label, value, valueColor, valueStyle }) => {
+    const i = rowIdx++;
+    return (
+      <div style={rowSt(i)}>
+        <div style={labelCellSt}>{label}</div>
+        <div
+          style={{
+            ...valueCellSt,
+            color: valueColor || valueCellSt.color,
+            ...valueStyle,
+          }}
+        >
+          {value}
+        </div>
+      </div>
+    );
+  };
+
+  const PillRow = ({ label, items, pillStyle }) => {
+    const i = rowIdx++;
+    return (
+      <div style={rowSt(i)}>
+        <div style={labelCellSt}>{label}</div>
+        <div style={{ ...valueCellSt, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0 }}>
+          {items.map((item) => (
+            <span key={item} style={pillStyle}>
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      style={{
+        border: `1px solid ${T.border}`,
+        borderRadius: 10,
+        overflow: "hidden",
+        fontFamily: T.font,
+      }}
+    >
+      {/* APPLICANT */}
+      <div style={sectionHeaderSt}>Applicant</div>
+      <Row label="Loan Size" value={`${c.loanSize.min} \u2013 ${c.loanSize.max}`} />
+      <Row
+        label="Max Applicants"
+        value={`${c.maxApplicants}${c.maxApplicants === 4 ? " (for SPV/Ltd)" : ""}`}
+      />
+      <Row label="Age Range" value={`${c.age.min} \u2013 ${c.age.maxAtEnd} (at end of term)`} />
+      <Row label="UK Residency" value={c.residency} />
+      <Row label="Min UK Residency" value={c.minUKResidency} />
+
+      {/* INCOME & AFFORDABILITY */}
+      <div style={sectionHeaderSt}>Income & Affordability</div>
+      <Row label="Income Multiple" value={c.incomeMultiple} />
+      <Row label="Stress Rate" value={c.stressRate} />
+      <PillRow label="Employment" items={c.employment} pillStyle={bluePill} />
+      {c.tenancy && <Row label="Tenancy" value={c.tenancy} />}
+      {c.experience && <Row label="Experience" value={c.experience} />}
+
+      {/* CREDIT HISTORY */}
+      <div style={sectionHeaderSt}>Credit History</div>
+      <Row
+        label="CCJs"
+        value={c.credit.maxCCJs === "0" ? "None accepted" : c.credit.maxCCJs}
+        valueColor={creditColor(c.credit.maxCCJs)}
+      />
+      <Row
+        label="Defaults"
+        value={c.credit.maxDefaults === "0" ? "None accepted" : c.credit.maxDefaults}
+        valueColor={creditColor(c.credit.maxDefaults)}
+      />
+      <Row
+        label="Missed Payments"
+        value={c.credit.missedPayments}
+        valueColor={creditColor(c.credit.missedPayments)}
+      />
+      <Row
+        label="IVA"
+        value={c.credit.iva}
+        valueColor={creditColor(c.credit.iva)}
+      />
+      <Row
+        label="Bankruptcy"
+        value={c.credit.bankruptcy}
+        valueColor={creditColor(c.credit.bankruptcy)}
+      />
+      <Row
+        label="DMP"
+        value={c.credit.dmp}
+        valueColor={creditColor(c.credit.dmp)}
+      />
+
+      {/* PROPERTY */}
+      <div style={sectionHeaderSt}>Property</div>
+      <Row label="Min Property Value" value={c.property.minValue} />
+      <PillRow
+        label="Acceptable Types"
+        items={c.property.acceptable}
+        pillStyle={greenPill}
+      />
+      <PillRow
+        label="Unacceptable Types"
+        items={c.property.unacceptable}
+        pillStyle={redPill}
+      />
+      <Row
+        label="Valuation"
+        value={c.property.valuation}
+        valueStyle={{ fontStyle: "italic", color: T.textMuted }}
+      />
+
+      {c.additionalNotes && (
+        <>
+          <div style={sectionHeaderSt}>Notes</div>
+          <Row
+            label="Additional"
+            value={c.additionalNotes}
+            valueStyle={{ fontStyle: "italic" }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// MAIN COMPONENT
 // ─────────────────────────────────────────────
 export default function ProductBuckets() {
+  const [buckets, setBuckets] = useState(loadBuckets);
   const [expandedIdx, setExpandedIdx] = useState(null);
-  const [bucketTab, setBucketTab] = useState({}); // { [bucketIdx]: "rates"|"criteria"|"fees" }
+  const [bucketTab, setBucketTab] = useState({});
+  const [editingIdx, setEditingIdx] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const toggleBucket = (i) => { setExpandedIdx(expandedIdx === i ? null : i); if (!bucketTab[i]) setBucketTab(prev => ({ ...prev, [i]: "rates" })); };
+  useEffect(() => {
+    saveBuckets(buckets);
+  }, [buckets]);
+
+  const toggleBucket = (i) => {
+    setExpandedIdx(expandedIdx === i ? null : i);
+    if (!bucketTab[i]) setBucketTab((prev) => ({ ...prev, [i]: "rates" }));
+  };
   const getTab = (i) => bucketTab[i] || "rates";
-  const setTab = (i, tab) => setBucketTab(prev => ({ ...prev, [i]: tab }));
+  const setTab = (i, tab) => setBucketTab((prev) => ({ ...prev, [i]: tab }));
+
+  const handleSaveNew = (form) => {
+    setBuckets((prev) => [...prev, form]);
+    setShowCreateModal(false);
+  };
+
+  const handleSaveEdit = (form) => {
+    setBuckets((prev) => {
+      const next = [...prev];
+      next[editingIdx] = form;
+      return next;
+    });
+    setEditingIdx(null);
+  };
+
+  const handleDelete = (idx) => {
+    setBuckets((prev) => prev.filter((_, i) => i !== idx));
+    setDeleteConfirm(null);
+    if (expandedIdx === idx) setExpandedIdx(null);
+  };
 
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
       {/* ── HEADER ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 28,
+        }}
+      >
         <div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: T.navy, marginBottom: 4 }}>
+          <div
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: T.navy,
+              marginBottom: 4,
+            }}
+          >
             Residential Mortgage Products
           </div>
           <div style={{ fontSize: 13, color: T.textMuted }}>
@@ -268,28 +1029,35 @@ export default function ProductBuckets() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span style={{
-            fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 8,
-            background: "#EEF2FF", color: "#4338CA", border: "1px solid #C7D2FE"
-          }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "5px 12px",
+              borderRadius: 8,
+              background: "#EEF2FF",
+              color: "#4338CA",
+              border: "1px solid #C7D2FE",
+            }}
+          >
             Bank Base Rate: 4.75%
           </span>
-          <span style={{
-            fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 8,
-            background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A"
-          }}>
-            Reversion Rate: SVR 7.99%
-          </span>
+          <Btn primary small onClick={() => setShowCreateModal(true)} icon="plus">
+            Create Bucket
+          </Btn>
         </div>
       </div>
 
       {/* ── BUCKET CARDS ── */}
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {BUCKETS.map((bucket, bIdx) => {
-          const ltvBands = Object.keys(bucket.products[0].rates);
+        {buckets.map((bucket, bIdx) => {
+          const ltvBands =
+            bucket.products && bucket.products.length > 0
+              ? Object.keys(bucket.products[0].rates)
+              : [];
 
           return (
-            <Card key={bucket.name} noPad style={{ overflow: "hidden" }}>
+            <Card key={bucket.name + bIdx} noPad style={{ overflow: "hidden" }}>
               {/* Colour strip */}
               <div style={{ height: 6, background: bucket.color }} />
 
@@ -298,26 +1066,104 @@ export default function ProductBuckets() {
                 style={{
                   padding: "16px 24px 14px",
                   cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
                 }}
                 onClick={() => toggleBucket(bIdx)}
               >
                 {/* Pill badge */}
-                <span style={{
-                  display: "inline-block", padding: "5px 16px", borderRadius: 20,
-                  background: bucket.color, color: "#fff",
-                  fontSize: 13, fontWeight: 700, letterSpacing: 0.2,
-                  whiteSpace: "nowrap",
-                }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    padding: "5px 16px",
+                    borderRadius: 20,
+                    background: bucket.color,
+                    color: "#fff",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    letterSpacing: 0.2,
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {bucket.name}
                 </span>
-                <span style={{ fontSize: 12, color: T.textMuted, flex: 1 }}>
+                <span
+                  style={{ fontSize: 12, color: T.textMuted, flex: 1 }}
+                >
                   {bucket.desc}
                 </span>
-                <span style={{
-                  transform: expandedIdx === bIdx ? "rotate(90deg)" : "rotate(0deg)",
-                  transition: "transform 0.2s", display: "flex", color: T.textMuted,
-                }}>
+
+                {/* Edit button */}
+                <span
+                  title="Edit bucket"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingIdx(bIdx);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    color: T.textMuted,
+                    background: "transparent",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = T.primaryLight)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  {Ico.settings(14)}
+                </span>
+
+                {/* Delete button */}
+                <span
+                  title="Delete bucket"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm(bIdx);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    color: T.textMuted,
+                    background: "transparent",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#FEF2F2")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  {Ico.x(14)}
+                </span>
+
+                {/* Chevron */}
+                <span
+                  style={{
+                    transform:
+                      expandedIdx === bIdx
+                        ? "rotate(90deg)"
+                        : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                    display: "flex",
+                    color: T.textMuted,
+                  }}
+                >
                   {Ico.arrow(16)}
                 </span>
               </div>
@@ -326,231 +1172,373 @@ export default function ProductBuckets() {
               {expandedIdx === bIdx && (
                 <div style={{ padding: "0 24px 20px" }}>
                   {/* Tab bar */}
-                  <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 16 }}>
-                    {[{ id: "rates", label: "Rates" }, { id: "criteria", label: "Criteria" }, { id: "fees", label: "Fees & Terms" }].map(tab => (
-                      <button key={tab.id} onClick={() => setTab(bIdx, tab.id)} style={{
-                        padding: "8px 18px", border: "none", background: "none", cursor: "pointer",
-                        fontSize: 12, fontWeight: getTab(bIdx) === tab.id ? 700 : 500, fontFamily: T.font,
-                        color: getTab(bIdx) === tab.id ? bucket.color : T.textMuted,
-                        borderBottom: getTab(bIdx) === tab.id ? `2.5px solid ${bucket.color}` : "2.5px solid transparent",
-                        marginBottom: -2,
-                      }}>{tab.label}</button>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 0,
+                      borderBottom: `2px solid ${T.border}`,
+                      marginBottom: 16,
+                    }}
+                  >
+                    {[
+                      { id: "rates", label: "Rates" },
+                      { id: "criteria", label: "Criteria" },
+                      { id: "fees", label: "Fees & Terms" },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setTab(bIdx, tab.id)}
+                        style={{
+                          padding: "8px 18px",
+                          border: "none",
+                          background: "none",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          fontWeight:
+                            getTab(bIdx) === tab.id ? 700 : 500,
+                          fontFamily: T.font,
+                          color:
+                            getTab(bIdx) === tab.id
+                              ? bucket.color
+                              : T.textMuted,
+                          borderBottom:
+                            getTab(bIdx) === tab.id
+                              ? `2.5px solid ${bucket.color}`
+                              : "2.5px solid transparent",
+                          marginBottom: -2,
+                        }}
+                      >
+                        {tab.label}
+                      </button>
                     ))}
                   </div>
 
                   {/* ── TAB: RATES ── */}
-                  {getTab(bIdx) === "rates" && <>
-                  {/* ── RATE TABLE ── */}
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{
-                      width: "100%", borderCollapse: "collapse", fontSize: 12,
-                      fontFamily: T.font,
-                    }}>
-                      <thead>
-                        <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-                          <th style={{
-                            textAlign: "left", padding: "8px 10px", fontSize: 11,
-                            fontWeight: 700, color: T.textMuted, width: 80,
-                            textTransform: "uppercase", letterSpacing: 0.5,
-                          }}>
-                            LTV
-                          </th>
-                          {bucket.products.map((p) => (
-                            <th key={p.code} style={{
-                              textAlign: "center", padding: "8px 6px", fontSize: 11,
-                              fontWeight: 700, color: T.navy, width: 80,
-                            }}>
-                              {p.type}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {ltvBands.map((ltv, rIdx) => (
-                          <tr
-                            key={ltv}
+                  {getTab(bIdx) === "rates" && (
+                    <>
+                      {ltvBands.length > 0 ? (
+                        <div style={{ overflowX: "auto" }}>
+                          <table
                             style={{
-                              borderBottom: `1px solid ${T.borderLight}`,
-                              background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFFFFF",
+                              width: "100%",
+                              borderCollapse: "collapse",
+                              fontSize: 12,
+                              fontFamily: T.font,
                             }}
                           >
-                            <td style={{
-                              padding: "9px 10px", fontWeight: 600, fontSize: 12,
-                              color: T.navy, whiteSpace: "nowrap",
-                            }}>
-                              {ltv}
-                            </td>
-                            {bucket.products.map((p) => {
-                              const rate = p.rates[ltv];
-                              const code = buildCode(p.code, ltv);
-                              return (
-                                <td key={p.code + ltv} style={{
-                                  textAlign: "center", padding: "7px 6px",
-                                  width: 80, verticalAlign: "middle",
-                                }}>
-                                  {rate !== null && rate !== undefined ? (
-                                    <div>
-                                      <span style={{
-                                        fontWeight: 700, fontSize: 13,
-                                        color: rateColor(rate),
-                                      }}>
-                                        {rate.toFixed(2)}%
-                                      </span>
-                                      <div style={{
-                                        fontSize: 9, color: T.textMuted,
-                                        marginTop: 1, letterSpacing: 0.2,
-                                      }}>
-                                        ({code})
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <span style={{ color: "#CBD5E1", fontSize: 14 }}>&mdash;</span>
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* ── TERMS STRIP ── */}
-                  {/* ── NOTES ── */}
-                  {bucket.notes && (
-                    <div style={{
-                      marginTop: 12, fontSize: 11, fontStyle: "italic",
-                      color: T.textMuted, paddingLeft: 2,
-                    }}>
-                      {bucket.notes}
-                    </div>
+                            <thead>
+                              <tr
+                                style={{
+                                  borderBottom: `2px solid ${T.border}`,
+                                }}
+                              >
+                                <th
+                                  style={{
+                                    textAlign: "left",
+                                    padding: "8px 10px",
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    color: T.textMuted,
+                                    width: 80,
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.5,
+                                  }}
+                                >
+                                  LTV
+                                </th>
+                                {bucket.products.map((p) => (
+                                  <th
+                                    key={p.code}
+                                    style={{
+                                      textAlign: "center",
+                                      padding: "8px 6px",
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: T.navy,
+                                      width: 80,
+                                    }}
+                                  >
+                                    {p.type}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {ltvBands.map((ltv, rIdx) => (
+                                <tr
+                                  key={ltv}
+                                  style={{
+                                    borderBottom: `1px solid ${T.borderLight}`,
+                                    background:
+                                      rIdx % 2 === 0
+                                        ? "#FAFAF8"
+                                        : "#FFFFFF",
+                                  }}
+                                >
+                                  <td
+                                    style={{
+                                      padding: "9px 10px",
+                                      fontWeight: 600,
+                                      fontSize: 12,
+                                      color: T.navy,
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {ltv}
+                                  </td>
+                                  {bucket.products.map((p) => {
+                                    const rate = p.rates[ltv];
+                                    const code = buildCode(p.code, ltv);
+                                    return (
+                                      <td
+                                        key={p.code + ltv}
+                                        style={{
+                                          textAlign: "center",
+                                          padding: "7px 6px",
+                                          width: 80,
+                                          verticalAlign: "middle",
+                                        }}
+                                      >
+                                        {rate !== null &&
+                                        rate !== undefined ? (
+                                          <div>
+                                            <span
+                                              style={{
+                                                fontWeight: 700,
+                                                fontSize: 13,
+                                                color: rateColor(rate),
+                                              }}
+                                            >
+                                              {rate.toFixed(2)}%
+                                            </span>
+                                            <div
+                                              style={{
+                                                fontSize: 9,
+                                                color: T.textMuted,
+                                                marginTop: 1,
+                                                letterSpacing: 0.2,
+                                              }}
+                                            >
+                                              ({code})
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <span
+                                            style={{
+                                              color: "#CBD5E1",
+                                              fontSize: 14,
+                                            }}
+                                          >
+                                            &mdash;
+                                          </span>
+                                        )}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: T.textMuted,
+                            fontStyle: "italic",
+                            padding: "20px 0",
+                          }}
+                        >
+                          No products configured for this bucket yet.
+                        </div>
+                      )}
+                      {bucket.notes && (
+                        <div
+                          style={{
+                            marginTop: 12,
+                            fontSize: 11,
+                            fontStyle: "italic",
+                            color: T.textMuted,
+                            paddingLeft: 2,
+                          }}
+                        >
+                          {bucket.notes}
+                        </div>
+                      )}
+                    </>
                   )}
-                  </>}
 
                   {/* ── TAB: CRITERIA ── */}
-                  {getTab(bIdx) === "criteria" && bucket.criteria && (() => {
-                    const c = bucket.criteria;
-                    const labelStyle = { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, color: T.textMuted, marginBottom: 2 };
-                    const valStyle = { fontSize: 12, color: T.text, fontWeight: 400 };
-                    const creditColor = (v) => v === "Not accepted" || v === "0" ? "#DC2626" : "#059669";
-                    const pillBase = { display: "inline-block", fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 12, marginRight: 5, marginBottom: 4 };
-
-                    return (
-                      <div>
-                        {/* Top two-column grid */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 32px" }}>
-                          {/* Left column — General */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            <div><div style={labelStyle}>Loan Size</div><div style={valStyle}>{c.loanSize.min} &ndash; {c.loanSize.max}</div></div>
-                            <div><div style={labelStyle}>Max Applicants</div><div style={valStyle}>{c.maxApplicants}{c.maxApplicants === 4 ? " (for SPV/Ltd)" : ""}</div></div>
-                            <div><div style={labelStyle}>Age</div><div style={valStyle}>{c.age.min} &ndash; {c.age.maxAtEnd} (at end of term)</div></div>
-                            <div><div style={labelStyle}>UK Residency</div><div style={valStyle}>{c.minUKResidency} minimum</div></div>
-                            <div><div style={labelStyle}>Income Multiple</div><div style={valStyle}>{c.incomeMultiple}</div></div>
-                            <div><div style={labelStyle}>Stress Rate</div><div style={valStyle}>{c.stressRate}</div></div>
-                            {c.tenancy && <div><div style={labelStyle}>Tenancy</div><div style={valStyle}>{c.tenancy}</div></div>}
-                            {c.experience && <div><div style={labelStyle}>Experience</div><div style={valStyle}>{c.experience}</div></div>}
-                            {c.additionalNotes && <div><div style={labelStyle}>Note</div><div style={{ ...valStyle, fontStyle: "italic", color: T.textMuted }}>{c.additionalNotes}</div></div>}
-                          </div>
-
-                          {/* Right column — Credit Requirements */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            <div style={{ ...labelStyle, fontSize: 11, marginBottom: 4 }}>Credit Requirements</div>
-                            <div><div style={labelStyle}>CCJs</div><div style={{ ...valStyle, color: creditColor(c.credit.maxCCJs) }}>{c.credit.maxCCJs === "0" ? "None accepted" : c.credit.maxCCJs}</div></div>
-                            <div><div style={labelStyle}>Defaults</div><div style={{ ...valStyle, color: creditColor(c.credit.maxDefaults) }}>{c.credit.maxDefaults === "0" ? "None accepted" : c.credit.maxDefaults}</div></div>
-                            <div><div style={labelStyle}>Missed Payments</div><div style={{ ...valStyle, color: creditColor(c.credit.missedPayments) }}>{c.credit.missedPayments}</div></div>
-                            <div><div style={labelStyle}>IVA</div><div style={{ ...valStyle, color: creditColor(c.credit.iva) }}>{c.credit.iva}</div></div>
-                            <div><div style={labelStyle}>Bankruptcy</div><div style={{ ...valStyle, color: creditColor(c.credit.bankruptcy) }}>{c.credit.bankruptcy}</div></div>
-                            {c.credit.dmp && <div><div style={labelStyle}>DMP</div><div style={{ ...valStyle, color: creditColor(c.credit.dmp) }}>{c.credit.dmp}</div></div>}
-                          </div>
-                        </div>
-
-                        {/* Middle two-column — Employment & Property */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 32px", marginTop: 16 }}>
-                          {/* Employment */}
-                          <div>
-                            <div style={{ ...labelStyle, marginBottom: 8 }}>Employment (Acceptable)</div>
-                            <div style={{ display: "flex", flexWrap: "wrap" }}>
-                              {c.employment.map((e) => (
-                                <span key={e} style={{ ...pillBase, background: "#EEF2FF", color: "#4338CA", border: "1px solid #C7D2FE" }}>{e}</span>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Property */}
-                          <div>
-                            <div style={{ ...labelStyle, marginBottom: 6 }}>Property Criteria</div>
-                            <div style={{ marginBottom: 6 }}><span style={labelStyle}>Min Value: </span><span style={valStyle}>{c.property.minValue}</span></div>
-                            <div style={{ ...labelStyle, marginBottom: 4 }}>Acceptable</div>
-                            <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 6 }}>
-                              {c.property.acceptable.map((a) => (
-                                <span key={a} style={{ ...pillBase, background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>{a}</span>
-                              ))}
-                            </div>
-                            <div style={{ ...labelStyle, marginBottom: 4 }}>Unacceptable</div>
-                            <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 6 }}>
-                              {c.property.unacceptable.map((u) => (
-                                <span key={u} style={{ ...pillBase, background: "#FEF2F2", color: "#991B1B", border: "1px solid #FECACA" }}>{u}</span>
-                              ))}
-                            </div>
-                            <div style={{ fontSize: 11, color: T.textMuted, fontStyle: "italic" }}>{c.property.valuation}</div>
-                          </div>
-                        </div>
-
-                      </div>
-                    );
-                  })()}
+                  {getTab(bIdx) === "criteria" && (
+                    <CriteriaTable bucket={bucket} />
+                  )}
 
                   {/* ── TAB: FEES & TERMS ── */}
-                  {getTab(bIdx) === "fees" && (() => {
-                    const c = bucket.criteria;
-                    return (
-                      <div>
-                        {/* Key terms */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
-                          {[
-                            { label: "Product Fee", value: bucket.fee },
-                            { label: "Loan Term", value: bucket.termRange },
-                            { label: "Reversion Rate", value: bucket.reversion },
-                            { label: "Min Property Value", value: c?.property?.minValue || "£75,000" },
-                          ].map(item => (
-                            <div key={item.label} style={{ padding: "12px 14px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{item.label}</div>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{item.value}</div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* ERC per product type */}
-                        <div style={{ marginBottom: 20 }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>Early Repayment Charges</div>
-                          <div style={{ display: "flex", gap: 10 }}>
-                            {bucket.products.map(p => (
-                              <div key={p.type} style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>{p.type}</div>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{p.erc}</div>
+                  {getTab(bIdx) === "fees" &&
+                    (() => {
+                      const c = bucket.criteria;
+                      return (
+                        <div>
+                          {/* Key terms */}
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr 1fr 1fr",
+                              gap: 12,
+                              marginBottom: 20,
+                            }}
+                          >
+                            {[
+                              { label: "Product Fee", value: bucket.fee },
+                              { label: "Loan Term", value: bucket.termRange },
+                              {
+                                label: "Reversion Rate",
+                                value: bucket.reversion,
+                              },
+                              {
+                                label: "Min Property Value",
+                                value:
+                                  c?.property?.minValue || "\u00a375,000",
+                              },
+                            ].map((item) => (
+                              <div
+                                key={item.label}
+                                style={{
+                                  padding: "12px 14px",
+                                  borderRadius: 8,
+                                  background: T.bg,
+                                  border: `1px solid ${T.borderLight}`,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    color: T.textMuted,
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.4,
+                                    marginBottom: 4,
+                                  }}
+                                >
+                                  {item.label}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: 14,
+                                    fontWeight: 600,
+                                    color: T.text,
+                                  }}
+                                >
+                                  {item.value}
+                                </div>
                               </div>
                             ))}
                           </div>
-                        </div>
 
-                        {/* Valuation fee scale */}
-                        {c?.valuationFees && (
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>Valuation Fee Scale</div>
-                            <div style={{ display: "flex", gap: 8 }}>
-                              {c.valuationFees.map(vf => (
-                                <div key={vf.upTo} style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}`, textAlign: "center" }}>
-                                  <div style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Up to {vf.upTo}</div>
-                                  <div style={{ fontSize: 16, fontWeight: 700, color: T.navy }}>{vf.fee}</div>
-                                </div>
-                              ))}
+                          {/* ERC per product type */}
+                          {bucket.products && bucket.products.length > 0 && (
+                            <div style={{ marginBottom: 20 }}>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: T.text,
+                                  marginBottom: 8,
+                                }}
+                              >
+                                Early Repayment Charges
+                              </div>
+                              <div style={{ display: "flex", gap: 10 }}>
+                                {bucket.products.map((p) => (
+                                  <div
+                                    key={p.type}
+                                    style={{
+                                      flex: 1,
+                                      padding: "10px 12px",
+                                      borderRadius: 8,
+                                      background: T.bg,
+                                      border: `1px solid ${T.borderLight}`,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: T.textMuted,
+                                        textTransform: "uppercase",
+                                        marginBottom: 4,
+                                      }}
+                                    >
+                                      {p.type}
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                        color: T.text,
+                                      }}
+                                    >
+                                      {p.erc}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                          )}
 
+                          {/* Valuation fee scale */}
+                          {c?.valuationFees && (
+                            <div>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: T.text,
+                                  marginBottom: 8,
+                                }}
+                              >
+                                Valuation Fee Scale
+                              </div>
+                              <div style={{ display: "flex", gap: 8 }}>
+                                {c.valuationFees.map((vf) => (
+                                  <div
+                                    key={vf.upTo}
+                                    style={{
+                                      flex: 1,
+                                      padding: "10px 12px",
+                                      borderRadius: 8,
+                                      background: T.bg,
+                                      border: `1px solid ${T.borderLight}`,
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 600,
+                                        color: T.textMuted,
+                                        marginBottom: 4,
+                                      }}
+                                    >
+                                      Up to {vf.upTo}
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontSize: 16,
+                                        fontWeight: 700,
+                                        color: T.navy,
+                                      }}
+                                    >
+                                      {vf.fee}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                 </div>
               )}
             </Card>
@@ -559,11 +1547,18 @@ export default function ProductBuckets() {
       </div>
 
       {/* ── BOTTOM BAR ── */}
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        marginTop: 24, padding: "14px 20px", background: "#F8F7F4",
-        borderRadius: 10, border: `1px solid ${T.borderLight}`,
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 24,
+          padding: "14px 20px",
+          background: "#F8F7F4",
+          borderRadius: 10,
+          border: `1px solid ${T.borderLight}`,
+        }}
+      >
         <span style={{ fontSize: 12, fontWeight: 600, color: T.navy }}>
           Effective from: 10 Apr 2026
         </span>
@@ -571,6 +1566,84 @@ export default function ProductBuckets() {
           Subject to criteria and valuation
         </span>
       </div>
+
+      {/* ── CREATE MODAL ── */}
+      {showCreateModal && (
+        <BucketFormModal
+          bucket={null}
+          onSave={handleSaveNew}
+          onCancel={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {/* ── EDIT MODAL ── */}
+      {editingIdx !== null && (
+        <BucketFormModal
+          bucket={buckets[editingIdx]}
+          onSave={handleSaveEdit}
+          onCancel={() => setEditingIdx(null)}
+        />
+      )}
+
+      {/* ── DELETE CONFIRM ── */}
+      {deleteConfirm !== null && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.4)",
+          }}
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            style={{
+              width: 400,
+              background: T.card,
+              borderRadius: 14,
+              padding: 28,
+              boxShadow: "0 16px 48px rgba(0,0,0,0.2)",
+              fontFamily: T.font,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: T.navy,
+                marginBottom: 8,
+              }}
+            >
+              Delete Bucket
+            </div>
+            <div
+              style={{ fontSize: 13, color: T.textMuted, marginBottom: 20 }}
+            >
+              Are you sure you want to delete{" "}
+              <strong style={{ color: T.text }}>
+                {buckets[deleteConfirm]?.name}
+              </strong>
+              ? This action cannot be undone.
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+              }}
+            >
+              <Btn onClick={() => setDeleteConfirm(null)}>Cancel</Btn>
+              <Btn danger onClick={() => handleDelete(deleteConfirm)}>
+                Delete
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
