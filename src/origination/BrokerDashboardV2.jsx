@@ -5,6 +5,7 @@ import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
 import QuickActions from "../shared/QuickActions";
 import GoalTracker from "../shared/GoalTracker";
+import BrokerHelpCentre from "./BrokerHelpCentre";
 
 /* ── time-based greeting ── */
 const getGreeting = () => {
@@ -104,6 +105,7 @@ const ProgressStepper = ({ currentStep }) => (
 
 /* ── main component ── */
 function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
+  const [showHelpCentre, setShowHelpCentre] = useState(false);
   const sorted = [...MOCK_LOANS].sort((a, b) => (SLA_URGENCY[a.status] || 99) - (SLA_URGENCY[b.status] || 99));
 
   const totalPipeline = MOCK_LOANS.reduce((sum, l) => {
@@ -124,7 +126,10 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
             You have <b style={{ color: T.text }}>4 cases</b> needing attention this week — 1 fewer than last week. Nice work.
           </div>
         </div>
-        <Btn primary icon="plus" onClick={onNewLoan}>New Loan</Btn>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Btn icon="search" onClick={() => setShowHelpCentre(true)}>Help Centre</Btn>
+          <Btn primary icon="plus" onClick={onNewLoan}>New Loan</Btn>
+        </div>
       </div>
 
       {/* Goals row */}
@@ -229,6 +234,9 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
           </div>
         </div>
       </div>
+
+      {/* Broker Help Centre Modal */}
+      <BrokerHelpCentre open={showHelpCentre} onClose={() => setShowHelpCentre(false)} />
     </div>
   );
 }

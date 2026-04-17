@@ -2,10 +2,29 @@ import { useState, useEffect } from "react";
 import { T, Ico } from "./tokens";
 import { Btn, Card } from "./primitives";
 
-const CURRENT_VERSION = "2.4.0";
+const CURRENT_VERSION = "2.18.0";
 const LS_KEY = "nova_whats_new_seen";
 
 const releases = [
+  {
+    version: "2.18.0",
+    date: "17 Apr 2026",
+    items: [
+      { tag: "New", text: "Broker Help Centre — Product Guide + AI Assistant for brokers. Browse all products, rates, criteria, and ask Nova AI questions." },
+      { tag: "New", text: "Product Guide shows live bucket data with rates, accepted dimensions, fees, and pricing tiers" },
+      { tag: "New", text: "Ask Nova AI — conversational assistant answering product, eligibility, fee, and document questions" },
+    ],
+  },
+  {
+    version: "2.17.0",
+    date: "17 Apr 2026",
+    items: [
+      { tag: "New", text: "Eligibility Calculator now reads Product Buckets — enforces all bucket criteria, shows bucket name, tier, and fees" },
+      { tag: "Improved", text: "Pricing Tiers redesigned to styled cards with condition pills and adjustment badges" },
+      { tag: "Improved", text: "Criteria, dimensions, and property/employment selectors fully consolidated" },
+      { tag: "Fixed", text: "All unicode escape sequences replaced with actual characters (£, ≤, ·, —, –)" },
+    ],
+  },
   {
     version: "2.4.0",
     date: "9 Apr 2026",

@@ -7,6 +7,33 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.18.0",
+    date: "17 Apr 2026",
+    title: "Broker Help Centre & Product AI Assistant",
+    items: [
+      { type: "New", text: "Broker Help Centre — dedicated modal with two tabs: Product Guide and Ask Nova AI" },
+      { type: "New", text: "Product Guide tab — browse all mortgage buckets with live rates, criteria, fees, tiers, and accepted dimensions pulled from Product Catalogue" },
+      { type: "New", text: "Ask Nova AI tab — conversational LLM assistant for brokers. Ask about products, rates, eligibility, credit profiles, fees, documents, commission, LTV bands, and pricing tiers" },
+      { type: "New", text: "Quick question chips — one-tap common questions for instant answers" },
+      { type: "Improved", text: "Help Centre button added to Broker Dashboard header for easy access alongside New Loan" },
+    ]
+  },
+  {
+    version: "2.17.0",
+    date: "17 Apr 2026",
+    title: "Product Buckets Wired to Broker Flow & Pricing Tiers Redesign",
+    items: [
+      { type: "New", text: "Bucket-aware eligibility — Eligibility Calculator now reads product bucket data and enforces all bucket-level criteria: max LTV, accepted credit profiles, employment, property, EPC, loan size limits, and age caps" },
+      { type: "New", text: "Bucket and tier info shown on eligibility results — product code, bucket name badge, applied tier, tier adjustment, and product fee" },
+      { type: "Improved", text: "Pricing Tiers redesigned from flat text to styled cards with condition pills, adjustment badges, and colour-coded tier borders" },
+      { type: "Improved", text: "Criteria tab consolidated — merged redundant 'Accepted Dimensions' section into Credit, Employment, and Property sections. Added 'Maximum Accepted' credit profile summary row" },
+      { type: "Improved", text: "Property Type selector expanded with all dimension values (Standard, Non-Standard, New Build, Ex-Local Authority, High-Rise, BTL)" },
+      { type: "Improved", text: "Employment option fixed from 'Contract' to 'Contractor' to match pricing dimensions" },
+      { type: "Improved", text: "LoanWizard now passes property type and EPC through to pricing engine (previously collected but not used)" },
+      { type: "Fixed", text: "All unicode escape sequences (\\u00a3, \\u2264, \\u00b7, \\u2014, \\u2013) replaced with actual £, ≤, ·, —, – characters across 10 files" },
+    ]
+  },
+  {
     version: "2.16.0",
     date: "16 Apr 2026",
     title: "Unified Data Model, Business Customers & Servicing Enhancements",
