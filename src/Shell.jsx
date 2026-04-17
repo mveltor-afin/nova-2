@@ -64,6 +64,7 @@ import WorkflowBuilder from "./admin/WorkflowBuilder";
 import ProductCatalogue from "./admin/ProductCatalogue";
 import RateMatrix from "./admin/RateMatrix";
 import ProductPerformance from "./admin/ProductPerformance";
+import PricingMatrix from "./admin/PricingMatrix";
 import DocumentTemplates from "./admin/DocumentTemplates";
 import APIHealthDashboard from "./admin/APIHealthDashboard";
 import ReportBuilder from "./admin/ReportBuilder";
@@ -343,6 +344,7 @@ export default function Shell({ userType }) {
     ? [
         { group:"PRODUCTS", items:[
           { id:"products",          label:"Product Catalogue",   icon:"products" },
+          { id:"pricingmatrix",     label:"Pricing Matrix",      icon:"dashboard" },
           { id:"ratematrix",        label:"Rate Matrix",         icon:"chart" },
           { id:"productperformance",label:"Product Performance", icon:"dashboard" },
         ]},
@@ -747,6 +749,7 @@ export default function Shell({ userType }) {
       case "journeyanalytics": return <JourneyAnalytics />;
       case "workflows":       return <WorkflowBuilder />;
       case "products":        return <ProductCatalogue />;
+      case "pricingmatrix":   return <PricingMatrix />;
       case "ratematrix":      return <RateMatrix />;
       case "productperformance": return <ProductPerformance />;
       case "doctemplates":    return <DocumentTemplates />;
