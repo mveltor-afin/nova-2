@@ -1305,32 +1305,26 @@ function RatesTab({ bucket }) {
                     background: isBase ? "#FAFAF8" : "#FFFFFF",
                   }}>
                     {/* Product/Tier name */}
-                    <td style={{ padding: "8px 10px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {!isBase && <span style={{ width: 3, height: 18, borderRadius: 2, background: tierColor, flexShrink: 0 }} />}
-                        <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ fontWeight: isBase ? 700 : 600, fontSize: isBase ? 13 : 12, color: isBase ? T.navy : T.text }}>
-                              {prod.type}{!isBase ? ` — ${tier.name}` : ""}
-                            </span>
-                            {isBase && <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: "#F1F5F9", color: T.textMuted }}>BASE</span>}
-                            {!isBase && (
-                              <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: tierColor + "14", color: tierColor }}>
-                                T{tIdx}
-                              </span>
-                            )}
-                          </div>
-                          {!isBase && condEntries.length > 0 && (
-                            <div style={{ display: "flex", gap: 3, marginTop: 2, flexWrap: "wrap" }}>
-                              {condEntries.map(([dim, vals]) => (
-                                <span key={dim} style={{ fontSize: 8, color: T.textMuted }}>
-                                  {DIMENSION_LABELS[dim] || dim}: {vals.join(", ")}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                    <td style={{ padding: isBase ? "10px 10px" : "6px 10px 6px 22px" }}>
+                      {isBase ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontWeight: 700, fontSize: 13, color: T.navy }}>{prod.type}</span>
+                          <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: "#F1F5F9", color: T.textMuted }}>BASE</span>
                         </div>
-                      </div>
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, paddingLeft: 2 }}>
+                          <span style={{ width: 3, height: 22, borderRadius: 2, background: tierColor, flexShrink: 0 }} />
+                          <span style={{ fontWeight: 600, fontSize: 12, color: tierColor }}>{tier.name}</span>
+                          <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: tierColor + "14", color: tierColor }}>T{tIdx}</span>
+                          {condEntries.length > 0 && condEntries.map(([dim, vals]) => (
+                            vals.map(v => (
+                              <span key={`${dim}-${v}`} style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 8, background: "#F1F5F9", color: T.textMuted }}>
+                                {v}
+                              </span>
+                            ))
+                          ))}
+                        </div>
+                      )}
                     </td>
                     {/* ERC */}
                     <td style={{ padding: "8px 8px", fontSize: 10, color: T.textMuted }}>{isBase ? prod.erc : ""}</td>

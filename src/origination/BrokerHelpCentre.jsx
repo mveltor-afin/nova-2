@@ -303,15 +303,24 @@ export default function BrokerHelpCentre({ open, onClose }) {
                                             borderBottom: isLastTier ? `2px solid ${T.border}` : `1px solid ${T.borderLight}`,
                                             background: isBase ? "#FAFAF8" : "#FFF",
                                           }}>
-                                            <td style={{ padding: "6px 8px" }}>
-                                              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                {!isBase && <span style={{ width: 2, height: 14, borderRadius: 1, background: tierColor, flexShrink: 0 }} />}
-                                                <span style={{ fontWeight: isBase ? 700 : 600, fontSize: isBase ? 12 : 11, color: isBase ? T.navy : T.text }}>
-                                                  {p.type}{!isBase ? ` — ${tier.name}` : ""}
-                                                </span>
-                                                {isBase && <span style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: "#F1F5F9", color: T.textMuted }}>BASE</span>}
-                                                {!isBase && <span style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: tierColor + "14", color: tierColor }}>T{tIdx}</span>}
-                                              </div>
+                                            <td style={{ padding: isBase ? "7px 8px" : "5px 8px 5px 18px" }}>
+                                              {isBase ? (
+                                                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                                  <span style={{ fontWeight: 700, fontSize: 12, color: T.navy }}>{p.type}</span>
+                                                  <span style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: "#F1F5F9", color: T.textMuted }}>BASE</span>
+                                                </div>
+                                              ) : (
+                                                <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                                                  <span style={{ width: 2, height: 14, borderRadius: 1, background: tierColor, flexShrink: 0 }} />
+                                                  <span style={{ fontWeight: 600, fontSize: 11, color: tierColor }}>{tier.name}</span>
+                                                  <span style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: tierColor + "14", color: tierColor }}>T{tIdx}</span>
+                                                  {Object.entries(tier.conditions || {}).filter(([,v]) => v?.length).map(([dim, vals]) =>
+                                                    vals.map(v => (
+                                                      <span key={`${dim}-${v}`} style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: "#F1F5F9", color: T.textMuted }}>{v}</span>
+                                                    ))
+                                                  )}
+                                                </div>
+                                              )}
                                             </td>
                                             <td style={{ padding: "6px 6px", fontSize: 9, color: T.textMuted }}>{isBase ? p.erc : ""}</td>
                                             {visibleBands.map(band => {
@@ -336,37 +345,87 @@ export default function BrokerHelpCentre({ open, onClose }) {
                               </div>
                             )}
 
-                            {/* Key criteria */}
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                              <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Credit Profiles</div>
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                                  {(bucket.acceptedCreditProfiles || []).map(cp => (
-                                    <span key={cp} style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 5, background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>{cp}</span>
-                                  ))}
+                            {/* Bucket-level criteria */}
+                            <div style={{ marginBottom: 10 }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Bucket Eligibility</div>
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
+                                {bucket.criteria?.loanSize && (
+                                  <div style={{ padding: "8px 10px", borderRadius: 8, background: T.card, border: `1px solid ${T.borderLight}` }}>
+                                    <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Loan Size</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>{bucket.criteria.loanSize.min} – {bucket.criteria.loanSize.max}</div>
+                                  </div>
+                                )}
+                                <div style={{ padding: "8px 10px", borderRadius: 8, background: T.card, border: `1px solid ${T.borderLight}` }}>
+                                  <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Max LTV</div>
+                                  <div style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>{bucket.maxLTV}%</div>
                                 </div>
+                                {bucket.criteria?.incomeMultiple && (
+                                  <div style={{ padding: "8px 10px", borderRadius: 8, background: T.card, border: `1px solid ${T.borderLight}` }}>
+                                    <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Income Multiple</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>{bucket.criteria.incomeMultiple}</div>
+                                  </div>
+                                )}
+                                {bucket.criteria?.age && (
+                                  <div style={{ padding: "8px 10px", borderRadius: 8, background: T.card, border: `1px solid ${T.borderLight}` }}>
+                                    <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Age</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>{bucket.criteria.age.min} – {bucket.criteria.age.maxAtEnd}</div>
+                                  </div>
+                                )}
                               </div>
-                              <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Employment</div>
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                                  {(bucket.acceptedEmployments || []).map(e => (
-                                    <span key={e} style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 5, background: "#EEF2FF", color: "#4338CA", border: "1px solid #C7D2FE" }}>{e}</span>
-                                  ))}
-                                </div>
+
+                              {/* Accepted dimensions — shown as rows with proper pills */}
+                              <div style={{ border: `1px solid ${T.borderLight}`, borderRadius: 10, overflow: "hidden" }}>
+                                {[
+                                  { label: "Credit Profiles", items: bucket.acceptedCreditProfiles || [], pillBg: "#ECFDF5", pillColor: "#065F46", pillBorder: "#A7F3D0" },
+                                  { label: "Employment", items: bucket.acceptedEmployments || [], pillBg: "#EEF2FF", pillColor: "#4338CA", pillBorder: "#C7D2FE" },
+                                  { label: "Property Types", items: bucket.acceptedProperties || [], pillBg: "#FFF7ED", pillColor: "#9A3412", pillBorder: "#FED7AA" },
+                                  { label: "EPC Ratings", items: (bucket.acceptedEpc || []).map(e => `EPC ${e}`), pillBg: "#F0FDF4", pillColor: "#166534", pillBorder: "#BBF7D0" },
+                                ].filter(d => d.items.length > 0).map((dim, dIdx) => (
+                                  <div key={dim.label} style={{ display: "flex", alignItems: "center", padding: "8px 12px", borderBottom: dIdx < 3 ? `1px solid ${T.borderLight}` : "none", background: dIdx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, minWidth: 100 }}>{dim.label}</span>
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                      {dim.items.map(item => (
+                                        <span key={item} style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 8, background: dim.pillBg, color: dim.pillColor, border: `1px solid ${dim.pillBorder}` }}>{item}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                              {bucket.criteria?.loanSize && (
-                                <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                  <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Loan Size</div>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{bucket.criteria.loanSize.min} – {bucket.criteria.loanSize.max}</div>
-                                </div>
-                              )}
-                              {bucket.criteria?.incomeMultiple && (
-                                <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                  <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Income Multiple</div>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{bucket.criteria.incomeMultiple}</div>
-                                </div>
-                              )}
                             </div>
+
+                            {/* Per-tier conditions */}
+                            {tiers.length > 0 && (
+                              <div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Tier Conditions</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                  {tiers.map((tier, tIdx) => {
+                                    const tc = TIER_COLORS[tIdx % 5];
+                                    const adj = tier.adjustmentType === "flat" ? tier.flatAdj : null;
+                                    const condEntries = Object.entries(tier.conditions || {}).filter(([,v]) => v?.length);
+                                    const DIM_LABELS = { credit: "Credit", employment: "Employment", property: "Property", epc: "EPC" };
+                                    return (
+                                      <div key={tIdx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, background: T.card, border: `1px solid ${T.borderLight}`, borderLeft: `3px solid ${tc}` }}>
+                                        <span style={{ fontWeight: 700, fontSize: 12, color: tc, minWidth: 80 }}>{tier.name}</span>
+                                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: adj != null ? (adj > 0 ? "#FEF3C7" : adj < 0 ? "#D1FAE5" : "#F1F5F9") : "#EDE9FE", color: adj != null ? (adj > 0 ? "#92400E" : adj < 0 ? "#065F46" : "#475569") : "#6D28D9" }}>
+                                          {adj != null ? `${adj >= 0 ? "+" : ""}${Number(adj).toFixed(2)}%` : "Per cell"}
+                                        </span>
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 3, flex: 1 }}>
+                                          {condEntries.length > 0 ? condEntries.map(([dim, vals]) =>
+                                            vals.map(v => (
+                                              <span key={`${dim}-${v}`} style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 6, background: tc + "14", color: tc, border: `1px solid ${tc}30` }}>
+                                                {DIM_LABELS[dim] || dim}: {v}
+                                              </span>
+                                            ))
+                                          ) : (
+                                            <span style={{ fontSize: 9, color: T.textMuted, fontStyle: "italic" }}>All applicants</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
                           );
                         })()}
