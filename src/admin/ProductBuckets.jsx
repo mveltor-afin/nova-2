@@ -56,10 +56,12 @@ const ALL_UNACCEPTABLE_TYPES = [
 // RATE GENERATION FROM PRICING ENGINE
 // ─────────────────────────────────────────────
 const generateRates = (baseRate, maxLTV) => {
+  const base = parseFloat(baseRate) || 0;
+  const max = parseInt(maxLTV) || 75;
   return LTV_ADJUSTMENTS.map(ltv => {
     const mid = Math.round((ltv.min + ltv.max) / 2) || 30;
-    if (mid > maxLTV) return { band: ltv.band, rate: null };
-    const rate = Math.round((baseRate + ltv.adj) * 100) / 100;
+    if (mid > max) return { band: ltv.band, rate: null };
+    const rate = Math.round((base + ltv.adj) * 100) / 100;
     return { band: ltv.band, rate };
   });
 };
@@ -1014,7 +1016,7 @@ function RatesTab({ bucket }) {
               {products.map((p) => (
                 <th key={p.code} style={{ textAlign: "center", padding: "8px 6px", fontSize: 11, fontWeight: 700, color: T.navy, minWidth: 100 }}>
                   <div>{p.type}</div>
-                  <div style={{ fontSize: 9, fontWeight: 500, color: T.textMuted, marginTop: 2 }}>Base: {p.baseRate.toFixed(2)}%</div>
+                  <div style={{ fontSize: 9, fontWeight: 500, color: T.textMuted, marginTop: 2 }}>Base: {(p.baseRate || 0).toFixed(2)}%</div>
                 </th>
               ))}
             </tr>
@@ -1034,7 +1036,7 @@ function RatesTab({ bucket }) {
                       {rate !== null && rate !== undefined ? (
                         <div>
                           <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(rate) }}>
-                            {rate.toFixed(2)}%
+                            {(rate || 0).toFixed(2)}%
                           </span>
                           <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1, letterSpacing: 0.2 }}>
                             ({code})
