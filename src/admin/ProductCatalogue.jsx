@@ -298,6 +298,7 @@ function ProductWizard({ onClose, onPublish }) {
   const [common, setCommon] = useState({ status: "Draft", channel: "Direct + Broker", eligibility: "All", code: "" });
   const [compliance, setCompliance] = useState({ fairValueRating: "Good", consumerDutyOutcome: "Price & Value", kfiTemplate: "Standard" });
   const [tiers, setTiers] = useState([]);
+  const [wizardDimensionsInfo, setWizardDimensionsInfo] = useState(false);
 
   // Dimension configuration for lending products
   const [acceptedCredits, setAcceptedCredits] = useState(
@@ -445,6 +446,7 @@ function ProductWizard({ onClose, onPublish }) {
                   {renderField(f, common[f.name], (k, v) => setCommon(prev => ({ ...prev, [k]: v })))}
                 </Field>
               ))}
+              <div style={{ gridColumn: "1 / -1", height: 20 }} />
             </div>
           )}
 
@@ -473,7 +475,7 @@ function ProductWizard({ onClose, onPublish }) {
                       <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Pricing</div>
                       <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>Set the base rate — the pricing engine generates all tier combinations automatically</div>
                     </div>
-                    <div onClick={() => setShowDimensionsInfo(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: T.primary, cursor: "pointer", padding: "4px 10px", borderRadius: 6, background: T.primaryLight }}>
+                    <div onClick={() => setWizardDimensionsInfo(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: T.primary, cursor: "pointer", padding: "4px 10px", borderRadius: 6, background: T.primaryLight }}>
                       {Ico.eye(12)} View Dimensions
                     </div>
                   </div>
@@ -673,6 +675,45 @@ function ProductWizard({ onClose, onPublish }) {
           </div>
         </div>
       </div>
+
+      {/* Wizard-level Dimensions Info Modal */}
+      {wizardDimensionsInfo && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setWizardDimensionsInfo(false)}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
+          <div onClick={e => e.stopPropagation()} style={{ position: "relative", background: T.card, borderRadius: 16, padding: "24px 28px", width: 640, maxWidth: "90vw", maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Pricing Dimensions</div>
+              <div onClick={() => setWizardDimensionsInfo(false)} style={{ width: 28, height: 28, borderRadius: 6, background: T.bg, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textMuted }}>{Ico.x(14)}</div>
+            </div>
+            <div style={{ padding: "12px 16px", background: T.primaryLight, borderRadius: 8, marginBottom: 16, borderLeft: `4px solid ${T.primary}`, fontSize: 12, color: T.text, lineHeight: 1.6 }}>
+              <strong>Final Rate</strong> = Base Rate + LTV Adjustment + Credit Adjustment + Employment + Property + EPC + Loyalty
+            </div>
+            {[
+              { title: "LTV Bands", items: LTV_ADJUSTMENTS.map(l => [l.band, `+${l.adj.toFixed(2)}%`]) },
+              { title: "Credit Profiles", items: PRICING_CREDIT_PROFILES.map(c => [c.label, `+${c.adj.toFixed(2)}%`, c.maxLTV ? `Max ${c.maxLTV}%` : ""]) },
+              { title: "Employment", items: Object.entries(EMPLOYMENT_ADJUSTMENTS).map(([k, v]) => [k, v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+              { title: "Property Type", items: Object.entries(PROPERTY_ADJUSTMENTS).map(([k, v]) => [k, v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+              { title: "EPC Rating", items: Object.entries(EPC_ADJUSTMENTS).map(([k, v]) => [`EPC ${k}`, v < 0 ? `${v.toFixed(2)}%` : v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+              { title: "Loyalty", items: Object.entries(LOYALTY_ADJUSTMENTS).map(([k, v]) => [k, v < 0 ? `${v.toFixed(2)}%` : v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+            ].map(dim => (
+              <div key={dim.title} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>{dim.title}</div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <tbody>
+                    {dim.items.map((row, i) => (
+                      <tr key={i} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
+                        <td style={{ padding: "5px 10px" }}>{row[0]}</td>
+                        <td style={{ padding: "5px 10px", fontWeight: 700, textAlign: "right", color: row[1].includes("-") ? T.success : row[1].includes("+") ? T.warning : T.textMuted }}>{row[1]}</td>
+                        {row[2] && <td style={{ padding: "5px 10px", fontSize: 10, color: T.textMuted }}>{row[2]}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
