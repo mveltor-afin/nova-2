@@ -312,6 +312,11 @@ function ProductWizard({ onClose, onPublish }) {
   const toggleEmployment = (id) => setAcceptedEmployments(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const toggleProperty = (id) => setAcceptedProperties(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
+  // Per-product overrides — override platform defaults with custom values
+  const [overrides, setOverrides] = useState({}); // { "Self-Employed": { adj: 0.10, comment: "Designed for contractors" } }
+  const setOverride = (key, adj, comment) => setOverrides(prev => ({ ...prev, [key]: { adj: parseFloat(adj) || 0, comment } }));
+  const removeOverride = (key) => setOverrides(prev => { const next = { ...prev }; delete next[key]; return next; });
+
   const isLendingCategory = category === "Lending";
   const addTier = () => {
     if (isLendingCategory) {
@@ -542,6 +547,47 @@ function ProductWizard({ onClose, onPublish }) {
                     </div>
                   </div>
 
+                  {/* Per-product dimension overrides */}
+                  <div style={{ marginTop: 16, padding: "14px 16px", background: T.warningBg, borderRadius: 10, border: `1px solid ${T.warningBorder}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                      {Ico.settings(14)}
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#92400E" }}>Dimension Overrides</span>
+                      <span style={{ fontSize: 10, color: T.textMuted, marginLeft: 4 }}>Override platform defaults for this product only</span>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 1fr 28px", gap: 6, alignItems: "center", marginBottom: 6, fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>
+                      <span>Dimension</span><span>Override %</span><span>Comment / Reason</span><span />
+                    </div>
+                    {[
+                      ...acceptedEmployments.map(e => ({ key: e, group: "Employment", default: EMPLOYMENT_ADJUSTMENTS[e] || 0 })),
+                      ...acceptedProperties.map(p => ({ key: p, group: "Property", default: PROPERTY_ADJUSTMENTS[p] || 0 })),
+                      ...["A","B","C","D","E","F","G"].map(r => ({ key: `EPC ${r}`, group: "EPC", default: EPC_ADJUSTMENTS[r] || 0 })),
+                    ].filter(d => d.default !== 0 || overrides[d.key]).map(d => {
+                      const ov = overrides[d.key];
+                      return (
+                        <div key={d.key} style={{ display: "grid", gridTemplateColumns: "1fr 80px 1fr 28px", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                          <div style={{ fontSize: 11 }}>
+                            <span style={{ fontWeight: 600, color: T.text }}>{d.key}</span>
+                            <span style={{ color: T.textMuted, marginLeft: 6 }}>default: {d.default > 0 ? "+" : ""}{d.default.toFixed(2)}%</span>
+                          </div>
+                          <input type="number" step="0.05" value={ov?.adj ?? ""} placeholder={d.default.toFixed(2)}
+                            onChange={e => setOverride(d.key, e.target.value, ov?.comment || "")}
+                            style={{ width: "100%", padding: "5px 6px", borderRadius: 4, border: `1px solid ${T.border}`, fontSize: 11, fontFamily: T.font, background: T.card, textAlign: "center" }} />
+                          <input type="text" value={ov?.comment || ""} placeholder="Reason for override"
+                            onChange={e => setOverride(d.key, ov?.adj ?? d.default, e.target.value)}
+                            style={{ width: "100%", padding: "5px 6px", borderRadius: 4, border: `1px solid ${T.border}`, fontSize: 11, fontFamily: T.font, background: T.card }} />
+                          {ov ? (
+                            <button onClick={() => removeOverride(d.key)} style={{ width: 24, height: 24, borderRadius: 4, border: `1px solid ${T.border}`, background: T.card, color: T.textMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                          ) : <span />}
+                        </div>
+                      );
+                    })}
+                    {Object.keys(overrides).length > 0 && (
+                      <div style={{ fontSize: 10, color: "#92400E", marginTop: 8, fontWeight: 600 }}>
+                        {Object.keys(overrides).length} override{Object.keys(overrides).length > 1 ? "s" : ""} will apply to this product only. Platform defaults unchanged.
+                      </div>
+                    )}
+                  </div>
+
                   {/* Live preview grid */}
                   {params.baseRate && (
                     <div style={{ padding: "14px 16px", background: T.bg, borderRadius: 10, border: `1px solid ${T.borderLight}` }}>
@@ -668,6 +714,7 @@ function ProductWizard({ onClose, onPublish }) {
                 creditAccepted: category === "Lending" ? acceptedCredits : null,
                 acceptedEmployments: category === "Lending" ? acceptedEmployments : null,
                 acceptedProperties: category === "Lending" ? acceptedProperties : null,
+                dimensionOverrides: category === "Lending" && Object.keys(overrides).length > 0 ? overrides : null,
                 tiers: category === "Savings" ? tiers : null,
                 keyTerms: category !== "Lending" ? `Min £1,000 — Max £500,000` : null,
               })}>Publish Product</Btn>
@@ -856,18 +903,13 @@ function ProductCatalogue() {
                             <div style={{ fontSize: 14, color: T.text }}>{p.type === "Lending" ? "£999 arrangement, £250 valuation" : "No fees"}</div>
                           </div>
                         </div>
-                        {/* Live Pricing Grid — generated from pricing engine */}
+                        {/* Live Pricing Grid + All Dimensions inline */}
                         {p.type === "Lending" && (
                           <div style={{ marginBottom: 20 }}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                {Ico.chart(16)}
-                                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Live Pricing Grid</span>
-                                <span style={{ fontSize: 11, color: T.textMuted }}>· from pricing engine</span>
-                              </div>
-                              <div onClick={() => setShowDimensionsInfo(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: T.primary, cursor: "pointer", padding: "4px 10px", borderRadius: 6, background: T.primaryLight }}>
-                                {Ico.eye(12)} Pricing Dimensions
-                              </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+                              {Ico.chart(16)}
+                              <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Pricing (Credit × LTV)</span>
+                              <span style={{ fontSize: 11, color: T.textMuted }}>· live from pricing engine</span>
                             </div>
                             <div style={{ overflowX: "auto" }}>
                               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
@@ -904,6 +946,46 @@ function ProductCatalogue() {
                                   ))}
                                 </tbody>
                               </table>
+                            </div>
+                            {/* Inline Dimension Breakdown — all visible, no extra click */}
+                            <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                              {[
+                                { title: "Employment Modifiers", icon: "products", items: Object.entries(EMPLOYMENT_ADJUSTMENTS).map(([k,v]) => [k, v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+                                { title: "Property Modifiers", icon: "shield", items: Object.entries(PROPERTY_ADJUSTMENTS).map(([k,v]) => [k, v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+                                { title: "EPC Incentive", icon: "sparkle", items: Object.entries(EPC_ADJUSTMENTS).map(([k,v]) => [`EPC ${k}`, v < 0 ? `${v.toFixed(2)}%` : v === 0 ? "Base" : `+${v.toFixed(2)}%`]) },
+                              ].map(dim => (
+                                <div key={dim.title} style={{ padding: "10px 12px", background: T.card, borderRadius: 8, border: `1px solid ${T.borderLight}` }}>
+                                  <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}>
+                                    {Ico[dim.icon]?.(10)} {dim.title}
+                                  </div>
+                                  {dim.items.map((row, i) => (
+                                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", fontSize: 11, borderBottom: i < dim.items.length - 1 ? `1px solid ${T.borderLight}` : "none" }}>
+                                      <span style={{ color: T.text }}>{row[0]}</span>
+                                      <span style={{ fontWeight: 700, color: row[1].includes("-") ? T.success : row[1].includes("+") ? T.warning : T.textMuted }}>{row[1]}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+                              <div style={{ padding: "10px 12px", background: T.card, borderRadius: 8, border: `1px solid ${T.borderLight}` }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>{Ico.customers(10)} Customer Loyalty</div>
+                                {Object.entries(LOYALTY_ADJUSTMENTS).map(([k,v], i, arr) => (
+                                  <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", fontSize: 11, borderBottom: i < arr.length - 1 ? `1px solid ${T.borderLight}` : "none" }}>
+                                    <span style={{ color: T.text }}>{k}</span>
+                                    <span style={{ fontWeight: 700, color: v < 0 ? T.success : T.textMuted }}>{v < 0 ? `${v.toFixed(2)}%` : v === 0 ? "Base" : `+${v.toFixed(2)}%`}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div style={{ padding: "10px 12px", background: T.primaryLight, borderRadius: 8, borderLeft: `3px solid ${T.primary}` }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: T.primary, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>How the rate is calculated</div>
+                                <div style={{ fontSize: 11, color: T.text, lineHeight: 1.6 }}>
+                                  Final Rate = Base Rate + LTV Adjustment + Credit Adjustment + Employment + Property + EPC + Loyalty
+                                </div>
+                                <div style={{ fontSize: 10, color: T.textMuted, marginTop: 4 }}>
+                                  Example: 4.19% + 0.30% (60-75% LTV) + 0.50% (Light Adverse) + 0.20% (Self-Employed) = <strong>5.19%</strong>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
