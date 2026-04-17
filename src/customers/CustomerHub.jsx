@@ -125,7 +125,33 @@ function buildComms(customer) {
 }
 
 const CHANNEL_COLORS = { Email: "#3B82F6", SMS: "#31B897", Call: "#8B5CF6", Push: "#F59E0B", System: "#6B7280" };
-const TABS = ["Overview", "Products", "Connections", "Timeline", "Documents", "Communications", "Complaints", "Integrations", "Risk"];
+const TABS = ["Overview", "Products", "Connections", "Timeline", "Documents", "Communications", "Customer Service", "Complaints", "Integrations", "Risk"];
+
+/* ─── Mock service interactions per customer ─── */
+const SERVICE_HISTORY = {
+  "CUS-001": [
+    { id: "SVC-001", date: "10 Apr 2026", time: "14:22", type: "Inbound Call", duration: "8 min", agent: "Tom Walker", sentiment: "Positive",
+      subject: "Rate switch enquiry", notes: "Customer called to ask about options when her fixed rate expires in Aug. Explained 2yr and 5yr fix options. Customer will discuss with partner and call back.", outcome: "Follow-up Required", followUp: "Call back in 1 week" },
+    { id: "SVC-002", date: "15 Mar 2026", time: "10:05", agent: "Tom Walker", type: "Outbound Call", duration: "5 min", sentiment: "Positive",
+      subject: "Annual review check-in", notes: "Proactive annual review call. Customer happy with mortgage, considering opening a savings account. Sent savings product brochure via email.", outcome: "Resolved", followUp: null },
+    { id: "SVC-003", date: "20 Jan 2026", time: "16:40", agent: "Lucy Fernandez", type: "Email", duration: "—", sentiment: "Neutral",
+      subject: "Statement request", notes: "Customer requested a formal mortgage statement for tax purposes. Generated and emailed within 2 hours.", outcome: "Resolved", followUp: null },
+  ],
+  "CUS-003": [
+    { id: "SVC-004", date: "12 Apr 2026", time: "09:15", agent: "Lucy Fernandez", type: "Inbound Call", duration: "22 min", sentiment: "Distressed",
+      subject: "Arrears discussion — vulnerability", notes: "Customer called very upset about arrears letters. Explained vulnerability protocol is active. Customer is on long-term sick from work. Discussed repayment options. Customer agreed to £50/week arrangement. Referred to Citizens Advice for additional support.", outcome: "Arrangement Made", followUp: "Review arrangement in 4 weeks" },
+    { id: "SVC-005", date: "28 Mar 2026", time: "11:30", agent: "Tom Walker", type: "Outbound Call", duration: "0 min", sentiment: "N/A",
+      subject: "Welfare check", notes: "Attempted welfare check — no answer. Left voicemail asking customer to call back at their convenience. No pressure.", outcome: "No Contact", followUp: "Try again in 3 days" },
+    { id: "SVC-006", date: "15 Mar 2026", time: "14:00", agent: "Emma Chen", type: "Internal Note", duration: "—", sentiment: "N/A",
+      subject: "Vulnerability flag review", notes: "Reviewed vulnerability case. Customer's employer confirmed long-term sick leave. Income protection claim in progress. Recommend maintaining vulnerability protocol and suppressing automated letters.", outcome: "Action Taken", followUp: "Review monthly" },
+  ],
+  "CUS-006": [
+    { id: "SVC-007", date: "5 Apr 2026", time: "15:45", agent: "Tom Walker", type: "Outbound Call", duration: "0 min", sentiment: "N/A",
+      subject: "Collections contact attempt", notes: "No answer. No voicemail set up. This is the 4th failed contact attempt in 60 days.", outcome: "No Contact", followUp: "Escalate to collections manager" },
+    { id: "SVC-008", date: "10 Feb 2026", time: "10:20", agent: "Lucy Fernandez", type: "Inbound Call", duration: "12 min", sentiment: "Frustrated",
+      subject: "Account access complaint", notes: "Customer frustrated about being locked out of online portal after 2 failed login attempts. Reset password and unlocked account. Customer asked why threshold is so low. Logged as complaint CMP-002.", outcome: "Complaint Raised", followUp: null },
+  ],
+};
 
 // Complaints imported from data/index.js (single source of truth)
 
@@ -185,6 +211,24 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
     setLogForm({ type: "Call", subject: "", body: "", outcome: "Resolved" });
     setShowLogForm(false);
   };
+
+  // Customer Service state
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [serviceForm, setServiceForm] = useState({ type: "Inbound Call", subject: "", notes: "", sentiment: "Neutral", outcome: "Resolved", followUp: "" });
+  const [serviceInteractions, setServiceInteractions] = useState(() => {
+    try { const s = localStorage.getItem(`cust-service-${customerId}`); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const saveServiceInteraction = () => {
+    if (!serviceForm.subject.trim()) return;
+    const entry = { ...serviceForm, id: `SVC-${Date.now()}`, date: "17 Apr 2026", time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }), agent: "You", duration: "—" };
+    const updated = [entry, ...serviceInteractions];
+    setServiceInteractions(updated);
+    try { localStorage.setItem(`cust-service-${customerId}`, JSON.stringify(updated)); } catch {}
+    setServiceForm({ type: "Inbound Call", subject: "", notes: "", sentiment: "Neutral", outcome: "Resolved", followUp: "" });
+    setShowServiceForm(false);
+  };
+  const mockServiceHistory = SERVICE_HISTORY[customerId] || [];
+  const allServiceInteractions = [...serviceInteractions, ...mockServiceHistory];
 
   // Complaints state
   const [showComplaintForm, setShowComplaintForm] = useState(false);
@@ -349,7 +393,7 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
         {/* Action buttons */}
         <div style={{ padding: "0 32px 24px", display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Btn primary small icon="send">Send Message</Btn>
-          <Btn small icon="messages" onClick={() => { setActiveTab("Communications"); setShowLogForm(true); }}>Log Call</Btn>
+          <Btn small icon="messages" onClick={() => { setActiveTab("Customer Service"); setShowServiceForm(true); }}>Log Call</Btn>
           {activeProducts.some(p => p.type === "Mortgage") && <Btn small icon="wallet" onClick={() => onOpenServicing?.(activeProducts.find(p => p.type === "Mortgage")?.origRef)}>Servicing</Btn>}
           <Btn small danger={customer.vuln} icon="alert">Flag Vulnerability</Btn>
         </div>
@@ -1087,6 +1131,119 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
                 </Card>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ═══════ TAB: CUSTOMER SERVICE ═══════ */}
+        {activeTab === "Customer Service" && (
+          <div>
+            {/* Header + Log button */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Customer Service</div>
+                <div style={{ fontSize: 12, color: T.textMuted }}>{allServiceInteractions.length} interactions · {allServiceInteractions.filter(s => s.followUp).length} follow-ups pending</div>
+              </div>
+              <Btn primary small icon="plus" onClick={() => setShowServiceForm(!showServiceForm)}>Log Interaction</Btn>
+            </div>
+
+            {/* Log Interaction Form */}
+            {showServiceForm && (
+              <Card style={{ marginBottom: 16, border: `2px solid ${T.primary}30`, padding: "16px 20px" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Record Customer Interaction</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Type</div>
+                    <select value={serviceForm.type} onChange={e => setServiceForm(f => ({ ...f, type: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Inbound Call", "Outbound Call", "Email", "Live Chat", "Internal Note", "Branch Visit"].map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Customer Sentiment</div>
+                    <select value={serviceForm.sentiment} onChange={e => setServiceForm(f => ({ ...f, sentiment: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Positive", "Neutral", "Frustrated", "Distressed", "Angry", "N/A"].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Outcome</div>
+                    <select value={serviceForm.outcome} onChange={e => setServiceForm(f => ({ ...f, outcome: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, background: T.card }}>
+                      {["Resolved", "Follow-up Required", "Arrangement Made", "Complaint Raised", "Escalated", "No Contact", "Action Taken"].map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Subject</div>
+                  <input value={serviceForm.subject} onChange={e => setServiceForm(f => ({ ...f, subject: e.target.value }))} placeholder="e.g. Rate switch enquiry, payment arrangement, welfare check"
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, boxSizing: "border-box" }} />
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Notes</div>
+                  <textarea value={serviceForm.notes} onChange={e => setServiceForm(f => ({ ...f, notes: e.target.value }))}
+                    placeholder="Record the full interaction — what the customer said, what you advised, any actions taken..." rows={4}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, resize: "vertical", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Follow-up Action (if required)</div>
+                  <input value={serviceForm.followUp} onChange={e => setServiceForm(f => ({ ...f, followUp: e.target.value }))} placeholder="e.g. Call back in 1 week, review arrangement in 4 weeks"
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn primary small icon="check" onClick={saveServiceInteraction}>Save Interaction</Btn>
+                  <Btn small ghost onClick={() => setShowServiceForm(false)}>Cancel</Btn>
+                </div>
+              </Card>
+            )}
+
+            {/* Service History */}
+            {allServiceInteractions.length === 0 && !showServiceForm && (
+              <Card style={{ padding: "40px 20px", textAlign: "center" }}>
+                <div style={{ color: T.textMuted, marginBottom: 8 }}>{Ico.messages(28)}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>No Interactions Recorded</div>
+                <div style={{ fontSize: 12, color: T.textMuted, marginTop: 4 }}>Use "Log Interaction" to record a call, email or note.</div>
+              </Card>
+            )}
+
+            {allServiceInteractions.map(s => {
+              const sentimentColors = { Positive: T.success, Neutral: T.textMuted, Frustrated: T.warning, Distressed: T.danger, Angry: T.danger, "N/A": T.textMuted };
+              const outcomeColors = { Resolved: T.success, "Follow-up Required": T.warning, "Arrangement Made": "#3B82F6", "Complaint Raised": T.danger, Escalated: T.danger, "No Contact": T.textMuted, "Action Taken": T.success };
+              const typeIcons = { "Inbound Call": "📞", "Outbound Call": "📱", "Email": "✉️", "Live Chat": "💬", "Internal Note": "📝", "Branch Visit": "🏦" };
+              return (
+                <Card key={s.id} style={{ marginBottom: 10, padding: 0, overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "stretch" }}>
+                    <div style={{ width: 4, background: sentimentColors[s.sentiment] || T.textMuted, flexShrink: 0 }} />
+                    <div style={{ padding: "14px 18px", flex: 1 }}>
+                      {/* Header row */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 16 }}>{typeIcons[s.type] || "📋"}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{s.subject}</span>
+                        {badge(s.type, T.primaryLight, T.primary)}
+                        {badge(s.sentiment, `${sentimentColors[s.sentiment]}18`, sentimentColors[s.sentiment])}
+                        {badge(s.outcome, `${outcomeColors[s.outcome]}18`, outcomeColors[s.outcome])}
+                      </div>
+                      {/* Notes */}
+                      <div style={{ fontSize: 13, color: T.text, lineHeight: 1.6, marginBottom: 10, padding: "10px 14px", background: T.bg, borderRadius: 8 }}>
+                        {s.notes}
+                      </div>
+                      {/* Meta row */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 11, color: T.textMuted, flexWrap: "wrap" }}>
+                        <span>{s.date} at {s.time}</span>
+                        <span>Agent: <strong style={{ color: T.text }}>{s.agent}</strong></span>
+                        {s.duration !== "—" && <span>Duration: {s.duration}</span>}
+                      </div>
+                      {/* Follow-up */}
+                      {s.followUp && (
+                        <div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 6, background: T.warningBg, border: `1px solid ${T.warningBorder}`, display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ color: T.warning }}>{Ico.clock(14)}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#92400E" }}>Follow-up: {s.followUp}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
 
