@@ -453,78 +453,120 @@ function ProductWizard({ onClose }) {
                 <div style={{ padding: 24, textAlign: "center", color: T.textMuted, fontSize: 13 }}>No parameters defined for this product type.</div>
               )}
 
-              {/* Pricing Tiers Editor */}
-              {(category === "Lending" || category === "Savings") && (
+              {/* Pricing — Lending: set base rate + max LTV, engine generates all tiers */}
+              {isLendingCategory && (
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.border}` }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Pricing</div>
+                      <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>Set the base rate — the pricing engine generates all tier combinations automatically</div>
+                    </div>
+                    <div onClick={() => setShowDimensionsInfo(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: T.primary, cursor: "pointer", padding: "4px 10px", borderRadius: 6, background: T.primaryLight }}>
+                      {Ico.eye(12)} View Dimensions
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+                    <Field label="Base Rate (at ≤60% LTV, Clean credit)">
+                      <div style={{ position: "relative" }}>
+                        <input type="number" step="0.01" value={params.baseRate || ""} placeholder="4.19"
+                          onChange={e => setParam("baseRate", e.target.value)}
+                          style={{ width: "100%", padding: "9px 12px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 14, fontFamily: T.font, background: T.card, color: T.text, outline: "none", fontWeight: 700 }} />
+                        <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: T.textMuted }}>%</span>
+                      </div>
+                    </Field>
+                    <Field label="Max LTV">
+                      <select value={params.maxLTV || "75"} onChange={e => setParam("maxLTV", e.target.value)}
+                        style={{ width: "100%", padding: "9px 12px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.card, color: T.text }}>
+                        {[60, 65, 70, 75, 80, 85, 90, 95].map(v => <option key={v} value={v}>{v}%</option>)}
+                      </select>
+                    </Field>
+                  </div>
+
+                  {/* Live preview grid */}
+                  {params.baseRate && (
+                    <div style={{ padding: "14px 16px", background: T.bg, borderRadius: 10, border: `1px solid ${T.borderLight}` }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 10 }}>Live Rate Preview (Credit × LTV)</div>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                          <thead>
+                            <tr>
+                              <th style={{ padding: "6px 8px", textAlign: "left", fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Credit \ LTV</th>
+                              {LTV_ADJUSTMENTS.filter(l => {
+                                const maxLtv = parseInt(params.maxLTV) || 75;
+                                return l.max <= maxLtv || l.min < maxLtv;
+                              }).map(l => (
+                                <th key={l.band} style={{ padding: "6px 8px", textAlign: "center", fontSize: 9, fontWeight: 700, color: T.textMuted }}>{l.band}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {PRICING_CREDIT_PROFILES.slice(0, 5).map((credit, ci) => (
+                              <tr key={credit.id}>
+                                <td style={{ padding: "5px 8px", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" }}>{credit.label}</td>
+                                {LTV_ADJUSTMENTS.filter(l => {
+                                  const maxLtv = parseInt(params.maxLTV) || 75;
+                                  return l.max <= maxLtv || l.min < maxLtv;
+                                }).map(ltv => {
+                                  const base = parseFloat(params.baseRate) || 0;
+                                  const mid = Math.round((ltv.min + ltv.max) / 2) || 30;
+                                  const maxLtv = parseInt(params.maxLTV) || 75;
+                                  if (mid > maxLtv || (credit.maxLTV && mid > credit.maxLTV)) {
+                                    return <td key={ltv.band} style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ color: T.textMuted }}>—</span></td>;
+                                  }
+                                  const rate = Math.round((base + ltv.adj + credit.adj) * 100) / 100;
+                                  const color = rate < 4.5 ? T.success : rate <= 5.5 ? "#92400E" : T.danger;
+                                  const bg = rate < 4.5 ? T.successBg : rate <= 5.5 ? T.warningBg : T.dangerBg;
+                                  return (
+                                    <td key={ltv.band} style={{ padding: "4px 6px", textAlign: "center" }}>
+                                      <span style={{ display: "inline-block", padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700, background: bg, color }}>{rate.toFixed(2)}%</span>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div style={{ fontSize: 10, color: T.textMuted, marginTop: 8 }}>
+                        Showing first 5 credit profiles. Employment, property, EPC and loyalty modifiers applied on top at application time.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Pricing — Savings: balance band tiers (manual) */}
+              {category === "Savings" && (
                 <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.border}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Pricing Tiers</div>
-                      <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
-                        {isLendingCategory ? "Define rate tiers by LTV band" : "Define rate tiers by balance band"}
-                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Balance Tiers</div>
+                      <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>Define rate by deposit balance band</div>
                     </div>
                     <Btn small iconNode={Ico.plus(14)} onClick={addTier}>Add Tier</Btn>
                   </div>
-
                   {tiers.length === 0 && (
                     <div style={{ padding: "16px 0", textAlign: "center", color: T.textMuted, fontSize: 12, background: T.bg, borderRadius: 8, border: `1px dashed ${T.border}` }}>
-                      No tiers added yet. Click "Add Tier" to define pricing bands.
+                      No tiers added. Click "Add Tier" to define balance bands.
                     </div>
                   )}
-
-                  {tiers.length > 0 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {/* Header row */}
-                      <div style={{ display: "grid", gridTemplateColumns: isLendingCategory ? "1fr 90px 90px 120px 32px" : "1fr 90px 120px 32px", gap: 8, paddingBottom: 4 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>
-                          {isLendingCategory ? "LTV Band" : "Balance Band"}
-                        </div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>Rate %</div>
-                        {isLendingCategory && (
-                          <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>Margin %</div>
-                        )}
-                        <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>Status</div>
-                        <div />
-                      </div>
-
-                      {/* Tier rows */}
-                      {tiers.map((tier, idx) => (
-                        <div key={idx} style={{ display: "grid", gridTemplateColumns: isLendingCategory ? "1fr 90px 90px 120px 32px" : "1fr 90px 120px 32px", gap: 8, alignItems: "center" }}>
-                          <input
-                            type="text" value={tier.ltvBand || tier.balanceBand || ""}
-                            placeholder={isLendingCategory ? "e.g. ≤60%" : "e.g. £1k - £9,999"}
-                            onChange={e => updateTier(idx, isLendingCategory ? "ltvBand" : "balanceBand", e.target.value)}
-                            style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
-                          />
-                          <input
-                            type="number" value={tier.rate} placeholder="4.49"
-                            onChange={e => updateTier(idx, "rate", e.target.value)}
-                            style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
-                          />
-                          {isLendingCategory && (
-                            <input
-                              type="number" value={tier.margin || ""} placeholder="1.54"
-                              onChange={e => updateTier(idx, "margin", e.target.value)}
-                              style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
-                            />
-                          )}
-                          <select
-                            value={tier.status} onChange={e => updateTier(idx, "status", e.target.value)}
-                            style={{ width: "100%", padding: "7px 8px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 11, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
-                          >
-                            <option value="Active">Active</option>
-                            <option value="FTB Only">FTB Only</option>
-                            <option value="Paused">Paused</option>
-                          </select>
-                          <button onClick={() => removeTier(idx)} style={{
-                            width: 28, height: 28, borderRadius: 6, border: `1px solid ${T.border}`, background: T.card,
-                            color: T.textMuted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 16, fontWeight: 600, lineHeight: 1,
-                          }} title="Remove tier">&times;</button>
-                        </div>
-                      ))}
+                  {tiers.map((tier, idx) => (
+                    <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 90px 120px 32px", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                      <input type="text" value={tier.balanceBand || ""} placeholder="e.g. £1k - £9,999"
+                        onChange={e => updateTier(idx, "balanceBand", e.target.value)}
+                        style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }} />
+                      <input type="number" value={tier.rate} placeholder="4.50"
+                        onChange={e => updateTier(idx, "rate", e.target.value)}
+                        style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }} />
+                      <select value={tier.status} onChange={e => updateTier(idx, "status", e.target.value)}
+                        style={{ width: "100%", padding: "7px 8px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 11, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}>
+                        <option value="Active">Active</option>
+                        <option value="Paused">Paused</option>
+                      </select>
+                      <button onClick={() => removeTier(idx)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${T.border}`, background: T.card, color: T.textMuted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>&times;</button>
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
