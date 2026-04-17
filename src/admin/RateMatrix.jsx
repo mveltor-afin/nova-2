@@ -127,7 +127,7 @@ export default function RateMatrix() {
                           <span style={{
                             display: "inline-block", padding: "4px 10px", borderRadius: 6,
                             fontSize: 13, fontWeight: 600, ...rateColor(r),
-                          }}>{r.toFixed(2)}%</span>
+                          }}>{r != null ? r.toFixed(2) + "%" : "—"}</span>
                         ) : (
                           <span style={{ color: T.textMuted }}>—</span>
                         )}
@@ -173,7 +173,7 @@ export default function RateMatrix() {
                         <span style={{
                           display: "inline-block", padding: "4px 10px", borderRadius: 6,
                           fontSize: 13, fontWeight: 600, ...savingsColor(r),
-                        }}>{r.toFixed(2)}%</span>
+                        }}>{r != null ? r.toFixed(2) + "%" : "—"}</span>
                       </td>
                     ))}
                     <td style={{ ...tdStyle, textAlign: "center", fontSize: 12 }}>{p.minDeposit}</td>

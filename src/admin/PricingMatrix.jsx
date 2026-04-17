@@ -60,7 +60,7 @@ const Chip = ({ label, active, onClick }) => (
 );
 
 export default function PricingMatrix() {
-  const [product, setProduct] = useState("Afin Fix 2yr");
+  const [product, setProduct] = useState(PRODUCTS[0]);
   const [purpose, setPurpose] = useState("Purchase");
   const [employment, setEmployment] = useState("All");
   const [hoveredCell, setHoveredCell] = useState(null);
@@ -92,7 +92,7 @@ export default function PricingMatrix() {
   ]);
 
   const totalModifier = useMemo(
-    () => PRODUCT_MODIFIERS[product] + PURPOSE_MODIFIERS[purpose] + EMPLOYMENT_MODIFIERS[employment] + appliedAdjust,
+    () => (PRODUCT_MODIFIERS[product] || 0) + (PURPOSE_MODIFIERS[purpose] || 0) + (EMPLOYMENT_MODIFIERS[employment] || 0) + appliedAdjust,
     [product, purpose, employment, appliedAdjust]
   );
 
@@ -259,7 +259,7 @@ export default function PricingMatrix() {
                               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                             }}
                           >
-                            {band} x {profile.split(" (")[0]} = {rate.toFixed(2)}%
+                            {band} x {profile.split(" (")[0]} = {rate != null ? rate.toFixed(2) : "N/A"}%
                           </div>
                         )}
                       </td>
@@ -308,7 +308,7 @@ export default function PricingMatrix() {
               color: "#92400E",
             }}
           >
-            {m.value > 0 ? "+" : ""}{m.value.toFixed(2)}% {m.label} modifier applied
+            {m.value > 0 ? "+" : ""}{(m.value || 0).toFixed(2)}% {m.label} modifier applied
           </span>
         ))}
       </div>
