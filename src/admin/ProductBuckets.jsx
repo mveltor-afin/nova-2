@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card } from "../shared/primitives";
-import { LTV_ADJUSTMENTS, CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, PROPERTY_ADJUSTMENTS, EPC_ADJUSTMENTS, LOYALTY_ADJUSTMENTS } from "../data/pricing";
+import { CREDIT_PROFILES, PROPERTY_ADJUSTMENTS } from "../data/pricing";
 
 // ─────────────────────────────────────────────
 // PERSISTENCE
@@ -76,6 +76,22 @@ const DEFAULT_BUCKETS = [
     acceptedProperties: ["Standard", "New Build", "Ex-Local Authority"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: {},
+    tiers: [
+      { name: "Standard", conditions: { credit: ["clean"], employment: ["Employed"], property: ["Standard"] },
+        adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
+      { name: "Self-Employed", conditions: { credit: ["clean"], employment: ["Self-Employed", "Contractor"] },
+        adjustmentType: "grid", flatAdj: 0.15, gridAdj: {
+          "2-Year Fixed": { "\u226460%": 0.15, "60-75%": 0.20 },
+          "5-Year Fixed": { "\u226460%": 0.15, "60-75%": 0.20 },
+          "2-Year Tracker": { "\u226460%": 0.15, "60-75%": 0.20 },
+        }},
+      { name: "Near Prime", conditions: { credit: ["near_prime"] },
+        adjustmentType: "flat", flatAdj: 0.25, gridAdj: {} },
+      { name: "Non-Standard Property", conditions: { property: ["Non-Standard", "Ex-Local Authority"] },
+        adjustmentType: "flat", flatAdj: 0.25, gridAdj: {} },
+      { name: "Green Discount", conditions: { epc: ["A", "B"] },
+        adjustmentType: "flat", flatAdj: -0.15, gridAdj: {} },
+    ],
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a31,000,000" },
       maxApplicants: 2,
@@ -123,6 +139,16 @@ const DEFAULT_BUCKETS = [
     acceptedProperties: ["Standard", "New Build", "Ex-Local Authority"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: {},
+    tiers: [
+      { name: "Standard", conditions: { credit: ["clean"], employment: ["Employed"] },
+        adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
+      { name: "Self-Employed", conditions: { employment: ["Self-Employed", "Contractor"] },
+        adjustmentType: "flat", flatAdj: 0.20, gridAdj: {} },
+      { name: "Near Prime", conditions: { credit: ["near_prime"] },
+        adjustmentType: "flat", flatAdj: 0.25, gridAdj: {} },
+      { name: "FTB 90%+", conditions: { credit: ["clean"] },
+        adjustmentType: "flat", flatAdj: 0.40, gridAdj: {} },
+    ],
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a3500,000" },
       maxApplicants: 2,
@@ -171,6 +197,16 @@ const DEFAULT_BUCKETS = [
     acceptedProperties: ["Standard", "New Build"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: { employment: { "Self-Employed": 0.10 } },
+    tiers: [
+      { name: "Standard", conditions: { credit: ["clean"], employment: ["Employed"] },
+        adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
+      { name: "Self-Employed", conditions: { employment: ["Self-Employed", "Contractor"] },
+        adjustmentType: "flat", flatAdj: 0.10, gridAdj: {} },
+      { name: "Near Prime", conditions: { credit: ["near_prime"] },
+        adjustmentType: "flat", flatAdj: 0.20, gridAdj: {} },
+      { name: "Light Adverse", conditions: { credit: ["light_adverse"] },
+        adjustmentType: "flat", flatAdj: 0.45, gridAdj: {} },
+    ],
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
       maxApplicants: 2,
@@ -218,6 +254,12 @@ const DEFAULT_BUCKETS = [
     acceptedProperties: ["Standard", "New Build"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: { ltv: [{ band: "\u226460%", adj: -0.10 }, { band: "60-75%", adj: 0.15 }] },
+    tiers: [
+      { name: "Standard", conditions: { credit: ["clean"], employment: ["Employed"] },
+        adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
+      { name: "Self-Employed", conditions: { employment: ["Self-Employed"] },
+        adjustmentType: "flat", flatAdj: 0.15, gridAdj: {} },
+    ],
     criteria: {
       loanSize: { min: "\u00a3150,000", max: "\u00a35,000,000" },
       maxApplicants: 2,
@@ -266,6 +308,18 @@ const DEFAULT_BUCKETS = [
     acceptedProperties: ["Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"],
     acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
     tierOverrides: { ltv: [{ band: "\u226460%", adj: 0.00 }, { band: "60-75%", adj: 0.50 }], employment: {} },
+    tiers: [
+      { name: "Standard", conditions: { credit: ["clean"], property: ["Standard"] },
+        adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
+      { name: "Portfolio Landlord", conditions: { employment: ["Employed", "Self-Employed"] },
+        adjustmentType: "flat", flatAdj: 0.10, gridAdj: {} },
+      { name: "Adverse Credit", conditions: { credit: ["adverse", "heavy_adverse"] },
+        adjustmentType: "flat", flatAdj: 0.50, gridAdj: {} },
+      { name: "Non-Standard", conditions: { property: ["Non-Standard", "Ex-Local Authority"] },
+        adjustmentType: "flat", flatAdj: 0.30, gridAdj: {} },
+      { name: "HMO", conditions: { property: ["High-Rise (>6 floors)"] },
+        adjustmentType: "flat", flatAdj: 0.35, gridAdj: {} },
+    ],
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
       maxApplicants: 4,
@@ -333,6 +387,7 @@ const emptyBucket = () => ({
   acceptedProperties: ["Standard", "New Build"],
   acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
   tierOverrides: {},
+  tiers: [],
   criteria: {
     loanSize: { min: "", max: "" },
     maxApplicants: 2,
@@ -1178,73 +1233,6 @@ function RatesTab({ bucket }) {
   const ltvBandMax = { "\u226460%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
   const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
 
-  const tierOverrides = bucket.tierOverrides || {};
-  const acceptedEmployments = bucket.acceptedEmployments || ["Employed", "Self-Employed", "Contractor"];
-  const acceptedProperties = bucket.acceptedProperties || ["Standard", "New Build"];
-  const acceptedEpc = bucket.acceptedEpc || ["A", "B", "C", "D", "E", "F", "G"];
-
-  const dimSectionSt = (color) => ({
-    padding: "7px 14px", fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-    letterSpacing: 1, color: "#fff", background: color || bucket.color,
-    borderBottom: `1px solid ${T.borderLight}`,
-  });
-  const dimRowSt = (i) => ({
-    display: "flex", borderBottom: `1px solid ${T.borderLight}`,
-    background: i % 2 === 0 ? "#FAFAF8" : "#FFFFFF",
-  });
-  const dimLabelSt = { width: "55%", padding: "8px 14px 8px 28px", fontSize: 12, color: T.text };
-  const dimValueSt = { width: "45%", padding: "8px 14px", fontSize: 12, fontWeight: 600, textAlign: "right" };
-
-  const fmtAdj = (v) => {
-    if (v === 0) return { text: "Base", color: T.textMuted };
-    const sign = v > 0 ? "+" : "";
-    return { text: `${sign}${v.toFixed(2)}%`, color: v > 0 ? "#B07A00" : "#059669" };
-  };
-
-  // Build dimension loading rows
-  const dimRows = [];
-  // Credit
-  const acceptedProfiles = (bucket.acceptedCreditProfiles || ["clean"])
-    .map(id => CREDIT_PROFILES.find(cp => cp.id === id)).filter(Boolean);
-  acceptedProfiles.forEach(cp => {
-    const ov = tierOverrides.credit && tierOverrides.credit[cp.id];
-    dimRows.push({ section: "CREDIT PROFILES", label: cp.label, adj: ov != null ? ov : cp.adj });
-  });
-  // Employment
-  acceptedEmployments.forEach(emp => {
-    const g = EMPLOYMENT_ADJUSTMENTS[emp] || 0;
-    const ov = tierOverrides?.employment?.[emp];
-    dimRows.push({ section: "EMPLOYMENT", label: emp, adj: ov != null ? ov : g });
-  });
-  // Property
-  acceptedProperties.forEach(prop => {
-    const g = PROPERTY_ADJUSTMENTS[prop] || 0;
-    const ov = tierOverrides?.property?.[prop];
-    dimRows.push({ section: "PROPERTY", label: prop, adj: ov != null ? ov : g });
-  });
-  // EPC
-  acceptedEpc.forEach(rating => {
-    const g = EPC_ADJUSTMENTS[rating] || 0;
-    const ov = tierOverrides?.epc?.[rating];
-    dimRows.push({ section: "EPC", label: rating, adj: ov != null ? ov : g });
-  });
-  // Loyalty
-  Object.entries(LOYALTY_ADJUSTMENTS).forEach(([tier, adj]) => {
-    const ov = tierOverrides?.loyalty?.[tier];
-    dimRows.push({ section: "LOYALTY", label: tier, adj: ov != null ? ov : adj });
-  });
-
-  // Group by section
-  const sections = [];
-  let currentSection = null;
-  dimRows.forEach(r => {
-    if (r.section !== currentSection) {
-      sections.push({ name: r.section, rows: [] });
-      currentSection = r.section;
-    }
-    sections[sections.length - 1].rows.push(r);
-  });
-
   return (
     <div>
       {/* LTV x Product rate grid */}
@@ -1316,344 +1304,305 @@ function RatesTab({ bucket }) {
         </span>
       </div>
 
-      {/* Dimension Loadings — single table */}
-      <div style={{ marginTop: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 10 }}>
-          Dimension Loadings
-        </div>
-        <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 8, fontStyle: "italic" }}>
-          Applied on top of displayed rates at application time.
-        </div>
-        <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
-          {/* Header row */}
-          <div style={{ display: "flex", borderBottom: `2px solid ${T.border}`, background: "#F8FAFC" }}>
-            <div style={{ width: "55%", padding: "8px 14px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Dimension</div>
-            <div style={{ width: "45%", padding: "8px 14px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Adjustment</div>
+      {/* Pricing Tiers Applied On Top */}
+      {(bucket.tiers && bucket.tiers.length > 0) && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 10 }}>
+            Pricing Tiers Applied On Top
           </div>
-          {sections.map((section) => {
-            let rowCount = 0;
-            return [
-              <div key={`sec-${section.name}`} style={dimSectionSt(bucket.color)}>
-                {section.name}
-              </div>,
-              ...section.rows.map((r) => {
-                const f = fmtAdj(r.adj);
-                const i = rowCount++;
-                return (
-                  <div key={`${section.name}-${r.label}`} style={dimRowSt(i)}>
-                    <div style={dimLabelSt}>{r.label}</div>
-                    <div style={{ ...dimValueSt, color: f.color }}>{f.text}</div>
-                  </div>
-                );
-              }),
-            ];
-          })}
+          <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
+            {bucket.tiers.map((tier, tIdx) => {
+              const tierColor = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"][tIdx % 5];
+              let adjLabel;
+              if (tier.adjustmentType === "flat") {
+                adjLabel = `${tier.flatAdj >= 0 ? "+" : ""}${tier.flatAdj.toFixed(2)}% (flat)`;
+              } else {
+                const vals = [];
+                Object.values(tier.gridAdj || {}).forEach(bands => Object.values(bands).forEach(v => vals.push(v)));
+                if (vals.length > 0) {
+                  const mn = Math.min(...vals), mx = Math.max(...vals);
+                  adjLabel = mn === mx
+                    ? `+${mn.toFixed(2)}% (varies by term/LTV)`
+                    : `+${mn.toFixed(2)}% to +${mx.toFixed(2)}% (varies by term/LTV)`;
+                } else {
+                  adjLabel = "+0.00% (varies by term/LTV)";
+                }
+              }
+              return (
+                <div
+                  key={tIdx}
+                  style={{
+                    display: "flex", alignItems: "center", padding: "8px 14px",
+                    borderBottom: tIdx < bucket.tiers.length - 1 ? `1px solid ${T.borderLight}` : "none",
+                    background: tIdx % 2 === 0 ? "#FAFAF8" : "#FFF",
+                  }}
+                >
+                  <span style={{ fontSize: 10, fontWeight: 700, color: tierColor, minWidth: 48 }}>Tier {tIdx + 1}:</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: T.navy, minWidth: 160 }}>{tier.name}</span>
+                  <span style={{ fontSize: 12, color: tier.flatAdj < 0 ? "#059669" : tier.flatAdj === 0 ? T.textMuted : "#B07A00", fontWeight: 600 }}>
+                    {adjLabel}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 // ─────────────────────────────────────────────
-// TIERS TAB — Override pricing dimensions per bucket
+// TIERS TAB — Tier Wizard (up to 5 tiers per bucket)
 // ─────────────────────────────────────────────
-function TiersTab({ bucket, onUpdateTierOverrides }) {
-  const overrides = bucket.tierOverrides || {};
+const TIER_COLORS = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"];
+const TIER_DIMENSIONS = {
+  credit: { label: "Credit", options: ["clean", "near_prime", "light_adverse", "adverse", "heavy_adverse"] },
+  employment: { label: "Employment", options: ["Employed", "Self-Employed", "Contractor", "Retired"] },
+  property: { label: "Property", options: ["Standard", "Non-Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"] },
+  epc: { label: "EPC", options: ["A", "B", "C", "D", "E", "F", "G"] },
+};
 
-  const setOverride = (dimension, key, val) => {
-    const next = JSON.parse(JSON.stringify(overrides));
-    if (!next[dimension]) next[dimension] = dimension === "ltv" ? [] : {};
-    if (dimension === "ltv") {
-      const idx = next[dimension].findIndex(t => t.band === key);
-      if (val === "" || val === null || val === undefined) {
-        if (idx >= 0) next[dimension].splice(idx, 1);
-        if (next[dimension].length === 0) delete next[dimension];
-      } else {
-        if (idx >= 0) next[dimension][idx].adj = parseFloat(val);
-        else next[dimension].push({ band: key, adj: parseFloat(val) });
-      }
-    } else {
-      if (val === "" || val === null || val === undefined) {
-        delete next[dimension][key];
-        if (Object.keys(next[dimension]).length === 0) delete next[dimension];
-      } else {
-        next[dimension][key] = parseFloat(val);
+function TiersTab({ bucket, onUpdateTiers }) {
+  const [tiers, setTiers] = useState(() => bucket.tiers ? JSON.parse(JSON.stringify(bucket.tiers)) : []);
+
+  const commit = (next) => { setTiers(next); onUpdateTiers(next); };
+
+  const addTier = () => {
+    if (tiers.length >= 5) return;
+    commit([...tiers, { name: "New Tier", conditions: {}, adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} }]);
+  };
+
+  const removeTier = (idx) => commit(tiers.filter((_, i) => i !== idx));
+
+  const updateTier = (idx, field, val) => {
+    commit(tiers.map((t, i) => i === idx ? { ...t, [field]: val } : t));
+  };
+
+  const toggleCondition = (tierIdx, dimension, value) => {
+    const tier = tiers[tierIdx];
+    const conds = { ...(tier.conditions || {}) };
+    const arr = [...(conds[dimension] || [])];
+    const vi = arr.indexOf(value);
+    if (vi >= 0) arr.splice(vi, 1); else arr.push(value);
+    if (arr.length === 0) delete conds[dimension]; else conds[dimension] = arr;
+    updateTier(tierIdx, "conditions", conds);
+  };
+
+  const updateGridAdj = (tierIdx, productType, band, val) => {
+    const tier = tiers[tierIdx];
+    const gridAdj = JSON.parse(JSON.stringify(tier.gridAdj || {}));
+    if (!gridAdj[productType]) gridAdj[productType] = {};
+    const v = parseFloat(val);
+    if (isNaN(v) || val === "") { delete gridAdj[productType][band]; if (Object.keys(gridAdj[productType]).length === 0) delete gridAdj[productType]; }
+    else { gridAdj[productType][band] = v; }
+    updateTier(tierIdx, "gridAdj", gridAdj);
+  };
+
+  // Derive visible LTV bands from bucket products
+  const products = bucket.products || [];
+  const usedBands = new Set();
+  products.forEach(p => { if (p.rates) Object.keys(p.rates).forEach(b => usedBands.add(b)); });
+  const visibleBands = ALL_LTV_BANDS.filter(b => usedBands.has(b));
+  const productTypes = products.map(p => p.type).filter(Boolean);
+
+  // Find an example base rate for preview
+  const getExampleRate = () => {
+    for (const p of products) {
+      if (p.rates) {
+        for (const b of visibleBands) {
+          if (p.rates[b] != null) return { type: p.type, band: b, rate: p.rates[b] };
+        }
       }
     }
-    onUpdateTierOverrides(next);
+    return null;
   };
+  const exampleRate = getExampleRate();
 
-  const resetAll = () => {
-    onUpdateTierOverrides({});
-  };
+  const chipSt = (active, color) => ({
+    display: "inline-block", padding: "3px 8px", borderRadius: 10,
+    fontSize: 10, fontWeight: 600, cursor: "pointer", marginRight: 4, marginBottom: 4,
+    border: active ? `1.5px solid ${color || T.primary}` : `1px solid ${T.border}`,
+    background: active ? (color + "18") : T.card,
+    color: active ? color : T.textMuted, transition: "all 0.12s", userSelect: "none",
+  });
 
-  const inputSt = {
-    width: 80, padding: "5px 8px", borderRadius: 6, textAlign: "center",
-    border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font,
+  const gridInputSt = {
+    width: 50, padding: "3px 4px", borderRadius: 5, textAlign: "center",
+    border: `1px solid ${T.border}`, fontSize: 11, fontFamily: T.font,
     color: T.text, background: T.card, outline: "none",
   };
-  const thSt = { textAlign: "left", padding: "7px 10px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 };
-  const tdSt = { padding: "7px 10px", fontSize: 12, color: T.text };
-  const sectionSt = { fontSize: 11, fontWeight: 700, color: bucket.color, padding: "8px 10px", background: bucket.color + "14", textTransform: "uppercase", letterSpacing: 0.8 };
-
-  const hasAnyOverride = Object.keys(overrides).length > 0;
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <div style={{ fontSize: 11, color: T.textMuted, fontStyle: "italic" }}>
-          Blank fields inherit from global defaults. Overridden values are highlighted in amber.
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>Pricing Tiers</div>
+          <div style={{ fontSize: 11, color: T.textMuted }}>Define up to 5 tiers. Each tier applies a rate adjustment on top of base rates.</div>
         </div>
-        {hasAnyOverride && (
-          <Btn small onClick={resetAll} style={{ fontSize: 10 }}>
-            Reset to Global
-          </Btn>
-        )}
+        <Btn small primary onClick={addTier} disabled={tiers.length >= 5} style={{ opacity: tiers.length >= 5 ? 0.45 : 1 }}>
+          + Add Tier
+        </Btn>
       </div>
 
-      <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
-        {/* LTV Adjustments */}
-        <div style={sectionSt}>LTV Adjustments</div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              <th style={thSt}>Band</th>
-              <th style={thSt}>Global Default</th>
-              <th style={thSt}>Override</th>
-              <th style={thSt}>Effective</th>
-            </tr>
-          </thead>
-          <tbody>
-            {LTV_ADJUSTMENTS.map((ltv, i) => {
-              const ov = overrides.ltv && overrides.ltv.find(t => t.band === ltv.band);
-              const hasOv = ov != null;
-              const effective = hasOv ? ov.adj : ltv.adj;
-              return (
-                <tr key={ltv.band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{ltv.band}</td>
-                  <td style={tdSt}>{ltv.adj >= 0 ? "+" : ""}{ltv.adj.toFixed(2)}%</td>
-                  <td style={tdSt}>
-                    <input
-                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
-                      type="number" step="0.01"
-                      value={hasOv ? ov.adj : ""}
-                      placeholder="\u2014"
-                      onChange={(e) => setOverride("ltv", ltv.band, e.target.value)}
-                    />
-                  </td>
-                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
-                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {tiers.length === 0 && (
+        <div style={{ padding: "28px 0", textAlign: "center", color: T.textMuted, fontSize: 12, fontStyle: "italic" }}>
+          No pricing tiers configured. Add a tier to define conditional rate adjustments.
+        </div>
+      )}
 
-        {/* Credit Profile Adjustments */}
-        <div style={sectionSt}>Credit Profile Adjustments</div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              <th style={thSt}>Profile</th>
-              <th style={thSt}>Global Default</th>
-              <th style={thSt}>Override</th>
-              <th style={thSt}>Effective</th>
-            </tr>
-          </thead>
-          <tbody>
-            {CREDIT_PROFILES.map((cp, i) => {
-              const ov = overrides.credit && overrides.credit[cp.id];
-              const hasOv = ov != null;
-              const effective = hasOv ? ov : cp.adj;
-              return (
-                <tr key={cp.id} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{cp.label}</td>
-                  <td style={tdSt}>{cp.adj >= 0 ? "+" : ""}{cp.adj.toFixed(2)}%</td>
-                  <td style={tdSt}>
-                    <input
-                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
-                      type="number" step="0.01"
-                      value={hasOv ? ov : ""}
-                      placeholder="\u2014"
-                      onChange={(e) => setOverride("credit", cp.id, e.target.value)}
-                    />
-                  </td>
-                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
-                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {/* Tier cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {tiers.map((tier, tIdx) => {
+          const tierColor = TIER_COLORS[tIdx % TIER_COLORS.length];
+          const adjRange = (() => {
+            if (tier.adjustmentType === "flat") return null;
+            const vals = [];
+            Object.values(tier.gridAdj || {}).forEach(bands => Object.values(bands).forEach(v => vals.push(v)));
+            if (vals.length === 0) return null;
+            return { min: Math.min(...vals), max: Math.max(...vals) };
+          })();
 
-        {/* Employment Adjustments */}
-        <div style={sectionSt}>Employment Adjustments</div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              <th style={thSt}>Type</th>
-              <th style={thSt}>Global Default</th>
-              <th style={thSt}>Override</th>
-              <th style={thSt}>Effective</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(EMPLOYMENT_ADJUSTMENTS).map(([type, adj], i) => {
-              const ov = overrides.employment && overrides.employment[type];
-              const hasOv = ov != null;
-              const effective = hasOv ? ov : adj;
-              const rejected = !(bucket.acceptedEmployments || []).includes(type);
-              return (
-                <tr key={type} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF", opacity: rejected ? 0.45 : 1 }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>
-                    {type}
-                    {rejected && <span style={{ marginLeft: 8, fontSize: 9, color: "#DC2626", fontWeight: 700 }}>Not accepted</span>}
-                  </td>
-                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
-                  <td style={tdSt}>
-                    <input
-                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
-                      type="number" step="0.01"
-                      value={hasOv ? ov : ""}
-                      placeholder={"\u2014"}
-                      disabled={rejected}
-                      onChange={(e) => setOverride("employment", type, e.target.value)}
-                    />
-                  </td>
-                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
-                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+          return (
+            <div key={tIdx} style={{
+              border: `1px solid ${T.border}`, borderRadius: 10, borderLeft: `4px solid ${tierColor}`,
+              background: T.card, overflow: "hidden", fontFamily: T.font,
+            }}>
+              {/* Header row */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: `1px solid ${T.borderLight}` }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: tierColor, minWidth: 20 }}>T{tIdx + 1}</span>
+                <input
+                  style={{
+                    width: 200, padding: "5px 8px", borderRadius: 6, border: `1px solid ${T.border}`,
+                    fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.navy, background: T.card, outline: "none",
+                  }}
+                  value={tier.name}
+                  onChange={(e) => updateTier(tIdx, "name", e.target.value)}
+                  placeholder="Tier name"
+                />
+                <div style={{ display: "flex", gap: 0, borderRadius: 6, overflow: "hidden", border: `1px solid ${T.border}` }}>
+                  {["flat", "grid"].map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => updateTier(tIdx, "adjustmentType", mode)}
+                      style={{
+                        padding: "4px 12px", border: "none", cursor: "pointer", fontSize: 10, fontWeight: 600,
+                        fontFamily: T.font, background: tier.adjustmentType === mode ? tierColor : T.bg,
+                        color: tier.adjustmentType === mode ? "#fff" : T.textMuted, transition: "all 0.12s",
+                      }}
+                    >
+                      {mode === "flat" ? "Flat" : "Per Cell"}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ flex: 1 }} />
+                <span
+                  onClick={() => removeTier(tIdx)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", fontSize: 14, fontWeight: 700, transition: "background 0.12s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  {Ico.x(12)}
+                </span>
+              </div>
 
-        {/* Property Type Adjustments */}
-        <div style={sectionSt}>Property Type Adjustments</div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              <th style={thSt}>Property Type</th>
-              <th style={thSt}>Global Default</th>
-              <th style={thSt}>Override</th>
-              <th style={thSt}>Effective</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(PROPERTY_ADJUSTMENTS).map(([type, adj], i) => {
-              const ov = overrides.property && overrides.property[type];
-              const hasOv = ov != null;
-              const effective = hasOv ? ov : adj;
-              const rejected = !(bucket.acceptedProperties || []).includes(type);
-              return (
-                <tr key={type} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF", opacity: rejected ? 0.45 : 1 }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>
-                    {type}
-                    {rejected && <span style={{ marginLeft: 8, fontSize: 9, color: "#DC2626", fontWeight: 700 }}>Not accepted</span>}
-                  </td>
-                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
-                  <td style={tdSt}>
-                    <input
-                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
-                      type="number" step="0.01"
-                      value={hasOv ? ov : ""}
-                      placeholder={"\u2014"}
-                      disabled={rejected}
-                      onChange={(e) => setOverride("property", type, e.target.value)}
-                    />
-                  </td>
-                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
-                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              {/* Conditions section */}
+              <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.borderLight}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                  Applies when:
+                </div>
+                {Object.entries(TIER_DIMENSIONS).map(([dim, cfg]) => {
+                  const selected = (tier.conditions && tier.conditions[dim]) || [];
+                  const hasAny = selected.length > 0;
+                  return (
+                    <div key={dim} style={{ marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: hasAny ? T.text : T.textMuted, marginRight: 8, minWidth: 70, display: "inline-block" }}>
+                        {cfg.label}:
+                      </span>
+                      {cfg.options.map(opt => (
+                        <span
+                          key={opt}
+                          style={chipSt(selected.includes(opt), tierColor)}
+                          onClick={() => toggleCondition(tIdx, dim, opt)}
+                        >
+                          {opt}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
 
-        {/* EPC Adjustments */}
-        <div style={sectionSt}>EPC Adjustments</div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              <th style={thSt}>EPC Rating</th>
-              <th style={thSt}>Global Default</th>
-              <th style={thSt}>Override</th>
-              <th style={thSt}>Effective</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(EPC_ADJUSTMENTS).map(([rating, adj], i) => {
-              const ov = overrides.epc && overrides.epc[rating];
-              const hasOv = ov != null;
-              const effective = hasOv ? ov : adj;
-              const rejected = !(bucket.acceptedEpc || []).includes(rating);
-              return (
-                <tr key={rating} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF", opacity: rejected ? 0.45 : 1 }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>
-                    {rating}
-                    {rejected && <span style={{ marginLeft: 8, fontSize: 9, color: "#DC2626", fontWeight: 700 }}>Not accepted</span>}
-                  </td>
-                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
-                  <td style={tdSt}>
+              {/* Adjustment section */}
+              <div style={{ padding: "10px 14px" }}>
+                {tier.adjustmentType === "flat" ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: T.text }}>Flat adjustment:</span>
                     <input
-                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      style={{ width: 70, padding: "5px 8px", borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font, color: T.text, background: T.card, outline: "none", textAlign: "center" }}
                       type="number" step="0.01"
-                      value={hasOv ? ov : ""}
-                      placeholder={"\u2014"}
-                      disabled={rejected}
-                      onChange={(e) => setOverride("epc", rating, e.target.value)}
+                      value={tier.flatAdj}
+                      onChange={(e) => updateTier(tIdx, "flatAdj", parseFloat(e.target.value) || 0)}
                     />
-                  </td>
-                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
-                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        {/* Loyalty Adjustments */}
-        <div style={sectionSt}>Loyalty Adjustments</div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              <th style={thSt}>Loyalty Tier</th>
-              <th style={thSt}>Global Default</th>
-              <th style={thSt}>Override</th>
-              <th style={thSt}>Effective</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(LOYALTY_ADJUSTMENTS).map(([tier, adj], i) => {
-              const ov = overrides.loyalty && overrides.loyalty[tier];
-              const hasOv = ov != null;
-              const effective = hasOv ? ov : adj;
-              return (
-                <tr key={tier} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
-                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{tier}</td>
-                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
-                  <td style={tdSt}>
-                    <input
-                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
-                      type="number" step="0.01"
-                      value={hasOv ? ov : ""}
-                      placeholder={"\u2014"}
-                      onChange={(e) => setOverride("loyalty", tier, e.target.value)}
-                    />
-                  </td>
-                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
-                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    <span style={{ fontSize: 12, color: T.textMuted }}>%</span>
+                    {exampleRate && (
+                      <span style={{ fontSize: 10, color: T.textMuted, marginLeft: 12, fontStyle: "italic" }}>
+                        {exampleRate.type} at {exampleRate.band}: {exampleRate.rate.toFixed(2)}% base {tier.flatAdj >= 0 ? "+" : ""}{tier.flatAdj.toFixed(2)}% tier = {(exampleRate.rate + tier.flatAdj).toFixed(2)}% final
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.text, marginBottom: 8 }}>Per-cell adjustments:</div>
+                    {productTypes.length === 0 || visibleBands.length === 0 ? (
+                      <div style={{ fontSize: 11, color: T.textMuted, fontStyle: "italic" }}>No products/LTV bands to show. Add products with rates first.</div>
+                    ) : (
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ borderCollapse: "collapse", fontSize: 11, fontFamily: T.font }}>
+                          <thead>
+                            <tr>
+                              <th style={{ padding: "4px 8px", fontSize: 10, fontWeight: 700, color: T.textMuted, textAlign: "left" }} />
+                              {productTypes.map(pt => (
+                                <th key={pt} style={{ padding: "4px 8px", fontSize: 10, fontWeight: 700, color: T.navy, textAlign: "center", whiteSpace: "nowrap" }}>{pt}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {visibleBands.map(band => (
+                              <tr key={band}>
+                                <td style={{ padding: "3px 8px", fontSize: 10, fontWeight: 600, color: T.textMuted, whiteSpace: "nowrap" }}>{band}</td>
+                                {productTypes.map(pt => {
+                                  const val = tier.gridAdj && tier.gridAdj[pt] && tier.gridAdj[pt][band];
+                                  return (
+                                    <td key={pt} style={{ padding: "3px 4px", textAlign: "center" }}>
+                                      <input
+                                        style={gridInputSt}
+                                        type="number" step="0.01"
+                                        value={val != null ? val : ""}
+                                        placeholder="--"
+                                        onChange={(e) => updateGridAdj(tIdx, pt, band, e.target.value)}
+                                      />
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    {exampleRate && adjRange && (
+                      <div style={{ fontSize: 10, color: T.textMuted, marginTop: 6, fontStyle: "italic" }}>
+                        {exampleRate.type} at {exampleRate.band}: {exampleRate.rate.toFixed(2)}% base + {adjRange.min.toFixed(2)}% to {adjRange.max.toFixed(2)}% tier
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1721,6 +1670,14 @@ export default function ProductBuckets() {
     setBuckets((prev) => {
       const next = [...prev];
       next[bIdx] = { ...next[bIdx], tierOverrides };
+      return next;
+    });
+  };
+
+  const updateBucketTiers = (bIdx, tiers) => {
+    setBuckets((prev) => {
+      const next = [...prev];
+      next[bIdx] = { ...next[bIdx], tiers };
       return next;
     });
   };
@@ -1853,7 +1810,7 @@ export default function ProductBuckets() {
                 {getTab(bIdx) === "tiers" && (
                   <TiersTab
                     bucket={bucket}
-                    onUpdateTierOverrides={(o) => updateBucketTierOverrides(bIdx, o)}
+                    onUpdateTiers={(t) => updateBucketTiers(bIdx, t)}
                   />
                 )}
               </div>
