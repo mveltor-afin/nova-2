@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card } from "../shared/primitives";
-import { LTV_ADJUSTMENTS, CREDIT_PROFILES, getRate } from "../data/pricing";
+import { LTV_ADJUSTMENTS, CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, getRate } from "../data/pricing";
 
 // ─────────────────────────────────────────────
 // PERSISTENCE
@@ -55,13 +55,17 @@ const ALL_UNACCEPTABLE_TYPES = [
 // ─────────────────────────────────────────────
 // RATE GENERATION FROM PRICING ENGINE
 // ─────────────────────────────────────────────
-const generateRates = (baseRate, maxLTV) => {
+const generateRates = (baseRate, maxLTV, tierOverrides = {}) => {
   const base = parseFloat(baseRate) || 0;
   const max = parseInt(maxLTV) || 75;
-  return LTV_ADJUSTMENTS.map(ltv => {
-    const mid = Math.round((ltv.min + ltv.max) / 2) || 30;
+  // Use bucket-level LTV overrides if provided, else global
+  const ltvTiers = tierOverrides.ltv || LTV_ADJUSTMENTS;
+  return ltvTiers.map(ltv => {
+    // If ltv is from overrides, it might just have band+adj; fill in min/max from global
+    const globalLtv = LTV_ADJUSTMENTS.find(g => g.band === ltv.band) || ltv;
+    const mid = Math.round(((globalLtv.min || 0) + (globalLtv.max || 75)) / 2) || 30;
     if (mid > max) return { band: ltv.band, rate: null };
-    const rate = Math.round((base + ltv.adj) * 100) / 100;
+    const rate = Math.round((base + (ltv.adj != null ? ltv.adj : globalLtv.adj || 0)) * 100) / 100;
     return { band: ltv.band, rate };
   });
 };
@@ -75,6 +79,8 @@ const DEFAULT_BUCKETS = [
     color: "#059669",
     desc: "Clean credit \u00b7 Standard criteria \u00b7 Purchase & remortgage",
     maxLTV: 75,
+    acceptedCreditProfiles: ["clean", "near_prime"],
+    tierOverrides: {},
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a31,000,000" },
       maxApplicants: 2,
@@ -117,6 +123,8 @@ const DEFAULT_BUCKETS = [
     color: "#31B897",
     desc: "Clean credit \u00b7 Extended LTV range up to 95%",
     maxLTV: 95,
+    acceptedCreditProfiles: ["clean", "near_prime"],
+    tierOverrides: {},
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a3500,000" },
       maxApplicants: 2,
@@ -160,6 +168,8 @@ const DEFAULT_BUCKETS = [
     color: "#3B82F6",
     desc: "Qualified professionals \u00b7 Enhanced income multiples \u00b7 Reduced rates",
     maxLTV: 90,
+    acceptedCreditProfiles: ["clean", "near_prime", "light_adverse"],
+    tierOverrides: { employment: { "Self-Employed": 0.10 } },
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
       maxApplicants: 2,
@@ -202,6 +212,8 @@ const DEFAULT_BUCKETS = [
     color: "#8B5CF6",
     desc: "\u00a3300k+ income or \u00a33M+ net assets \u00b7 Bespoke pricing",
     maxLTV: 75,
+    acceptedCreditProfiles: ["clean"],
+    tierOverrides: { ltv: [{ band: "\u226460%", adj: -0.10 }, { band: "60-75%", adj: 0.15 }] },
     criteria: {
       loanSize: { min: "\u00a3150,000", max: "\u00a35,000,000" },
       maxApplicants: 2,
@@ -245,6 +257,8 @@ const DEFAULT_BUCKETS = [
     color: "#F59E0B",
     desc: "Investment properties \u00b7 ICR 145% \u00b7 Portfolio landlords accepted",
     maxLTV: 75,
+    acceptedCreditProfiles: ["clean", "near_prime", "light_adverse", "adverse", "heavy_adverse"],
+    tierOverrides: { ltv: [{ band: "\u226460%", adj: 0.00 }, { band: "60-75%", adj: 0.50 }], employment: {} },
     criteria: {
       loanSize: { min: "\u00a325,000", max: "\u00a32,000,000" },
       maxApplicants: 4,
@@ -307,6 +321,8 @@ const emptyBucket = () => ({
   color: "#059669",
   desc: "",
   maxLTV: 75,
+  acceptedCreditProfiles: ["clean"],
+  tierOverrides: {},
   criteria: {
     loanSize: { min: "", max: "" },
     maxApplicants: 2,
@@ -530,35 +546,30 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
           </div>
         </div>
 
-        {/* SECTION 3: CREDIT */}
-        <div style={sectionTitleSt}>3. Credit Requirements</div>
-        <div style={row3}>
-          <div style={fieldWrap}>
-            <label style={labelSt}>Max CCJs</label>
-            <input style={inputSt} value={form.criteria.credit.maxCCJs} onChange={(e) => set("criteria.credit.maxCCJs", e.target.value)} placeholder="0" />
-          </div>
-          <div style={fieldWrap}>
-            <label style={labelSt}>Max Defaults</label>
-            <input style={inputSt} value={form.criteria.credit.maxDefaults} onChange={(e) => set("criteria.credit.maxDefaults", e.target.value)} placeholder="0" />
-          </div>
-          <div style={fieldWrap}>
-            <label style={labelSt}>Missed Payments</label>
-            <input style={inputSt} value={form.criteria.credit.missedPayments} onChange={(e) => set("criteria.credit.missedPayments", e.target.value)} placeholder="None in last 36 months" />
-          </div>
+        {/* SECTION 3: ACCEPTED CREDIT PROFILES */}
+        <div style={sectionTitleSt}>3. Accepted Credit Profiles</div>
+        <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 10 }}>
+          Select which credit profiles this bucket accepts. Rates are adjusted automatically based on the profile's pricing adjustment.
         </div>
-        <div style={row3}>
-          <div style={fieldWrap}>
-            <label style={labelSt}>IVA Rule</label>
-            <input style={inputSt} value={form.criteria.credit.iva} onChange={(e) => set("criteria.credit.iva", e.target.value)} placeholder="Not accepted" />
-          </div>
-          <div style={fieldWrap}>
-            <label style={labelSt}>Bankruptcy Rule</label>
-            <input style={inputSt} value={form.criteria.credit.bankruptcy} onChange={(e) => set("criteria.credit.bankruptcy", e.target.value)} placeholder="Not accepted" />
-          </div>
-          <div style={fieldWrap}>
-            <label style={labelSt}>DMP Rule</label>
-            <input style={inputSt} value={form.criteria.credit.dmp} onChange={(e) => set("criteria.credit.dmp", e.target.value)} placeholder="Not accepted" />
-          </div>
+        <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
+          {CREDIT_PROFILES.map((cp) => (
+            <span
+              key={cp.id}
+              style={chipSt((form.acceptedCreditProfiles || []).includes(cp.id), "#059669")}
+              onClick={() => {
+                setForm((prev) => {
+                  const next = JSON.parse(JSON.stringify(prev));
+                  if (!next.acceptedCreditProfiles) next.acceptedCreditProfiles = [];
+                  const idx = next.acceptedCreditProfiles.indexOf(cp.id);
+                  if (idx >= 0) next.acceptedCreditProfiles.splice(idx, 1);
+                  else next.acceptedCreditProfiles.push(cp.id);
+                  return next;
+                });
+              }}
+            >
+              {cp.label} {cp.adj >= 0 ? "+" : ""}{cp.adj.toFixed(2)}%
+            </span>
+          ))}
         </div>
 
         {/* SECTION 4: EMPLOYMENT */}
@@ -762,12 +773,29 @@ function CriteriaTable({ bucket }) {
       {c.experience && <Row label="Experience" value={c.experience} />}
 
       <div style={sectionHeaderSt}>Credit History</div>
-      <Row label="CCJs" value={c.credit.maxCCJs === "0" ? "None accepted" : c.credit.maxCCJs} valueColor={creditColor(c.credit.maxCCJs)} />
-      <Row label="Defaults" value={c.credit.maxDefaults === "0" ? "None accepted" : c.credit.maxDefaults} valueColor={creditColor(c.credit.maxDefaults)} />
-      <Row label="Missed Payments" value={c.credit.missedPayments} valueColor={creditColor(c.credit.missedPayments)} />
-      <Row label="IVA" value={c.credit.iva} valueColor={creditColor(c.credit.iva)} />
-      <Row label="Bankruptcy" value={c.credit.bankruptcy} valueColor={creditColor(c.credit.bankruptcy)} />
-      <Row label="DMP" value={c.credit.dmp} valueColor={creditColor(c.credit.dmp)} />
+      {bucket.acceptedCreditProfiles && bucket.acceptedCreditProfiles.length > 0 ? (
+        <>
+          <PillRow
+            label="Accepted Profiles"
+            items={CREDIT_PROFILES.filter(cp => (bucket.acceptedCreditProfiles || []).includes(cp.id)).map(cp => `${cp.label} (${cp.adj >= 0 ? "+" : ""}${cp.adj.toFixed(2)}%)`)}
+            pillStyle={greenPill}
+          />
+          <PillRow
+            label="Rejected Profiles"
+            items={CREDIT_PROFILES.filter(cp => !(bucket.acceptedCreditProfiles || []).includes(cp.id)).map(cp => cp.label)}
+            pillStyle={redPill}
+          />
+        </>
+      ) : (
+        <>
+          <Row label="CCJs" value={c.credit.maxCCJs === "0" ? "None accepted" : c.credit.maxCCJs} valueColor={creditColor(c.credit.maxCCJs)} />
+          <Row label="Defaults" value={c.credit.maxDefaults === "0" ? "None accepted" : c.credit.maxDefaults} valueColor={creditColor(c.credit.maxDefaults)} />
+          <Row label="Missed Payments" value={c.credit.missedPayments} valueColor={creditColor(c.credit.missedPayments)} />
+          <Row label="IVA" value={c.credit.iva} valueColor={creditColor(c.credit.iva)} />
+          <Row label="Bankruptcy" value={c.credit.bankruptcy} valueColor={creditColor(c.credit.bankruptcy)} />
+          <Row label="DMP" value={c.credit.dmp} valueColor={creditColor(c.credit.dmp)} />
+        </>
+      )}
 
       <div style={sectionHeaderSt}>Property</div>
       <Row label="Min Property Value" value={c.property.minValue} />
@@ -995,14 +1023,13 @@ function RatesTab({ bucket }) {
   }
 
   const maxLTV = bucket.maxLTV || 75;
+  const overrides = bucket.tierOverrides || {};
+  const acceptedProfiles = (bucket.acceptedCreditProfiles || ["clean"])
+    .map(id => CREDIT_PROFILES.find(cp => cp.id === id))
+    .filter(Boolean);
 
-  // Generate rate grid: rows = LTV bands, columns = products
-  const rateGrid = products.map((prod) => ({
-    product: prod,
-    rates: generateRates(prod.baseRate, maxLTV),
-  }));
-
-  const ltvBands = LTV_ADJUSTMENTS.map((ltv) => ltv.band);
+  // Determine LTV tiers to use
+  const ltvTiers = overrides.ltv || LTV_ADJUSTMENTS;
 
   return (
     <div>
@@ -1010,8 +1037,8 @@ function RatesTab({ bucket }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
           <thead>
             <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 90, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                LTV Band
+              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 160, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Profile / LTV
               </th>
               {products.map((p) => (
                 <th key={p.code} style={{ textAlign: "center", padding: "8px 6px", fontSize: 11, fontWeight: 700, color: T.navy, minWidth: 100 }}>
@@ -1022,40 +1049,63 @@ function RatesTab({ bucket }) {
             </tr>
           </thead>
           <tbody>
-            {ltvBands.map((band, rIdx) => (
-              <tr key={band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFFFFF" }}>
-                <td style={{ padding: "9px 10px", fontWeight: 600, fontSize: 12, color: T.navy, whiteSpace: "nowrap" }}>
-                  {band}
-                </td>
-                {rateGrid.map((col) => {
-                  const rateEntry = col.rates[rIdx];
-                  const rate = rateEntry ? rateEntry.rate : null;
-                  const code = col.product.code + band.replace(/[^0-9]/g, "");
+            {acceptedProfiles.map((profile) => {
+              const creditAdj = profile.adj || 0;
+              return [
+                // Credit profile section header
+                <tr key={`header-${profile.id}`} style={{ background: bucket.color + "14" }}>
+                  <td
+                    colSpan={products.length + 1}
+                    style={{ padding: "7px 10px", fontSize: 11, fontWeight: 700, color: bucket.color, letterSpacing: 0.3 }}
+                  >
+                    {"\u25B8"} {profile.label} ({creditAdj >= 0 ? "+" : ""}{creditAdj.toFixed(2)}%)
+                  </td>
+                </tr>,
+                // LTV band rows under this credit profile
+                ...ltvTiers.map((ltv, rIdx) => {
+                  const globalLtv = LTV_ADJUSTMENTS.find(g => g.band === ltv.band) || ltv;
+                  const mid = Math.round(((globalLtv.min || 0) + (globalLtv.max || 75)) / 2) || 30;
+                  const ltvAdj = ltv.adj != null ? ltv.adj : globalLtv.adj || 0;
                   return (
-                    <td key={col.product.code + band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
-                      {rate !== null && rate !== undefined ? (
-                        <div>
-                          <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(rate) }}>
-                            {(rate || 0).toFixed(2)}%
-                          </span>
-                          <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1, letterSpacing: 0.2 }}>
-                            ({code})
-                          </div>
-                        </div>
-                      ) : (
-                        <span style={{ color: "#CBD5E1", fontSize: 14 }}>&mdash;</span>
-                      )}
-                    </td>
+                    <tr key={`${profile.id}-${ltv.band}`} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFFFFF" }}>
+                      <td style={{ padding: "8px 10px 8px 24px", fontWeight: 600, fontSize: 12, color: T.navy, whiteSpace: "nowrap" }}>
+                        {ltv.band}
+                      </td>
+                      {products.map((prod) => {
+                        const base = parseFloat(prod.baseRate) || 0;
+                        if (mid > maxLTV) {
+                          return (
+                            <td key={prod.code + ltv.band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
+                              <span style={{ color: "#CBD5E1", fontSize: 14 }}>&mdash;</span>
+                            </td>
+                          );
+                        }
+                        const rate = Math.round((base + ltvAdj + creditAdj) * 100) / 100;
+                        const code = prod.code + ltv.band.replace(/[^0-9]/g, "");
+                        return (
+                          <td key={prod.code + ltv.band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
+                            <div>
+                              <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(rate) }}>
+                                {rate.toFixed(2)}%
+                              </span>
+                              <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1, letterSpacing: 0.2 }}>
+                                ({code})
+                              </div>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
                   );
-                })}
-              </tr>
-            ))}
+                }),
+              ];
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Legend */}
-      <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.borderLight}` }}>
+      <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.borderLight}`, flexWrap: "wrap" }}>
         <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: "#059669", display: "inline-block" }} />
           {"< 4.50%"}
@@ -1069,8 +1119,184 @@ function RatesTab({ bucket }) {
           {"> 5.50%"}
         </span>
         <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto" }}>
-          Rates auto-generated from base rate + LTV adjustments. Max LTV: {maxLTV}%
+          Rate = base + LTV adj + credit adj. Max LTV: {maxLTV}%
         </span>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// TIERS TAB — Override pricing dimensions per bucket
+// ─────────────────────────────────────────────
+function TiersTab({ bucket, onUpdateTierOverrides }) {
+  const overrides = bucket.tierOverrides || {};
+
+  const setOverride = (dimension, key, val) => {
+    const next = JSON.parse(JSON.stringify(overrides));
+    if (!next[dimension]) next[dimension] = dimension === "ltv" ? [] : {};
+    if (dimension === "ltv") {
+      const idx = next[dimension].findIndex(t => t.band === key);
+      if (val === "" || val === null || val === undefined) {
+        if (idx >= 0) next[dimension].splice(idx, 1);
+        if (next[dimension].length === 0) delete next[dimension];
+      } else {
+        if (idx >= 0) next[dimension][idx].adj = parseFloat(val);
+        else next[dimension].push({ band: key, adj: parseFloat(val) });
+      }
+    } else {
+      if (val === "" || val === null || val === undefined) {
+        delete next[dimension][key];
+        if (Object.keys(next[dimension]).length === 0) delete next[dimension];
+      } else {
+        next[dimension][key] = parseFloat(val);
+      }
+    }
+    onUpdateTierOverrides(next);
+  };
+
+  const resetAll = () => {
+    onUpdateTierOverrides({});
+  };
+
+  const inputSt = {
+    width: 80, padding: "5px 8px", borderRadius: 6, textAlign: "center",
+    border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font,
+    color: T.text, background: T.card, outline: "none",
+  };
+  const thSt = { textAlign: "left", padding: "7px 10px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 };
+  const tdSt = { padding: "7px 10px", fontSize: 12, color: T.text };
+  const sectionSt = { fontSize: 11, fontWeight: 700, color: bucket.color, padding: "8px 10px", background: bucket.color + "14", textTransform: "uppercase", letterSpacing: 0.8 };
+
+  const hasAnyOverride = Object.keys(overrides).length > 0;
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: T.textMuted, fontStyle: "italic" }}>
+          Blank fields inherit from global defaults. Overridden values are highlighted in amber.
+        </div>
+        {hasAnyOverride && (
+          <Btn small onClick={resetAll} style={{ fontSize: 10 }}>
+            Reset to Global
+          </Btn>
+        )}
+      </div>
+
+      <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
+        {/* LTV Adjustments */}
+        <div style={sectionSt}>LTV Adjustments</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={thSt}>Band</th>
+              <th style={thSt}>Global Default</th>
+              <th style={thSt}>Override</th>
+              <th style={thSt}>Effective</th>
+            </tr>
+          </thead>
+          <tbody>
+            {LTV_ADJUSTMENTS.map((ltv, i) => {
+              const ov = overrides.ltv && overrides.ltv.find(t => t.band === ltv.band);
+              const hasOv = ov != null;
+              const effective = hasOv ? ov.adj : ltv.adj;
+              return (
+                <tr key={ltv.band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{ltv.band}</td>
+                  <td style={tdSt}>{ltv.adj >= 0 ? "+" : ""}{ltv.adj.toFixed(2)}%</td>
+                  <td style={tdSt}>
+                    <input
+                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      type="number" step="0.01"
+                      value={hasOv ? ov.adj : ""}
+                      placeholder="\u2014"
+                      onChange={(e) => setOverride("ltv", ltv.band, e.target.value)}
+                    />
+                  </td>
+                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
+                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Credit Profile Adjustments */}
+        <div style={sectionSt}>Credit Profile Adjustments</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={thSt}>Profile</th>
+              <th style={thSt}>Global Default</th>
+              <th style={thSt}>Override</th>
+              <th style={thSt}>Effective</th>
+            </tr>
+          </thead>
+          <tbody>
+            {CREDIT_PROFILES.map((cp, i) => {
+              const ov = overrides.credit && overrides.credit[cp.id];
+              const hasOv = ov != null;
+              const effective = hasOv ? ov : cp.adj;
+              return (
+                <tr key={cp.id} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{cp.label}</td>
+                  <td style={tdSt}>{cp.adj >= 0 ? "+" : ""}{cp.adj.toFixed(2)}%</td>
+                  <td style={tdSt}>
+                    <input
+                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      type="number" step="0.01"
+                      value={hasOv ? ov : ""}
+                      placeholder="\u2014"
+                      onChange={(e) => setOverride("credit", cp.id, e.target.value)}
+                    />
+                  </td>
+                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
+                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Employment Adjustments */}
+        <div style={sectionSt}>Employment Adjustments</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={thSt}>Type</th>
+              <th style={thSt}>Global Default</th>
+              <th style={thSt}>Override</th>
+              <th style={thSt}>Effective</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(EMPLOYMENT_ADJUSTMENTS).map(([type, adj], i) => {
+              const ov = overrides.employment && overrides.employment[type];
+              const hasOv = ov != null;
+              const effective = hasOv ? ov : adj;
+              return (
+                <tr key={type} style={{ borderBottom: `1px solid ${T.borderLight}`, background: hasOv ? "#FFFBEB" : i % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                  <td style={{ ...tdSt, fontWeight: 600, color: T.navy }}>{type}</td>
+                  <td style={tdSt}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</td>
+                  <td style={tdSt}>
+                    <input
+                      style={{ ...inputSt, borderColor: hasOv ? "#F59E0B" : T.border }}
+                      type="number" step="0.01"
+                      value={hasOv ? ov : ""}
+                      placeholder="\u2014"
+                      onChange={(e) => setOverride("employment", type, e.target.value)}
+                    />
+                  </td>
+                  <td style={{ ...tdSt, fontWeight: 700, color: hasOv ? "#D97706" : T.text }}>
+                    {effective >= 0 ? "+" : ""}{effective.toFixed(2)}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -1130,6 +1356,14 @@ export default function ProductBuckets() {
     setBuckets((prev) => {
       const next = [...prev];
       next[bIdx] = { ...next[bIdx], fees };
+      return next;
+    });
+  };
+
+  const updateBucketTierOverrides = (bIdx, tierOverrides) => {
+    setBuckets((prev) => {
+      const next = [...prev];
+      next[bIdx] = { ...next[bIdx], tierOverrides };
       return next;
     });
   };
@@ -1218,6 +1452,7 @@ export default function ProductBuckets() {
                     { id: "products", label: "Products" },
                     { id: "criteria", label: "Criteria" },
                     { id: "fees", label: "Fees & Terms" },
+                    { id: "tiers", label: "Tiers" },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -1254,6 +1489,14 @@ export default function ProductBuckets() {
                   <FeesTab
                     bucket={bucket}
                     onUpdateFees={(f) => updateBucketFees(bIdx, f)}
+                  />
+                )}
+
+                {/* TAB: TIERS */}
+                {getTab(bIdx) === "tiers" && (
+                  <TiersTab
+                    bucket={bucket}
+                    onUpdateTierOverrides={(o) => updateBucketTierOverrides(bIdx, o)}
                   />
                 )}
               </div>
