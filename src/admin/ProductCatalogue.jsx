@@ -299,6 +299,18 @@ function ProductWizard({ onClose, onPublish }) {
   const [compliance, setCompliance] = useState({ fairValueRating: "Good", consumerDutyOutcome: "Price & Value", kfiTemplate: "Standard" });
   const [tiers, setTiers] = useState([]);
 
+  // Dimension configuration for lending products
+  const [acceptedCredits, setAcceptedCredits] = useState(
+    PRICING_CREDIT_PROFILES.slice(0, 5).map(c => c.id) // default: Clean → Heavy Adverse
+  );
+  const [acceptedEmployments, setAcceptedEmployments] = useState(["Employed", "Self-Employed", "Contractor"]);
+  const [acceptedProperties, setAcceptedProperties] = useState(["Standard", "New Build"]);
+  const [excludedEpc, setExcludedEpc] = useState([]);
+
+  const toggleCredit = (id) => setAcceptedCredits(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleEmployment = (id) => setAcceptedEmployments(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleProperty = (id) => setAcceptedProperties(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
   const isLendingCategory = category === "Lending";
   const addTier = () => {
     if (isLendingCategory) {
@@ -483,6 +495,51 @@ function ProductWizard({ onClose, onPublish }) {
                     </Field>
                   </div>
 
+                  {/* Dimension selectors */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>Accepted Credit Profiles</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+                      {PRICING_CREDIT_PROFILES.map(c => {
+                        const active = acceptedCredits.includes(c.id);
+                        return (
+                          <div key={c.id} onClick={() => toggleCredit(c.id)} style={{
+                            padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            background: active ? T.successBg : T.bg, color: active ? T.success : T.textMuted,
+                            border: `1px solid ${active ? T.successBorder : T.border}`, transition: "all 0.15s",
+                          }}>{c.label}</div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>Accepted Employment Types</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+                      {["Employed", "Self-Employed", "Contractor", "Retired"].map(emp => {
+                        const active = acceptedEmployments.includes(emp);
+                        return (
+                          <div key={emp} onClick={() => toggleEmployment(emp)} style={{
+                            padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            background: active ? T.successBg : T.bg, color: active ? T.success : T.textMuted,
+                            border: `1px solid ${active ? T.successBorder : T.border}`, transition: "all 0.15s",
+                          }}>{emp}</div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>Accepted Property Types</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {["Standard", "Non-Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"].map(pt => {
+                        const active = acceptedProperties.includes(pt);
+                        return (
+                          <div key={pt} onClick={() => toggleProperty(pt)} style={{
+                            padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            background: active ? T.successBg : T.bg, color: active ? T.success : T.textMuted,
+                            border: `1px solid ${active ? T.successBorder : T.border}`, transition: "all 0.15s",
+                          }}>{pt}</div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Live preview grid */}
                   {params.baseRate && (
                     <div style={{ padding: "14px 16px", background: T.bg, borderRadius: 10, border: `1px solid ${T.borderLight}` }}>
@@ -501,7 +558,7 @@ function ProductWizard({ onClose, onPublish }) {
                             </tr>
                           </thead>
                           <tbody>
-                            {PRICING_CREDIT_PROFILES.slice(0, 5).map((credit, ci) => (
+                            {PRICING_CREDIT_PROFILES.filter(c => acceptedCredits.includes(c.id)).map((credit, ci) => (
                               <tr key={credit.id}>
                                 <td style={{ padding: "5px 8px", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" }}>{credit.label}</td>
                                 {LTV_ADJUSTMENTS.filter(l => {
@@ -529,7 +586,7 @@ function ProductWizard({ onClose, onPublish }) {
                         </table>
                       </div>
                       <div style={{ fontSize: 10, color: T.textMuted, marginTop: 8 }}>
-                        Showing first 5 credit profiles. Employment, property, EPC and loyalty modifiers applied on top at application time.
+                        Showing {acceptedCredits.length} accepted credit profiles. Employment ({acceptedEmployments.join(", ")}), property ({acceptedProperties.join(", ")}), EPC and loyalty modifiers applied at application time.
                       </div>
                     </div>
                   )}
@@ -606,7 +663,9 @@ function ProductWizard({ onClose, onPublish }) {
                 maxTerm: params.maxTerm || "35yr",
                 erc: params.erc || "—",
                 eligibility: common.eligibility || "All",
-                creditAccepted: category === "Lending" ? ["clean", "near_prime", "light_adverse"] : null,
+                creditAccepted: category === "Lending" ? acceptedCredits : null,
+                acceptedEmployments: category === "Lending" ? acceptedEmployments : null,
+                acceptedProperties: category === "Lending" ? acceptedProperties : null,
                 tiers: category === "Savings" ? tiers : null,
                 keyTerms: category !== "Lending" ? `Min £1,000 — Max £500,000` : null,
               })}>Publish Product</Btn>
