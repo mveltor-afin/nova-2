@@ -249,8 +249,11 @@ const buildCode = (prodCode, ltv) => {
 // ─────────────────────────────────────────────
 export default function ProductBuckets() {
   const [expandedIdx, setExpandedIdx] = useState(null);
+  const [bucketTab, setBucketTab] = useState({}); // { [bucketIdx]: "rates"|"criteria"|"fees" }
 
-  const toggleBucket = (i) => setExpandedIdx(expandedIdx === i ? null : i);
+  const toggleBucket = (i) => { setExpandedIdx(expandedIdx === i ? null : i); if (!bucketTab[i]) setBucketTab(prev => ({ ...prev, [i]: "rates" })); };
+  const getTab = (i) => bucketTab[i] || "rates";
+  const setTab = (i, tab) => setBucketTab(prev => ({ ...prev, [i]: tab }));
 
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
@@ -322,6 +325,21 @@ export default function ProductBuckets() {
               {/* Expanded content */}
               {expandedIdx === bIdx && (
                 <div style={{ padding: "0 24px 20px" }}>
+                  {/* Tab bar */}
+                  <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 16 }}>
+                    {[{ id: "rates", label: "Rates" }, { id: "criteria", label: "Criteria" }, { id: "fees", label: "Fees & Terms" }].map(tab => (
+                      <button key={tab.id} onClick={() => setTab(bIdx, tab.id)} style={{
+                        padding: "8px 18px", border: "none", background: "none", cursor: "pointer",
+                        fontSize: 12, fontWeight: getTab(bIdx) === tab.id ? 700 : 500, fontFamily: T.font,
+                        color: getTab(bIdx) === tab.id ? bucket.color : T.textMuted,
+                        borderBottom: getTab(bIdx) === tab.id ? `2.5px solid ${bucket.color}` : "2.5px solid transparent",
+                        marginBottom: -2,
+                      }}>{tab.label}</button>
+                    ))}
+                  </div>
+
+                  {/* ── TAB: RATES ── */}
+                  {getTab(bIdx) === "rates" && <>
                   {/* ── RATE TABLE ── */}
                   <div style={{ overflowX: "auto" }}>
                     <table style={{
@@ -398,43 +416,6 @@ export default function ProductBuckets() {
                   </div>
 
                   {/* ── TERMS STRIP ── */}
-                  <div style={{
-                    display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16,
-                    padding: "12px 14px", background: "#F8F7F4", borderRadius: 10,
-                    border: `1px solid ${T.borderLight}`,
-                  }}>
-                    {bucket.products.map((p) => (
-                      <span key={p.code + "-erc"} style={{
-                        fontSize: 11, color: T.textSecondary,
-                        padding: "3px 10px", background: "#FFFFFF",
-                        borderRadius: 6, border: `1px solid ${T.borderLight}`,
-                      }}>
-                        <span style={{ fontWeight: 600 }}>ERC ({p.type}):</span> {p.erc}
-                      </span>
-                    ))}
-                    <span style={{
-                      fontSize: 11, color: T.textSecondary,
-                      padding: "3px 10px", background: "#FFFFFF",
-                      borderRadius: 6, border: `1px solid ${T.borderLight}`,
-                    }}>
-                      <span style={{ fontWeight: 600 }}>Loan Term:</span> {bucket.termRange}
-                    </span>
-                    <span style={{
-                      fontSize: 11, color: T.textSecondary,
-                      padding: "3px 10px", background: "#FFFFFF",
-                      borderRadius: 6, border: `1px solid ${T.borderLight}`,
-                    }}>
-                      <span style={{ fontWeight: 600 }}>Product Fee:</span> {bucket.fee}
-                    </span>
-                    <span style={{
-                      fontSize: 11, color: T.textSecondary,
-                      padding: "3px 10px", background: "#FFFFFF",
-                      borderRadius: 6, border: `1px solid ${T.borderLight}`,
-                    }}>
-                      <span style={{ fontWeight: 600 }}>Reversion:</span> {bucket.reversion}
-                    </span>
-                  </div>
-
                   {/* ── NOTES ── */}
                   {bucket.notes && (
                     <div style={{
@@ -444,9 +425,10 @@ export default function ProductBuckets() {
                       {bucket.notes}
                     </div>
                   )}
+                  </>}
 
-                  {/* ── CRITERIA SECTION ── */}
-                  {bucket.criteria && (() => {
+                  {/* ── TAB: CRITERIA ── */}
+                  {getTab(bIdx) === "criteria" && bucket.criteria && (() => {
                     const c = bucket.criteria;
                     const labelStyle = { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, color: T.textMuted, marginBottom: 2 };
                     const valStyle = { fontSize: 12, color: T.text, fontWeight: 400 };
@@ -454,12 +436,7 @@ export default function ProductBuckets() {
                     const pillBase = { display: "inline-block", fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 12, marginRight: 5, marginBottom: 4 };
 
                     return (
-                      <div style={{ marginTop: 18, padding: "16px 18px", background: T.bg, borderRadius: 10, border: `1px solid ${T.borderLight}` }}>
-                        {/* Title */}
-                        <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 14 }}>
-                          Criteria Overview
-                        </div>
-
+                      <div>
                         {/* Top two-column grid */}
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 32px" }}>
                           {/* Left column — General */}
@@ -519,31 +496,61 @@ export default function ProductBuckets() {
                           </div>
                         </div>
 
-                        {/* Valuation Fee Scale */}
-                        {c.valuationFees && (
-                          <div style={{ marginTop: 16 }}>
-                            <div style={{ ...labelStyle, marginBottom: 8 }}>Valuation Fee Scale</div>
-                            <table style={{ borderCollapse: "collapse", fontSize: 11, fontFamily: T.font }}>
-                              <thead>
-                                <tr style={{ borderBottom: `1px solid ${T.borderLight}` }}>
-                                  <th style={{ textAlign: "left", padding: "5px 16px 5px 0", fontWeight: 700, color: T.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>Property Value</th>
-                                  <th style={{ textAlign: "right", padding: "5px 0", fontWeight: 700, color: T.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>Fee</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {c.valuationFees.map((vf) => (
-                                  <tr key={vf.upTo} style={{ borderBottom: `1px solid ${T.borderLight}` }}>
-                                    <td style={{ padding: "4px 16px 4px 0", color: T.text }}>Up to {vf.upTo}</td>
-                                    <td style={{ padding: "4px 0", textAlign: "right", fontWeight: 600, color: T.navy }}>{vf.fee}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ── TAB: FEES & TERMS ── */}
+                  {getTab(bIdx) === "fees" && (() => {
+                    const c = bucket.criteria;
+                    return (
+                      <div>
+                        {/* Key terms */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+                          {[
+                            { label: "Product Fee", value: bucket.fee },
+                            { label: "Loan Term", value: bucket.termRange },
+                            { label: "Reversion Rate", value: bucket.reversion },
+                            { label: "Min Property Value", value: c?.property?.minValue || "£75,000" },
+                          ].map(item => (
+                            <div key={item.label} style={{ padding: "12px 14px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{item.label}</div>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* ERC per product type */}
+                        <div style={{ marginBottom: 20 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>Early Repayment Charges</div>
+                          <div style={{ display: "flex", gap: 10 }}>
+                            {bucket.products.map(p => (
+                              <div key={p.type} style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", marginBottom: 4 }}>{p.type}</div>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{p.erc}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Valuation fee scale */}
+                        {c?.valuationFees && (
+                          <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>Valuation Fee Scale</div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {c.valuationFees.map(vf => (
+                                <div key={vf.upTo} style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}`, textAlign: "center" }}>
+                                  <div style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, marginBottom: 4 }}>Up to {vf.upTo}</div>
+                                  <div style={{ fontSize: 16, fontWeight: 700, color: T.navy }}>{vf.fee}</div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
                     );
                   })()}
+
                 </div>
               )}
             </Card>
