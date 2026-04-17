@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card } from "../shared/primitives";
-import { LTV_ADJUSTMENTS, CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, PROPERTY_ADJUSTMENTS, EPC_ADJUSTMENTS, LOYALTY_ADJUSTMENTS, getRate } from "../data/pricing";
+import { LTV_ADJUSTMENTS, CREDIT_PROFILES, EMPLOYMENT_ADJUSTMENTS, PROPERTY_ADJUSTMENTS, EPC_ADJUSTMENTS, LOYALTY_ADJUSTMENTS } from "../data/pricing";
 
 // ─────────────────────────────────────────────
 // PERSISTENCE
@@ -58,22 +58,9 @@ const ALL_ACCEPTED_PROPERTY = ["Standard", "Non-Standard", "New Build", "Ex-Loca
 const ALL_ACCEPTED_EPC = ["A", "B", "C", "D", "E", "F", "G"];
 
 // ─────────────────────────────────────────────
-// RATE GENERATION FROM PRICING ENGINE
+// ALL LTV BANDS (used for rate grids)
 // ─────────────────────────────────────────────
-const generateRates = (baseRate, maxLTV, tierOverrides = {}) => {
-  const base = parseFloat(baseRate) || 0;
-  const max = parseInt(maxLTV) || 75;
-  // Use bucket-level LTV overrides if provided, else global
-  const ltvTiers = tierOverrides.ltv || LTV_ADJUSTMENTS;
-  return ltvTiers.map(ltv => {
-    // If ltv is from overrides, it might just have band+adj; fill in min/max from global
-    const globalLtv = LTV_ADJUSTMENTS.find(g => g.band === ltv.band) || ltv;
-    const mid = Math.round(((globalLtv.min || 0) + (globalLtv.max || 75)) / 2) || 30;
-    if (mid > max) return { band: ltv.band, rate: null };
-    const rate = Math.round((base + (ltv.adj != null ? ltv.adj : globalLtv.adj || 0)) * 100) / 100;
-    return { band: ltv.band, rate };
-  });
-};
+const ALL_LTV_BANDS = ["\u226460%", "60-75%", "75-85%", "85-90%", "90-95%"];
 
 // ─────────────────────────────────────────────
 // DEFAULT BUCKETS — Unified hierarchy
@@ -121,9 +108,9 @@ const DEFAULT_BUCKETS = [
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "P2F", baseRate: 4.19, erc: "3%, 2%", rates: null },
-      { type: "5-Year Fixed", code: "P5F", baseRate: 4.59, erc: "5%, 4%, 3%, 2%, 1%", rates: null },
-      { type: "2-Year Tracker", code: "PTR", baseRate: 4.84, erc: "No ERCs", rates: null },
+      { type: "2-Year Fixed", code: "P2F", erc: "3%, 2%", rates: { "\u226460%": 4.19, "60-75%": 4.49 } },
+      { type: "5-Year Fixed", code: "P5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 4.59, "60-75%": 4.89 } },
+      { type: "2-Year Tracker", code: "PTR", erc: "No ERCs", rates: { "\u226460%": 4.84, "60-75%": 5.14 } },
     ],
   },
   {
@@ -169,9 +156,9 @@ const DEFAULT_BUCKETS = [
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "H2F", baseRate: 4.49, erc: "4%, 3%", rates: null },
-      { type: "5-Year Fixed", code: "H5F", baseRate: 4.89, erc: "5%, 4%, 3%, 2%, 1%", rates: null },
-      { type: "2-Year Tracker", code: "HTR", baseRate: 5.14, erc: "No ERCs", rates: null },
+      { type: "2-Year Fixed", code: "H2F", erc: "4%, 3%", rates: { "\u226460%": 4.49, "60-75%": 4.79, "75-85%": 5.29, "85-90%": 5.59, "90-95%": 5.99 } },
+      { type: "5-Year Fixed", code: "H5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 4.89, "60-75%": 5.19, "75-85%": 5.69, "85-90%": 5.99, "90-95%": 6.39 } },
+      { type: "2-Year Tracker", code: "HTR", erc: "No ERCs", rates: { "\u226460%": 5.14, "60-75%": 5.44, "75-85%": 5.94, "85-90%": 6.24, "90-95%": 6.64 } },
     ],
   },
   {
@@ -216,9 +203,9 @@ const DEFAULT_BUCKETS = [
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "D2F", baseRate: 3.69, erc: "2%, 1%", rates: null },
-      { type: "5-Year Fixed", code: "D5F", baseRate: 4.09, erc: "5%, 4%, 3%, 2%, 1%", rates: null },
-      { type: "2-Year Tracker", code: "DTR", baseRate: 4.24, erc: "No ERCs", rates: null },
+      { type: "2-Year Fixed", code: "D2F", erc: "2%, 1%", rates: { "\u226460%": 3.69, "60-75%": 3.99, "75-85%": 4.49, "85-90%": 4.79 } },
+      { type: "5-Year Fixed", code: "D5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 4.09, "60-75%": 4.39, "75-85%": 4.89, "85-90%": 5.19 } },
+      { type: "2-Year Tracker", code: "DTR", erc: "No ERCs", rates: { "\u226460%": 4.34, "60-75%": 4.64, "75-85%": 5.14, "85-90%": 5.44 } },
     ],
   },
   {
@@ -264,9 +251,9 @@ const DEFAULT_BUCKETS = [
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "M2F", baseRate: 3.49, erc: "2%, 1%", rates: null },
-      { type: "5-Year Fixed", code: "M5F", baseRate: 3.89, erc: "5%, 4%, 3%, 2%, 1%", rates: null },
-      { type: "2-Year Tracker", code: "MTR", baseRate: 4.04, erc: "No ERCs", rates: null },
+      { type: "2-Year Fixed", code: "M2F", erc: "2%, 1%", rates: { "\u226460%": 3.49, "60-75%": 3.79 } },
+      { type: "5-Year Fixed", code: "M5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 3.89, "60-75%": 4.19 } },
+      { type: "2-Year Tracker", code: "MTR", erc: "No ERCs", rates: { "\u226460%": 4.04, "60-75%": 4.34 } },
     ],
   },
   {
@@ -316,9 +303,9 @@ const DEFAULT_BUCKETS = [
       ],
     },
     products: [
-      { type: "2-Year Fixed", code: "B2F", baseRate: 5.19, erc: "3%, 2%", rates: null },
-      { type: "5-Year Fixed", code: "B5F", baseRate: 5.49, erc: "5%, 4%, 3%, 2%, 1%", rates: null },
-      { type: "Tracker", code: "BTR", baseRate: 5.49, erc: "No ERCs", rates: null },
+      { type: "2-Year Fixed", code: "B2F", erc: "3%, 2%", rates: { "\u226460%": 5.19, "60-75%": 5.49 } },
+      { type: "5-Year Fixed", code: "B5F", erc: "5%, 4%, 3%, 2%, 1%", rates: { "\u226460%": 5.49, "60-75%": 5.79 } },
+      { type: "Tracker", code: "BTR", erc: "No ERCs", rates: { "\u226460%": 5.49, "60-75%": 5.79 } },
     ],
   },
 ];
@@ -371,7 +358,7 @@ const emptyBucket = () => ({
 });
 
 const emptyProduct = () => ({
-  type: "", code: "", baseRate: 4.50, erc: "", rates: null,
+  type: "", code: "", erc: "", rates: {},
 });
 
 // ─────────────────────────────────────────────
@@ -731,34 +718,56 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
         {/* SECTION 7: INITIAL PRODUCTS */}
         <div style={sectionTitleSt}>7. Products</div>
         <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 12 }}>
-          Define the product types for this bucket. Rates are auto-generated from the base rate + LTV adjustments.
+          Define the product types for this bucket. Full rate editing is available in the "Edit Rates" tab after creation.
         </div>
         {(form.products || []).map((prod, pIdx) => (
-          <div key={pIdx} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 2fr 32px", gap: 8, marginBottom: 8, alignItems: "end" }}>
-            <div>
-              {pIdx === 0 && <label style={labelSt}>Type</label>}
-              <input style={inputSt} value={prod.type} onChange={(e) => setProduct(pIdx, "type", e.target.value)} placeholder="e.g. 2-Year Fixed" />
+          <div key={pIdx} style={{ marginBottom: 14, padding: 12, borderRadius: 8, border: `1px solid ${T.borderLight}`, background: T.bg }}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 32px", gap: 8, marginBottom: 8, alignItems: "end" }}>
+              <div>
+                {pIdx === 0 && <label style={labelSt}>Type</label>}
+                <input style={inputSt} value={prod.type} onChange={(e) => setProduct(pIdx, "type", e.target.value)} placeholder="e.g. 2-Year Fixed" />
+              </div>
+              <div>
+                {pIdx === 0 && <label style={labelSt}>Code</label>}
+                <input style={inputSt} value={prod.code} onChange={(e) => setProduct(pIdx, "code", e.target.value)} placeholder="P2F" />
+              </div>
+              <div>
+                {pIdx === 0 && <label style={labelSt}>ERC</label>}
+                <input style={inputSt} value={prod.erc} onChange={(e) => setProduct(pIdx, "erc", e.target.value)} placeholder="3%, 2%" />
+              </div>
+              <span
+                onClick={() => removeProduct(pIdx)}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 34, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", transition: "background 0.15s", marginBottom: 1 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                {Ico.x(14)}
+              </span>
             </div>
-            <div>
-              {pIdx === 0 && <label style={labelSt}>Code</label>}
-              <input style={inputSt} value={prod.code} onChange={(e) => setProduct(pIdx, "code", e.target.value)} placeholder="P2F" />
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: T.textMuted, marginRight: 4 }}>LTV Rates:</span>
+              {ALL_LTV_BANDS.map((band) => (
+                <div key={band} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                  <span style={{ fontSize: 10, color: T.textMuted }}>{band}</span>
+                  <input
+                    style={{ width: 54, padding: "4px 6px", borderRadius: 5, border: `1px solid ${T.border}`, fontSize: 11, fontFamily: T.font, color: T.text, background: T.card, outline: "none", textAlign: "center" }}
+                    type="number" step="0.01"
+                    value={(prod.rates && prod.rates[band]) || ""}
+                    placeholder="--"
+                    onChange={(e) => {
+                      setForm((prev) => {
+                        const next = JSON.parse(JSON.stringify(prev));
+                        if (!next.products[pIdx].rates) next.products[pIdx].rates = {};
+                        const v = parseFloat(e.target.value);
+                        if (isNaN(v)) { delete next.products[pIdx].rates[band]; }
+                        else { next.products[pIdx].rates[band] = v; }
+                        return next;
+                      });
+                    }}
+                  />
+                </div>
+              ))}
             </div>
-            <div>
-              {pIdx === 0 && <label style={labelSt}>Base Rate</label>}
-              <input style={inputSt} type="number" step="0.01" value={prod.baseRate} onChange={(e) => setProduct(pIdx, "baseRate", parseFloat(e.target.value) || 0)} />
-            </div>
-            <div>
-              {pIdx === 0 && <label style={labelSt}>ERC</label>}
-              <input style={inputSt} value={prod.erc} onChange={(e) => setProduct(pIdx, "erc", e.target.value)} placeholder="3%, 2%" />
-            </div>
-            <span
-              onClick={() => removeProduct(pIdx)}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 34, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", transition: "background 0.15s", marginBottom: 1 }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              {Ico.x(14)}
-            </span>
           </div>
         ))}
         <Btn small onClick={addProduct} style={{ marginTop: 4, marginBottom: 8 }}>
@@ -931,76 +940,102 @@ function CriteriaTable({ bucket }) {
 }
 
 // ─────────────────────────────────────────────
-// PRODUCTS TAB
+// PRODUCTS TAB (Edit Rates — inline grid editor)
 // ─────────────────────────────────────────────
 function ProductsTab({ bucket, onUpdateProducts }) {
   const [products, setProducts] = useState(bucket.products || []);
 
+  const commit = (next) => { setProducts(next); onUpdateProducts(next); };
+
   const updateProduct = (idx, field, val) => {
-    const next = products.map((p, i) => i === idx ? { ...p, [field]: val } : p);
-    setProducts(next);
-    onUpdateProducts(next);
+    commit(products.map((p, i) => i === idx ? { ...p, [field]: val } : p));
   };
 
-  const addProduct = () => {
-    const next = [...products, emptyProduct()];
-    setProducts(next);
-    onUpdateProducts(next);
+  const updateRate = (idx, band, val) => {
+    const next = products.map((p, i) => {
+      if (i !== idx) return p;
+      const rates = { ...(p.rates || {}) };
+      const v = parseFloat(val);
+      if (isNaN(v) || val === "") { delete rates[band]; } else { rates[band] = v; }
+      return { ...p, rates };
+    });
+    commit(next);
   };
 
-  const removeProduct = (idx) => {
-    const next = products.filter((_, i) => i !== idx);
-    setProducts(next);
-    onUpdateProducts(next);
-  };
+  const addProduct = () => commit([...products, emptyProduct()]);
+  const removeProduct = (idx) => commit(products.filter((_, i) => i !== idx));
+
+  const maxLTV = bucket.maxLTV || 75;
+  const ltvBandMax = { "\u226460%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+  const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
 
   const inputSt = {
-    width: "100%", padding: "7px 10px", borderRadius: 7,
+    padding: "7px 10px", borderRadius: 7,
     border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font,
     color: T.text, background: T.card, outline: "none", boxSizing: "border-box",
   };
-  const labelSt = { fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 };
+  const labelSt = { fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, padding: "8px 6px" };
+  const rateInputSt = {
+    width: 60, padding: "6px 4px", borderRadius: 6, textAlign: "center",
+    border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font,
+    color: T.text, background: T.card, outline: "none",
+  };
 
   return (
     <div>
       <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>
-        Define product types for this bucket. Rates are auto-generated from each product's base rate using the pricing engine LTV adjustments.
+        Edit product rates per LTV band. Empty cells mean the product is not offered at that LTV.
       </div>
 
-      {/* Column headers */}
-      {products.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 100px 2fr 32px", gap: 10, marginBottom: 6 }}>
-          <div style={labelSt}>Product Type</div>
-          <div style={labelSt}>Code</div>
-          <div style={labelSt}>Base Rate</div>
-          <div style={labelSt}>ERC Schedule</div>
-          <div />
-        </div>
-      )}
-
-      {products.map((prod, idx) => (
-        <div key={idx} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 100px 2fr 32px", gap: 10, marginBottom: 8, alignItems: "center" }}>
-          <input style={inputSt} value={prod.type} onChange={(e) => updateProduct(idx, "type", e.target.value)} placeholder="e.g. 2-Year Fixed" />
-          <input style={inputSt} value={prod.code} onChange={(e) => updateProduct(idx, "code", e.target.value)} placeholder="P2F" />
-          <div style={{ position: "relative" }}>
-            <input
-              style={{ ...inputSt, paddingRight: 20 }}
-              type="number" step="0.01" value={prod.baseRate}
-              onChange={(e) => updateProduct(idx, "baseRate", parseFloat(e.target.value) || 0)}
-            />
-            <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: T.textMuted }}>%</span>
-          </div>
-          <input style={inputSt} value={prod.erc} onChange={(e) => updateProduct(idx, "erc", e.target.value)} placeholder="3%, 2%" />
-          <span
-            onClick={() => removeProduct(idx)}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", transition: "background 0.15s" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            {Ico.x(14)}
-          </span>
-        </div>
-      ))}
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
+          <thead>
+            <tr style={{ borderBottom: `2px solid ${T.border}` }}>
+              <th style={labelSt}>Product Type</th>
+              <th style={labelSt}>Code</th>
+              <th style={labelSt}>ERC</th>
+              {visibleBands.map((b) => <th key={b} style={{ ...labelSt, textAlign: "center" }}>{b}</th>)}
+              <th style={{ width: 32 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((prod, idx) => (
+              <tr key={idx} style={{ borderBottom: `1px solid ${T.borderLight}`, background: idx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                <td style={{ padding: "6px" }}>
+                  <input style={{ ...inputSt, width: "100%" }} value={prod.type} onChange={(e) => updateProduct(idx, "type", e.target.value)} placeholder="e.g. 2-Year Fixed" />
+                </td>
+                <td style={{ padding: "6px" }}>
+                  <input style={{ ...inputSt, width: 64 }} value={prod.code} onChange={(e) => updateProduct(idx, "code", e.target.value)} placeholder="P2F" />
+                </td>
+                <td style={{ padding: "6px" }}>
+                  <input style={{ ...inputSt, width: "100%", minWidth: 80 }} value={prod.erc} onChange={(e) => updateProduct(idx, "erc", e.target.value)} placeholder="3%, 2%" />
+                </td>
+                {visibleBands.map((band) => (
+                  <td key={band} style={{ padding: "6px", textAlign: "center" }}>
+                    <input
+                      style={rateInputSt}
+                      type="number" step="0.01"
+                      value={(prod.rates && prod.rates[band] != null) ? prod.rates[band] : ""}
+                      placeholder="--"
+                      onChange={(e) => updateRate(idx, band, e.target.value)}
+                    />
+                  </td>
+                ))}
+                <td style={{ padding: "6px" }}>
+                  <span
+                    onClick={() => removeProduct(idx)}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", transition: "background 0.15s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    {Ico.x(14)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {products.length === 0 && (
         <div style={{ padding: "24px 0", textAlign: "center", color: T.textMuted, fontSize: 12, fontStyle: "italic" }}>
@@ -1009,7 +1044,7 @@ function ProductsTab({ bucket, onUpdateProducts }) {
       )}
 
       <Btn small onClick={addProduct} style={{ marginTop: 8 }}>
-        + Add Product
+        + Add Product Type
       </Btn>
     </div>
   );
@@ -1127,96 +1162,137 @@ function FeesTab({ bucket, onUpdateFees }) {
 }
 
 // ─────────────────────────────────────────────
-// RATES TAB — Auto-generated from pricing engine
+// RATES TAB — Reads explicit rates from product.rates
 // ─────────────────────────────────────────────
 function RatesTab({ bucket }) {
   const products = bucket.products || [];
   if (products.length === 0) {
     return (
       <div style={{ fontSize: 12, color: T.textMuted, fontStyle: "italic", padding: "20px 0" }}>
-        No products configured for this bucket yet. Add products in the Products tab.
+        No products configured for this bucket yet. Add products in the Edit Rates tab.
       </div>
     );
   }
 
   const maxLTV = bucket.maxLTV || 75;
-  const overrides = bucket.tierOverrides || {};
-  const acceptedProfiles = (bucket.acceptedCreditProfiles || ["clean"])
-    .map(id => CREDIT_PROFILES.find(cp => cp.id === id))
-    .filter(Boolean);
+  const ltvBandMax = { "\u226460%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+  const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
 
-  // Determine LTV tiers to use
-  const ltvTiers = overrides.ltv || LTV_ADJUSTMENTS;
+  const tierOverrides = bucket.tierOverrides || {};
+  const acceptedEmployments = bucket.acceptedEmployments || ["Employed", "Self-Employed", "Contractor"];
+  const acceptedProperties = bucket.acceptedProperties || ["Standard", "New Build"];
+  const acceptedEpc = bucket.acceptedEpc || ["A", "B", "C", "D", "E", "F", "G"];
+
+  const dimSectionSt = (color) => ({
+    padding: "7px 14px", fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+    letterSpacing: 1, color: "#fff", background: color || bucket.color,
+    borderBottom: `1px solid ${T.borderLight}`,
+  });
+  const dimRowSt = (i) => ({
+    display: "flex", borderBottom: `1px solid ${T.borderLight}`,
+    background: i % 2 === 0 ? "#FAFAF8" : "#FFFFFF",
+  });
+  const dimLabelSt = { width: "55%", padding: "8px 14px 8px 28px", fontSize: 12, color: T.text };
+  const dimValueSt = { width: "45%", padding: "8px 14px", fontSize: 12, fontWeight: 600, textAlign: "right" };
+
+  const fmtAdj = (v) => {
+    if (v === 0) return { text: "Base", color: T.textMuted };
+    const sign = v > 0 ? "+" : "";
+    return { text: `${sign}${v.toFixed(2)}%`, color: v > 0 ? "#B07A00" : "#059669" };
+  };
+
+  // Build dimension loading rows
+  const dimRows = [];
+  // Credit
+  const acceptedProfiles = (bucket.acceptedCreditProfiles || ["clean"])
+    .map(id => CREDIT_PROFILES.find(cp => cp.id === id)).filter(Boolean);
+  acceptedProfiles.forEach(cp => {
+    const ov = tierOverrides.credit && tierOverrides.credit[cp.id];
+    dimRows.push({ section: "CREDIT PROFILES", label: cp.label, adj: ov != null ? ov : cp.adj });
+  });
+  // Employment
+  acceptedEmployments.forEach(emp => {
+    const g = EMPLOYMENT_ADJUSTMENTS[emp] || 0;
+    const ov = tierOverrides?.employment?.[emp];
+    dimRows.push({ section: "EMPLOYMENT", label: emp, adj: ov != null ? ov : g });
+  });
+  // Property
+  acceptedProperties.forEach(prop => {
+    const g = PROPERTY_ADJUSTMENTS[prop] || 0;
+    const ov = tierOverrides?.property?.[prop];
+    dimRows.push({ section: "PROPERTY", label: prop, adj: ov != null ? ov : g });
+  });
+  // EPC
+  acceptedEpc.forEach(rating => {
+    const g = EPC_ADJUSTMENTS[rating] || 0;
+    const ov = tierOverrides?.epc?.[rating];
+    dimRows.push({ section: "EPC", label: rating, adj: ov != null ? ov : g });
+  });
+  // Loyalty
+  Object.entries(LOYALTY_ADJUSTMENTS).forEach(([tier, adj]) => {
+    const ov = tierOverrides?.loyalty?.[tier];
+    dimRows.push({ section: "LOYALTY", label: tier, adj: ov != null ? ov : adj });
+  });
+
+  // Group by section
+  const sections = [];
+  let currentSection = null;
+  dimRows.forEach(r => {
+    if (r.section !== currentSection) {
+      sections.push({ name: r.section, rows: [] });
+      currentSection = r.section;
+    }
+    sections[sections.length - 1].rows.push(r);
+  });
 
   return (
     <div>
+      {/* LTV x Product rate grid */}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
           <thead>
             <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 160, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Profile / LTV
+              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 100, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                LTV
               </th>
               {products.map((p) => (
                 <th key={p.code} style={{ textAlign: "center", padding: "8px 6px", fontSize: 11, fontWeight: 700, color: T.navy, minWidth: 100 }}>
-                  <div>{p.type}</div>
-                  <div style={{ fontSize: 9, fontWeight: 500, color: T.textMuted, marginTop: 2 }}>Base: {(p.baseRate || 0).toFixed(2)}%</div>
+                  {p.type}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {acceptedProfiles.map((profile) => {
-              const creditAdj = profile.adj || 0;
-              return [
-                // Credit profile section header
-                <tr key={`header-${profile.id}`} style={{ background: bucket.color + "14" }}>
-                  <td
-                    colSpan={products.length + 1}
-                    style={{ padding: "7px 10px", fontSize: 11, fontWeight: 700, color: bucket.color, letterSpacing: 0.3 }}
-                  >
-                    {"\u25B8"} {profile.label} ({creditAdj >= 0 ? "+" : ""}{creditAdj.toFixed(2)}%)
-                  </td>
-                </tr>,
-                // LTV band rows under this credit profile
-                ...ltvTiers.map((ltv, rIdx) => {
-                  const globalLtv = LTV_ADJUSTMENTS.find(g => g.band === ltv.band) || ltv;
-                  const mid = Math.round(((globalLtv.min || 0) + (globalLtv.max || 75)) / 2) || 30;
-                  const ltvAdj = ltv.adj != null ? ltv.adj : globalLtv.adj || 0;
-                  return (
-                    <tr key={`${profile.id}-${ltv.band}`} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFFFFF" }}>
-                      <td style={{ padding: "8px 10px 8px 24px", fontWeight: 600, fontSize: 12, color: T.navy, whiteSpace: "nowrap" }}>
-                        {ltv.band}
+            {visibleBands.map((band, rIdx) => (
+              <tr key={band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFFFFF" }}>
+                <td style={{ padding: "8px 10px", fontWeight: 600, fontSize: 12, color: T.navy, whiteSpace: "nowrap" }}>
+                  {band}
+                </td>
+                {products.map((prod) => {
+                  const rate = prod.rates && prod.rates[band];
+                  const code = prod.code + band.replace(/[^0-9]/g, "");
+                  if (rate == null) {
+                    return (
+                      <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
+                        <span style={{ color: "#CBD5E1", fontSize: 14 }}>&mdash;</span>
                       </td>
-                      {products.map((prod) => {
-                        const base = parseFloat(prod.baseRate) || 0;
-                        if (mid > maxLTV) {
-                          return (
-                            <td key={prod.code + ltv.band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
-                              <span style={{ color: "#CBD5E1", fontSize: 14 }}>&mdash;</span>
-                            </td>
-                          );
-                        }
-                        const rate = Math.round((base + ltvAdj + creditAdj) * 100) / 100;
-                        const code = prod.code + ltv.band.replace(/[^0-9]/g, "");
-                        return (
-                          <td key={prod.code + ltv.band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
-                            <div>
-                              <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(rate) }}>
-                                {rate.toFixed(2)}%
-                              </span>
-                              <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1, letterSpacing: 0.2 }}>
-                                ({code})
-                              </div>
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
+                    );
+                  }
+                  return (
+                    <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
+                      <div>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(rate) }}>
+                          {rate.toFixed(2)}%
+                        </span>
+                        <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1, letterSpacing: 0.2 }}>
+                          ({code})
+                        </div>
+                      </div>
+                    </td>
                   );
-                }),
-              ];
-            })}
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -1236,97 +1312,44 @@ function RatesTab({ bucket }) {
           {"> 5.50%"}
         </span>
         <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto" }}>
-          Rate = base + LTV adj + credit adj. Max LTV: {maxLTV}%
+          Max LTV: {maxLTV}%
         </span>
       </div>
 
-      {/* Dimension Loadings */}
-      {(() => {
-        const acceptedEmployments = bucket.acceptedEmployments || ["Employed", "Self-Employed", "Contractor"];
-        const acceptedProperties = bucket.acceptedProperties || ["Standard", "New Build"];
-        const acceptedEpc = bucket.acceptedEpc || ["A", "B", "C", "D", "E", "F", "G"];
-        const tierOverrides = bucket.tierOverrides || {};
-        return (
-          <div style={{ marginTop: 16, padding: "14px 16px", background: T.bg, borderRadius: 10, border: `1px solid ${T.borderLight}` }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: T.textMuted, marginBottom: 10 }}>
-              Additional Loadings (applied on top of displayed rates at application time)
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-              {/* Employment */}
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>EMPLOYMENT</div>
-                {acceptedEmployments.map(emp => {
-                  const globalAdj = EMPLOYMENT_ADJUSTMENTS[emp] || 0;
-                  const override = tierOverrides?.employment?.[emp];
-                  const effective = override != null ? override : globalAdj;
-                  return (
-                    <div key={emp} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "2px 0" }}>
-                      <span>{emp}</span>
-                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
-                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Property */}
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>PROPERTY</div>
-                {acceptedProperties.map(prop => {
-                  const globalAdj = PROPERTY_ADJUSTMENTS[prop] || 0;
-                  const override = tierOverrides?.property?.[prop];
-                  const effective = override != null ? override : globalAdj;
-                  return (
-                    <div key={prop} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "2px 0" }}>
-                      <span>{prop}</span>
-                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
-                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* EPC */}
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>EPC</div>
-                {acceptedEpc.map(rating => {
-                  const globalAdj = EPC_ADJUSTMENTS[rating] || 0;
-                  const override = tierOverrides?.epc?.[rating];
-                  const effective = override != null ? override : globalAdj;
-                  return (
-                    <div key={rating} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "2px 0" }}>
-                      <span>{rating}</span>
-                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
-                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 6 }}>LOYALTY</div>
-              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                {Object.entries(LOYALTY_ADJUSTMENTS).map(([tier, adj]) => {
-                  const override = tierOverrides?.loyalty?.[tier];
-                  const effective = override != null ? override : adj;
-                  return (
-                    <div key={tier} style={{ fontSize: 11 }}>
-                      <span>{tier}: </span>
-                      <span style={{ fontWeight: 600, color: effective > 0 ? "#B07A00" : effective < 0 ? "#059669" : T.textMuted }}>
-                        {effective === 0 ? "Base" : `${effective > 0 ? "+" : ""}${effective.toFixed(2)}%`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div style={{ fontSize: 10, color: T.textMuted, marginTop: 10, fontStyle: "italic" }}>
-              Rate range for any cell: displayed rate (best case) to displayed rate + max combined loading
-            </div>
+      {/* Dimension Loadings — single table */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 10 }}>
+          Dimension Loadings
+        </div>
+        <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 8, fontStyle: "italic" }}>
+          Applied on top of displayed rates at application time.
+        </div>
+        <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
+          {/* Header row */}
+          <div style={{ display: "flex", borderBottom: `2px solid ${T.border}`, background: "#F8FAFC" }}>
+            <div style={{ width: "55%", padding: "8px 14px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Dimension</div>
+            <div style={{ width: "45%", padding: "8px 14px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Adjustment</div>
           </div>
-        );
-      })()}
+          {sections.map((section) => {
+            let rowCount = 0;
+            return [
+              <div key={`sec-${section.name}`} style={dimSectionSt(bucket.color)}>
+                {section.name}
+              </div>,
+              ...section.rows.map((r) => {
+                const f = fmtAdj(r.adj);
+                const i = rowCount++;
+                return (
+                  <div key={`${section.name}-${r.label}`} style={dimRowSt(i)}>
+                    <div style={dimLabelSt}>{r.label}</div>
+                    <div style={{ ...dimValueSt, color: f.color }}>{f.text}</div>
+                  </div>
+                );
+              }),
+            ];
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1711,7 +1734,7 @@ export default function ProductBuckets() {
             Product Catalogue
           </div>
           <div style={{ fontSize: 13, color: T.textMuted }}>
-            Bucket-based product hierarchy with auto-generated rate grids from the pricing engine
+            Bucket-based product hierarchy with explicit rate grids and dimension loadings
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -1783,7 +1806,7 @@ export default function ProductBuckets() {
                 <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 16 }}>
                   {[
                     { id: "rates", label: "Rates" },
-                    { id: "products", label: "Products" },
+                    { id: "products", label: "Edit Rates" },
                     { id: "criteria", label: "Criteria" },
                     { id: "fees", label: "Fees & Terms" },
                     { id: "tiers", label: "Tiers" },
