@@ -1221,10 +1221,13 @@ function FeesTab({ bucket, onUpdateFees }) {
 // ─────────────────────────────────────────────
 function RatesTab({ bucket }) {
   const products = bucket.products || [];
+  const tiers = bucket.tiers || [];
+  const [selectedTier, setSelectedTier] = useState("base");
+
   if (products.length === 0) {
     return (
       <div style={{ fontSize: 12, color: T.textMuted, fontStyle: "italic", padding: "20px 0" }}>
-        No products configured for this bucket yet. Add products in the Edit Rates tab.
+        No products configured yet. Add products in the Edit Rates tab.
       </div>
     );
   }
@@ -1233,49 +1236,85 @@ function RatesTab({ bucket }) {
   const ltvBandMax = { "\u226460%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
   const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
 
+  const activeTier = selectedTier !== "base" ? tiers[parseInt(selectedTier)] : null;
+  const TIER_COLORS = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"];
+
+  const getTierAdj = (productType, band) => {
+    if (!activeTier) return 0;
+    if (activeTier.adjustmentType === "flat") return parseFloat(activeTier.flatAdj) || 0;
+    return parseFloat(activeTier.gridAdj?.[productType]?.[band]) || parseFloat(activeTier.flatAdj) || 0;
+  };
+
   return (
     <div>
-      {/* LTV x Product rate grid */}
+      {/* Tier selector */}
+      {tiers.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Showing:</span>
+          <div style={{ display: "flex", gap: 0 }}>
+            <button onClick={() => setSelectedTier("base")} style={{
+              padding: "6px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
+              background: selectedTier === "base" ? T.navy : T.card, color: selectedTier === "base" ? "#fff" : T.textMuted,
+              border: `1px solid ${selectedTier === "base" ? T.navy : T.border}`, borderRadius: "6px 0 0 6px",
+            }}>Base Rates</button>
+            {tiers.map((tier, tIdx) => (
+              <button key={tIdx} onClick={() => setSelectedTier(String(tIdx))} style={{
+                padding: "6px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
+                background: selectedTier === String(tIdx) ? TIER_COLORS[tIdx % 5] : T.card,
+                color: selectedTier === String(tIdx) ? "#fff" : T.textMuted,
+                border: `1px solid ${selectedTier === String(tIdx) ? TIER_COLORS[tIdx % 5] : T.border}`,
+                borderRadius: tIdx === tiers.length - 1 ? "0 6px 6px 0" : 0,
+              }}>{tier.name}</button>
+            ))}
+          </div>
+          {activeTier && (
+            <span style={{ fontSize: 11, color: TIER_COLORS[parseInt(selectedTier) % 5], fontWeight: 600 }}>
+              {activeTier.adjustmentType === "flat"
+                ? `${(activeTier.flatAdj || 0) >= 0 ? "+" : ""}${(activeTier.flatAdj || 0).toFixed(2)}% flat`
+                : "varies by term/LTV"}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Rate grid */}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
           <thead>
             <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 100, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                LTV
-              </th>
+              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 100, textTransform: "uppercase" }}>LTV</th>
               {products.map((p) => (
-                <th key={p.code} style={{ textAlign: "center", padding: "8px 6px", fontSize: 11, fontWeight: 700, color: T.navy, minWidth: 100 }}>
-                  {p.type}
-                </th>
+                <th key={p.code} style={{ textAlign: "center", padding: "8px 6px", fontSize: 11, fontWeight: 700, color: T.navy, minWidth: 120 }}>{p.type}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {visibleBands.map((band, rIdx) => (
-              <tr key={band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFFFFF" }}>
-                <td style={{ padding: "8px 10px", fontWeight: 600, fontSize: 12, color: T.navy, whiteSpace: "nowrap" }}>
-                  {band}
-                </td>
+              <tr key={band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                <td style={{ padding: "8px 10px", fontWeight: 600, fontSize: 12, color: T.navy }}>{band}</td>
                 {products.map((prod) => {
-                  const rate = prod.rates && prod.rates[band];
-                  const code = prod.code + band.replace(/[^0-9]/g, "");
-                  if (rate == null) {
-                    return (
-                      <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
-                        <span style={{ color: "#CBD5E1", fontSize: 14 }}>&mdash;</span>
-                      </td>
-                    );
+                  const baseRate = prod.rates?.[band];
+                  if (baseRate == null) {
+                    return <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px" }}><span style={{ color: "#CBD5E1" }}>—</span></td>;
                   }
+                  const adj = getTierAdj(prod.type, band);
+                  const finalRate = Math.round((baseRate + adj) * 100) / 100;
+                  const code = prod.code + band.replace(/[^0-9]/g, "");
                   return (
-                    <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px", verticalAlign: "middle" }}>
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(rate) }}>
-                          {rate.toFixed(2)}%
-                        </span>
-                        <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1, letterSpacing: 0.2 }}>
-                          ({code})
+                    <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px" }}>
+                      {activeTier ? (
+                        <div>
+                          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 1 }}>{baseRate.toFixed(2)}%</div>
+                          <div style={{ fontSize: 9, color: adj >= 0 ? "#B07A00" : "#059669", fontWeight: 600 }}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</div>
+                          <div style={{ fontWeight: 800, fontSize: 14, color: rateColor(finalRate), marginTop: 1 }}>{finalRate.toFixed(2)}%</div>
+                          <div style={{ fontSize: 8, color: T.textMuted }}>({code})</div>
                         </div>
-                      </div>
+                      ) : (
+                        <div>
+                          <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(baseRate) }}>{baseRate.toFixed(2)}%</span>
+                          <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1 }}>({code})</div>
+                        </div>
+                      )}
                     </td>
                   );
                 })}
@@ -1285,67 +1324,33 @@ function RatesTab({ bucket }) {
         </table>
       </div>
 
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.borderLight}`, flexWrap: "wrap" }}>
+      {/* Legend + tier list */}
+      <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.borderLight}`, flexWrap: "wrap", alignItems: "center" }}>
         <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 4, background: "#059669", display: "inline-block" }} />
-          {"< 4.50%"}
-        </span>
-        <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 4, background: "#D97706", display: "inline-block" }} />
-          4.50% - 5.50%
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: "#059669" }} /> {"< 4.50%"}
         </span>
         <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 4, background: "#DC2626", display: "inline-block" }} />
-          {"> 5.50%"}
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: "#D97706" }} /> 4.50% - 5.50%
         </span>
-        <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto" }}>
-          Max LTV: {maxLTV}%
+        <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: "#DC2626" }} /> {"> 5.50%"}
         </span>
+        <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto" }}>Max LTV: {maxLTV}%</span>
       </div>
 
-      {/* Pricing Tiers Applied On Top */}
-      {(bucket.tiers && bucket.tiers.length > 0) && (
-        <div style={{ marginTop: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 10 }}>
-            Pricing Tiers Applied On Top
-          </div>
-          <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", fontFamily: T.font }}>
-            {bucket.tiers.map((tier, tIdx) => {
-              const tierColor = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"][tIdx % 5];
-              let adjLabel;
-              if (tier.adjustmentType === "flat") {
-                adjLabel = `${tier.flatAdj >= 0 ? "+" : ""}${tier.flatAdj.toFixed(2)}% (flat)`;
-              } else {
-                const vals = [];
-                Object.values(tier.gridAdj || {}).forEach(bands => Object.values(bands).forEach(v => vals.push(v)));
-                if (vals.length > 0) {
-                  const mn = Math.min(...vals), mx = Math.max(...vals);
-                  adjLabel = mn === mx
-                    ? `+${mn.toFixed(2)}% (varies by term/LTV)`
-                    : `+${mn.toFixed(2)}% to +${mx.toFixed(2)}% (varies by term/LTV)`;
-                } else {
-                  adjLabel = "+0.00% (varies by term/LTV)";
-                }
-              }
-              return (
-                <div
-                  key={tIdx}
-                  style={{
-                    display: "flex", alignItems: "center", padding: "8px 14px",
-                    borderBottom: tIdx < bucket.tiers.length - 1 ? `1px solid ${T.borderLight}` : "none",
-                    background: tIdx % 2 === 0 ? "#FAFAF8" : "#FFF",
-                  }}
-                >
-                  <span style={{ fontSize: 10, fontWeight: 700, color: tierColor, minWidth: 48 }}>Tier {tIdx + 1}:</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: T.navy, minWidth: 160 }}>{tier.name}</span>
-                  <span style={{ fontSize: 12, color: tier.flatAdj < 0 ? "#059669" : tier.flatAdj === 0 ? T.textMuted : "#B07A00", fontWeight: 600 }}>
-                    {adjLabel}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+      {/* Tier summary */}
+      {tiers.length > 0 && (
+        <div style={{ marginTop: 16, padding: "12px 16px", background: T.bg, borderRadius: 8, border: `1px solid ${T.borderLight}` }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Pricing Tiers</div>
+          {tiers.map((tier, tIdx) => (
+            <div key={tIdx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 12 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 4, background: TIER_COLORS[tIdx % 5], flexShrink: 0 }} />
+              <span style={{ fontWeight: 600, color: T.text, minWidth: 140 }}>{tier.name}</span>
+              <span style={{ color: T.textMuted, fontSize: 11 }}>
+                {Object.entries(tier.conditions || {}).filter(([,v]) => v?.length).map(([k,v]) => `${k}: ${v.join(", ")}`).join(" · ")}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
