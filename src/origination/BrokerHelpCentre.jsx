@@ -240,43 +240,96 @@ export default function BrokerHelpCentre({ open, onClose }) {
                         </div>
 
                         {/* Expanded content */}
-                        {isExpanded && (
+                        {isExpanded && (() => {
+                          const TIER_COLORS = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"];
+                          const visibleBands = ["≤60%", "60-75%", "75-85%", "85-90%", "90-95%"].filter(b => {
+                            const bMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+                            return bMax[b] <= (bucket.maxLTV || 75);
+                          });
+                          const allTiers = [{ name: "Base", _isBase: true }, ...tiers];
+                          const getTierAdj = (tier, prodType, band) => {
+                            if (!tier || tier._isBase) return 0;
+                            if (tier.adjustmentType === "flat") return parseFloat(tier.flatAdj) || 0;
+                            return parseFloat(tier.gridAdj?.[prodType]?.[band]) || parseFloat(tier.flatAdj) || 0;
+                          };
+
+                          return (
                           <div style={{ borderTop: `1px solid ${T.borderLight}`, padding: "16px 18px" }}>
-                            {/* Rate grid */}
+                            {/* Fee bar */}
+                            {bucket.fees && (
+                              <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+                                {bucket.fees.productFee && (
+                                  <div style={{ padding: "5px 10px", borderRadius: 8, background: bucket.color + "0A", border: `1px solid ${bucket.color}20`, display: "flex", alignItems: "center", gap: 5 }}>
+                                    <span style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Fee</span>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>{bucket.fees.productFee}</span>
+                                  </div>
+                                )}
+                                {bucket.fees.termRange && (
+                                  <div style={{ padding: "5px 10px", borderRadius: 8, background: "#F1F5F9", border: `1px solid ${T.borderLight}`, display: "flex", alignItems: "center", gap: 5 }}>
+                                    <span style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Term</span>
+                                    <span style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{bucket.fees.termRange}</span>
+                                  </div>
+                                )}
+                                {bucket.fees.reversion && (
+                                  <div style={{ padding: "5px 10px", borderRadius: 8, background: "#F1F5F9", border: `1px solid ${T.borderLight}`, display: "flex", alignItems: "center", gap: 5 }}>
+                                    <span style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Reversion</span>
+                                    <span style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{bucket.fees.reversion}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Rate grid — product × tier rows */}
                             {products.length > 0 && (
-                              <div style={{ marginBottom: 16 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>Rates</div>
-                                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
+                              <div style={{ marginBottom: 14 }}>
+                                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: T.font }}>
                                   <thead>
                                     <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-                                      <th style={{ textAlign: "left", padding: "6px 8px", fontSize: 10, fontWeight: 700, color: T.textMuted }}>Product</th>
-                                      <th style={{ textAlign: "center", padding: "6px 8px", fontSize: 10, fontWeight: 700, color: T.textMuted }}>ERC</th>
-                                      {["≤60%", "60-75%", "75-85%", "85-90%", "90-95%"].filter(b => {
-                                        const bMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
-                                        return bMax[b] <= (bucket.maxLTV || 75);
-                                      }).map(b => (
-                                        <th key={b} style={{ textAlign: "center", padding: "6px 6px", fontSize: 10, fontWeight: 700, color: T.navy }}>{b}</th>
+                                      <th style={{ textAlign: "left", padding: "6px 8px", fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", minWidth: 160 }}>Product / Tier</th>
+                                      <th style={{ textAlign: "left", padding: "6px 6px", fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", width: 60 }}>ERC</th>
+                                      {visibleBands.map(b => (
+                                        <th key={b} style={{ textAlign: "center", padding: "6px 4px", fontSize: 9, fontWeight: 700, color: T.navy }}>{b}</th>
                                       ))}
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {products.map((p, pIdx) => (
-                                      <tr key={pIdx} style={{ borderBottom: `1px solid ${T.borderLight}`, background: pIdx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
-                                        <td style={{ padding: "7px 8px", fontWeight: 600, color: T.navy }}>{p.type}</td>
-                                        <td style={{ padding: "7px 8px", textAlign: "center", fontSize: 10, color: T.textMuted }}>{p.erc}</td>
-                                        {["≤60%", "60-75%", "75-85%", "85-90%", "90-95%"].filter(b => {
-                                          const bMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
-                                          return bMax[b] <= (bucket.maxLTV || 75);
-                                        }).map(b => {
-                                          const rate = p.rates?.[b];
-                                          const color = rate == null ? "#CBD5E1" : rate < 4.5 ? "#059669" : rate <= 5.5 ? "#D97706" : "#DC2626";
-                                          return (
-                                            <td key={b} style={{ padding: "7px 6px", textAlign: "center", fontWeight: 700, color }}>
-                                              {rate != null ? rate.toFixed(2) + "%" : "—"}
+                                      allTiers.map((tier, tIdx) => {
+                                        const isBase = tier._isBase;
+                                        const tierColor = isBase ? T.navy : TIER_COLORS[(tIdx - 1) % 5];
+                                        const isLastTier = tIdx === allTiers.length - 1;
+                                        return (
+                                          <tr key={`${pIdx}-${tIdx}`} style={{
+                                            borderBottom: isLastTier ? `2px solid ${T.border}` : `1px solid ${T.borderLight}`,
+                                            background: isBase ? "#FAFAF8" : "#FFF",
+                                          }}>
+                                            <td style={{ padding: "6px 8px" }}>
+                                              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                                {!isBase && <span style={{ width: 2, height: 14, borderRadius: 1, background: tierColor, flexShrink: 0 }} />}
+                                                <span style={{ fontWeight: isBase ? 700 : 600, fontSize: isBase ? 12 : 11, color: isBase ? T.navy : T.text }}>
+                                                  {p.type}{!isBase ? ` — ${tier.name}` : ""}
+                                                </span>
+                                                {isBase && <span style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: "#F1F5F9", color: T.textMuted }}>BASE</span>}
+                                                {!isBase && <span style={{ fontSize: 8, fontWeight: 600, padding: "0px 4px", borderRadius: 4, background: tierColor + "14", color: tierColor }}>T{tIdx}</span>}
+                                              </div>
                                             </td>
-                                          );
-                                        })}
-                                      </tr>
+                                            <td style={{ padding: "6px 6px", fontSize: 9, color: T.textMuted }}>{isBase ? p.erc : ""}</td>
+                                            {visibleBands.map(band => {
+                                              const baseRate = p.rates?.[band];
+                                              if (baseRate == null) return <td key={band} style={{ textAlign: "center", padding: "6px 4px", color: "#CBD5E1" }}>—</td>;
+                                              const adj = getTierAdj(tier, p.type, band);
+                                              const finalRate = Math.round((baseRate + adj) * 100) / 100;
+                                              const color = finalRate < 4.5 ? "#059669" : finalRate <= 5.5 ? "#D97706" : "#DC2626";
+                                              return (
+                                                <td key={band} style={{ textAlign: "center", padding: "6px 4px" }}>
+                                                  <span style={{ fontWeight: 700, fontSize: 12, color }}>{finalRate.toFixed(2)}%</span>
+                                                  {!isBase && adj !== 0 && <div style={{ fontSize: 7, color: adj > 0 ? "#B07A00" : "#059669", fontWeight: 600 }}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</div>}
+                                                </td>
+                                              );
+                                            })}
+                                          </tr>
+                                        );
+                                      })
                                     ))}
                                   </tbody>
                                 </table>
@@ -284,78 +337,39 @@ export default function BrokerHelpCentre({ open, onClose }) {
                             )}
 
                             {/* Key criteria */}
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-                              <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Credit Profiles</div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                              <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                                <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Credit Profiles</div>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                                   {(bucket.acceptedCreditProfiles || []).map(cp => (
-                                    <span key={cp} style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 6, background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>{cp}</span>
+                                    <span key={cp} style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 5, background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>{cp}</span>
                                   ))}
                                 </div>
                               </div>
-                              <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Employment</div>
+                              <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                                <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Employment</div>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                                   {(bucket.acceptedEmployments || []).map(e => (
-                                    <span key={e} style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 6, background: "#EEF2FF", color: "#4338CA", border: "1px solid #C7D2FE" }}>{e}</span>
+                                    <span key={e} style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 5, background: "#EEF2FF", color: "#4338CA", border: "1px solid #C7D2FE" }}>{e}</span>
                                   ))}
                                 </div>
                               </div>
-                              {bucket.criteria && (
-                                <>
-                                  <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                    <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Loan Size</div>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{bucket.criteria.loanSize?.min} – {bucket.criteria.loanSize?.max}</div>
-                                  </div>
-                                  <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-                                    <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Income Multiple</div>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{bucket.criteria.incomeMultiple}</div>
-                                  </div>
-                                </>
+                              {bucket.criteria?.loanSize && (
+                                <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                                  <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Loan Size</div>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{bucket.criteria.loanSize.min} – {bucket.criteria.loanSize.max}</div>
+                                </div>
+                              )}
+                              {bucket.criteria?.incomeMultiple && (
+                                <div style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                                  <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Income Multiple</div>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{bucket.criteria.incomeMultiple}</div>
+                                </div>
                               )}
                             </div>
-
-                            {/* Fees */}
-                            {bucket.fees && (
-                              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                                {[
-                                  { label: "Product Fee", value: bucket.fees.productFee },
-                                  { label: "Term Range", value: bucket.fees.termRange },
-                                  { label: "Reversion", value: bucket.fees.reversion },
-                                ].map(f => (
-                                  <div key={f.label} style={{ flex: "1 1 0", minWidth: 120, padding: "8px 12px", borderRadius: 8, background: bucket.color + "08", border: `1px solid ${bucket.color}20` }}>
-                                    <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3 }}>{f.label}</div>
-                                    <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginTop: 2 }}>{f.value}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Tiers summary */}
-                            {tiers.length > 0 && (
-                              <div style={{ marginTop: 12 }}>
-                                <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Pricing Tiers</div>
-                                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                  {tiers.map((tier, tIdx) => {
-                                    const TIER_COLORS = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"];
-                                    const tc = TIER_COLORS[tIdx % 5];
-                                    const adj = tier.adjustmentType === "flat" ? tier.flatAdj : null;
-                                    return (
-                                      <span key={tIdx} style={{
-                                        display: "inline-flex", alignItems: "center", gap: 4,
-                                        padding: "3px 8px", borderRadius: 8, fontSize: 10, fontWeight: 600,
-                                        background: tc + "14", color: tc, border: `1px solid ${tc}30`,
-                                      }}>
-                                        {tier.name}
-                                        {adj != null && <span style={{ fontWeight: 700 }}>({adj >= 0 ? "+" : ""}{Number(adj).toFixed(2)}%)</span>}
-                                      </span>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
                           </div>
-                        )}
+                          );
+                        })()}
                       </div>
                     );
                   })}

@@ -1220,12 +1220,13 @@ function FeesTab({ bucket, onUpdateFees }) {
 }
 
 // ─────────────────────────────────────────────
-// RATES TAB — Reads explicit rates from product.rates
+// RATES TAB — Product × Tier matrix
+// Each product + tier combination is its own row
 // ─────────────────────────────────────────────
 function RatesTab({ bucket }) {
   const products = bucket.products || [];
   const tiers = bucket.tiers || [];
-  const [selectedTier, setSelectedTier] = useState("base");
+  const fees = bucket.fees || {};
 
   if (products.length === 0) {
     return (
@@ -1238,96 +1239,135 @@ function RatesTab({ bucket }) {
   const maxLTV = bucket.maxLTV || 75;
   const ltvBandMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
   const visibleBands = ALL_LTV_BANDS.filter((b) => ltvBandMax[b] <= maxLTV);
-
-  const activeTier = selectedTier !== "base" ? tiers[parseInt(selectedTier)] : null;
   const TIER_COLORS = [T.primary, "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"];
+  const DIMENSION_LABELS = { credit: "Credit", employment: "Employment", property: "Property", epc: "EPC" };
 
-  const getTierAdj = (productType, band) => {
-    if (!activeTier) return 0;
-    if (activeTier.adjustmentType === "flat") return parseFloat(activeTier.flatAdj) || 0;
-    return parseFloat(activeTier.gridAdj?.[productType]?.[band]) || parseFloat(activeTier.flatAdj) || 0;
+  const getTierAdj = (tier, productType, band) => {
+    if (!tier) return 0;
+    if (tier.adjustmentType === "flat") return parseFloat(tier.flatAdj) || 0;
+    return parseFloat(tier.gridAdj?.[productType]?.[band]) || parseFloat(tier.flatAdj) || 0;
   };
+
+  // Build rows: each product × tier combo
+  const allTiers = [{ name: "Base", _isBase: true }, ...tiers];
 
   return (
     <div>
-      {/* Tier selector */}
-      {tiers.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Showing:</span>
-          <div style={{ display: "flex", gap: 0 }}>
-            <button onClick={() => setSelectedTier("base")} style={{
-              padding: "6px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
-              background: selectedTier === "base" ? T.navy : T.card, color: selectedTier === "base" ? "#fff" : T.textMuted,
-              border: `1px solid ${selectedTier === "base" ? T.navy : T.border}`, borderRadius: "6px 0 0 6px",
-            }}>Base Rates</button>
-            {tiers.map((tier, tIdx) => (
-              <button key={tIdx} onClick={() => setSelectedTier(String(tIdx))} style={{
-                padding: "6px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
-                background: selectedTier === String(tIdx) ? TIER_COLORS[tIdx % 5] : T.card,
-                color: selectedTier === String(tIdx) ? "#fff" : T.textMuted,
-                border: `1px solid ${selectedTier === String(tIdx) ? TIER_COLORS[tIdx % 5] : T.border}`,
-                borderRadius: tIdx === tiers.length - 1 ? "0 6px 6px 0" : 0,
-              }}>{tier.name}</button>
-            ))}
-          </div>
-          {activeTier && (
-            <span style={{ fontSize: 11, color: TIER_COLORS[parseInt(selectedTier) % 5], fontWeight: 600 }}>
-              {activeTier.adjustmentType === "flat"
-                ? `${(activeTier.flatAdj || 0) >= 0 ? "+" : ""}${(activeTier.flatAdj || 0).toFixed(2)}% flat`
-                : "varies by term/LTV"}
-            </span>
+      {/* Fee summary bar */}
+      {(fees.productFee || fees.termRange || fees.reversion) && (
+        <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+          {fees.productFee && (
+            <div style={{ padding: "6px 12px", borderRadius: 8, background: bucket.color + "0A", border: `1px solid ${bucket.color}20`, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Product Fee</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{fees.productFee}</span>
+            </div>
           )}
+          {fees.termRange && (
+            <div style={{ padding: "6px 12px", borderRadius: 8, background: "#F1F5F9", border: `1px solid ${T.borderLight}`, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Term</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{fees.termRange}</span>
+            </div>
+          )}
+          {fees.reversion && (
+            <div style={{ padding: "6px 12px", borderRadius: 8, background: "#F1F5F9", border: `1px solid ${T.borderLight}`, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>Reversion</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{fees.reversion}</span>
+            </div>
+          )}
+          <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto", alignSelf: "center" }}>Max LTV: {maxLTV}%</span>
         </div>
       )}
 
-      {/* Rate grid */}
+      {/* Rate grid — product × tier rows */}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
           <thead>
             <tr style={{ borderBottom: `2px solid ${T.border}` }}>
-              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 11, fontWeight: 700, color: T.textMuted, width: 100, textTransform: "uppercase" }}>LTV</th>
-              {products.map((p) => (
-                <th key={p.code} style={{ textAlign: "center", padding: "8px 6px", fontSize: 11, fontWeight: 700, color: T.navy, minWidth: 120 }}>{p.type}</th>
+              <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", minWidth: 200 }}>Product / Tier</th>
+              <th style={{ textAlign: "left", padding: "8px 8px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", width: 80 }}>ERC</th>
+              {visibleBands.map((b) => (
+                <th key={b} style={{ textAlign: "center", padding: "8px 6px", fontSize: 10, fontWeight: 700, color: T.navy, minWidth: 80 }}>{b}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {visibleBands.map((band, rIdx) => (
-              <tr key={band} style={{ borderBottom: `1px solid ${T.borderLight}`, background: rIdx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
-                <td style={{ padding: "8px 10px", fontWeight: 600, fontSize: 12, color: T.navy }}>{band}</td>
-                {products.map((prod) => {
-                  const baseRate = prod.rates?.[band];
-                  if (baseRate == null) {
-                    return <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px" }}><span style={{ color: "#CBD5E1" }}>—</span></td>;
-                  }
-                  const adj = getTierAdj(prod.type, band);
-                  const finalRate = Math.round((baseRate + adj) * 100) / 100;
-                  const code = prod.code + band.replace(/[^0-9]/g, "");
-                  return (
-                    <td key={prod.code + band} style={{ textAlign: "center", padding: "7px 6px" }}>
-                      {activeTier ? (
+            {products.map((prod, pIdx) => (
+              allTiers.map((tier, tIdx) => {
+                const isBase = tier._isBase;
+                const tierColor = isBase ? T.navy : TIER_COLORS[(tIdx - 1) % 5];
+                const isFirstTierOfProduct = tIdx === 0;
+                const isLastTierOfProduct = tIdx === allTiers.length - 1;
+                const condEntries = !isBase ? Object.entries(tier.conditions || {}).filter(([,v]) => v?.length) : [];
+
+                return (
+                  <tr key={`${pIdx}-${tIdx}`} style={{
+                    borderBottom: isLastTierOfProduct ? `2px solid ${T.border}` : `1px solid ${T.borderLight}`,
+                    background: isBase ? "#FAFAF8" : "#FFFFFF",
+                  }}>
+                    {/* Product/Tier name */}
+                    <td style={{ padding: "8px 10px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {!isBase && <span style={{ width: 3, height: 18, borderRadius: 2, background: tierColor, flexShrink: 0 }} />}
                         <div>
-                          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 1 }}>{baseRate.toFixed(2)}%</div>
-                          <div style={{ fontSize: 9, color: adj >= 0 ? "#B07A00" : "#059669", fontWeight: 600 }}>{adj >= 0 ? "+" : ""}{adj.toFixed(2)}%</div>
-                          <div style={{ fontWeight: 800, fontSize: 14, color: rateColor(finalRate), marginTop: 1 }}>{finalRate.toFixed(2)}%</div>
-                          <div style={{ fontSize: 8, color: T.textMuted }}>({code})</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontWeight: isBase ? 700 : 600, fontSize: isBase ? 13 : 12, color: isBase ? T.navy : T.text }}>
+                              {prod.type}{!isBase ? ` — ${tier.name}` : ""}
+                            </span>
+                            {isBase && <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: "#F1F5F9", color: T.textMuted }}>BASE</span>}
+                            {!isBase && (
+                              <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: tierColor + "14", color: tierColor }}>
+                                T{tIdx}
+                              </span>
+                            )}
+                          </div>
+                          {!isBase && condEntries.length > 0 && (
+                            <div style={{ display: "flex", gap: 3, marginTop: 2, flexWrap: "wrap" }}>
+                              {condEntries.map(([dim, vals]) => (
+                                <span key={dim} style={{ fontSize: 8, color: T.textMuted }}>
+                                  {DIMENSION_LABELS[dim] || dim}: {vals.join(", ")}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div>
-                          <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(baseRate) }}>{baseRate.toFixed(2)}%</span>
-                          <div style={{ fontSize: 9, color: T.textMuted, marginTop: 1 }}>({code})</div>
-                        </div>
-                      )}
+                      </div>
                     </td>
-                  );
-                })}
-              </tr>
+                    {/* ERC */}
+                    <td style={{ padding: "8px 8px", fontSize: 10, color: T.textMuted }}>{isBase ? prod.erc : ""}</td>
+                    {/* Rate cells */}
+                    {visibleBands.map((band) => {
+                      const baseRate = prod.rates?.[band];
+                      if (baseRate == null) {
+                        return <td key={band} style={{ textAlign: "center", padding: "7px 6px" }}><span style={{ color: "#CBD5E1" }}>—</span></td>;
+                      }
+                      const adj = isBase ? 0 : getTierAdj(tier, prod.type, band);
+                      const finalRate = Math.round((baseRate + adj) * 100) / 100;
+                      return (
+                        <td key={band} style={{ textAlign: "center", padding: "7px 6px" }}>
+                          {isBase ? (
+                            <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(baseRate) }}>{baseRate.toFixed(2)}%</span>
+                          ) : (
+                            <div>
+                              <span style={{ fontWeight: 700, fontSize: 13, color: rateColor(finalRate) }}>{finalRate.toFixed(2)}%</span>
+                              {adj !== 0 && (
+                                <div style={{ fontSize: 8, color: adj > 0 ? "#B07A00" : "#059669", fontWeight: 600 }}>
+                                  {adj >= 0 ? "+" : ""}{adj.toFixed(2)}%
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Legend + tier list */}
+      {/* Legend */}
       <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.borderLight}`, flexWrap: "wrap", alignItems: "center" }}>
         <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: "#059669" }} /> {"< 4.50%"}
@@ -1338,64 +1378,10 @@ function RatesTab({ bucket }) {
         <span style={{ fontSize: 10, color: T.textMuted, display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: "#DC2626" }} /> {"> 5.50%"}
         </span>
-        <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto" }}>Max LTV: {maxLTV}%</span>
+        <span style={{ fontSize: 10, color: T.textMuted, marginLeft: "auto" }}>
+          {allTiers.length > 1 ? `${products.length} products × ${tiers.length} tiers = ${products.length * allTiers.length} rate lines` : `${products.length} products`}
+        </span>
       </div>
-
-      {/* Tier summary */}
-      {tiers.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
-            Pricing Tiers ({tiers.length})
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(tiers.length, 3)}, 1fr)`, gap: 10 }}>
-            {tiers.map((tier, tIdx) => {
-              const tc = TIER_COLORS[tIdx % 5];
-              const adj = tier.adjustmentType === "flat" ? tier.flatAdj : null;
-              const condEntries = Object.entries(tier.conditions || {}).filter(([,v]) => v?.length);
-              const DIMENSION_LABELS = { credit: "Credit", employment: "Employment", property: "Property", epc: "EPC" };
-              return (
-                <div key={tIdx} style={{
-                  borderRadius: 10, border: `1px solid ${T.borderLight}`, borderTop: `3px solid ${tc}`,
-                  background: T.card, padding: "12px 14px", fontFamily: T.font,
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{tier.name}</span>
-                    </div>
-                    <span style={{
-                      padding: "2px 8px", borderRadius: 10, fontSize: 10, fontWeight: 700,
-                      background: adj != null ? (adj > 0 ? "#FEF3C7" : adj < 0 ? "#D1FAE5" : "#F1F5F9") : "#EDE9FE",
-                      color: adj != null ? (adj > 0 ? "#92400E" : adj < 0 ? "#065F46" : "#475569") : "#6D28D9",
-                    }}>
-                      {adj != null ? `${adj >= 0 ? "+" : ""}${Number(adj).toFixed(2)}%` : "Per cell"}
-                    </span>
-                  </div>
-                  {condEntries.length > 0 ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {condEntries.map(([dim, vals]) => (
-                        <div key={dim} style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, minWidth: 58 }}>
-                            {DIMENSION_LABELS[dim] || dim}
-                          </span>
-                          {vals.map(v => (
-                            <span key={v} style={{
-                              display: "inline-block", padding: "1px 7px", borderRadius: 8,
-                              fontSize: 9, fontWeight: 600, background: tc + "14", color: tc,
-                              border: `1px solid ${tc}30`,
-                            }}>{v}</span>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: 10, color: T.textMuted, fontStyle: "italic" }}>No conditions — applies to all</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
