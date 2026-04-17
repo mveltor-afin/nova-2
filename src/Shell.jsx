@@ -62,6 +62,8 @@ import RegulatoryReportingScreen from "./admin/RegulatoryReportingScreen";
 import SettingsScreen from "./admin/SettingsScreen";
 import WorkflowBuilder from "./admin/WorkflowBuilder";
 import ProductCatalogue from "./admin/ProductCatalogue";
+import RateMatrix from "./admin/RateMatrix";
+import ProductPerformance from "./admin/ProductPerformance";
 import DocumentTemplates from "./admin/DocumentTemplates";
 import APIHealthDashboard from "./admin/APIHealthDashboard";
 import ReportBuilder from "./admin/ReportBuilder";
@@ -343,6 +345,24 @@ export default function Shell({ userType }) {
           { id:"settings",        label:"Settings",           icon:"settings" },
         ]},
       ]
+    : persona === "Product Manager"
+    ? [
+        { group:"PRODUCTS", items:[
+          { id:"products",          label:"Product Catalogue",   icon:"products" },
+          { id:"ratematrix",        label:"Rate Matrix",         icon:"chart" },
+          { id:"productperformance",label:"Product Performance", icon:"dashboard" },
+        ]},
+        { group:"MARKET", items:[
+          { id:"pricing",           label:"Market Comparison",   icon:"dollar" },
+          { id:"mymi",              label:"MI & Analytics",      icon:"chart" },
+          { id:"myreports",         label:"Reports",             icon:"file" },
+        ]},
+        { group:null, items:[
+          { id:"messages",          label:"Messages",            icon:"messages" },
+          { id:"releases",          label:"Releases",            icon:"sparkle" },
+          { id:"settings",          label:"Settings",            icon:"settings" },
+        ]},
+      ]
     : persona === "Customer"
     ? [
         { group:"MY BANKING", items:[
@@ -503,7 +523,7 @@ export default function Shell({ userType }) {
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
                 const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
-                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Customer" ? "customerdashboard" : "needsattention"));
+                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : p === "Customer" ? "customerdashboard" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -750,6 +770,8 @@ export default function Shell({ userType }) {
       case "journeyanalytics": return <JourneyAnalytics />;
       case "workflows":       return <WorkflowBuilder />;
       case "products":        return <ProductCatalogue />;
+      case "ratematrix":      return <RateMatrix />;
+      case "productperformance": return <ProductPerformance />;
       case "doctemplates":    return <DocumentTemplates />;
       case "commscentre":     return <CommsCentre />;
       case "apihealth":       return <APIHealthDashboard />;

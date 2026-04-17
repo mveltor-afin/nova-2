@@ -179,21 +179,78 @@ const COMPLIANCE_FIELDS = [
 ];
 
 const LENDING = [
-  { id: 1, name: "Afin Fix 2yr 75%", type: "Lending", rate: "4.49%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active" },
-  { id: 2, name: "Afin Fix 5yr 75%", type: "Lending", rate: "4.89%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "All", status: "Active" },
-  { id: 3, name: "Afin Track SVR 75%", type: "Lending", rate: "5.14%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "None", eligibility: "All", status: "Active" },
-  { id: 4, name: "Afin Fix 2yr 90%", type: "Lending", rate: "5.29%", maxLTV: "90%", minTerm: "5yr", maxTerm: "35yr", erc: "4% / 3%", eligibility: "All", status: "Active" },
-  { id: 5, name: "Afin Pro Fix 2yr", type: "Lending", rate: "3.99%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "Professional only", status: "Active" },
-  { id: 6, name: "Afin HNW Fix 5yr", type: "Lending", rate: "4.29%", maxLTV: "85%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "HNW only", status: "Active" },
-  { id: 7, name: "Afin BTL Tracker", type: "Lending", rate: "5.99%", maxLTV: "75%", minTerm: "5yr", maxTerm: "25yr", erc: "3%", eligibility: "BTL only", status: "Active" },
-  { id: 8, name: "Afin Shared Ownership", type: "Lending", rate: "5.49%", maxLTV: "95% of share", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active" },
+  { id: 1, name: "Afin Fix 2yr 75%", type: "Lending", rate: "4.49%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "4.19%", margin: "1.24%", status: "Active" },
+    { ltvBand: "60-75%", rate: "4.49%", margin: "1.54%", status: "Active" },
+    { ltvBand: "75-85%", rate: "4.99%", margin: "2.04%", status: "Active" },
+    { ltvBand: "85-90%", rate: "5.29%", margin: "2.34%", status: "Active" },
+    { ltvBand: "90-95%", rate: "5.69%", margin: "2.74%", status: "FTB Only" },
+  ]},
+  { id: 2, name: "Afin Fix 5yr 75%", type: "Lending", rate: "4.89%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "All", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "4.59%", margin: "1.64%", status: "Active" },
+    { ltvBand: "60-75%", rate: "4.89%", margin: "1.94%", status: "Active" },
+    { ltvBand: "75-85%", rate: "5.39%", margin: "2.44%", status: "Active" },
+    { ltvBand: "85-90%", rate: "5.69%", margin: "2.74%", status: "Paused" },
+  ]},
+  { id: 3, name: "Afin Track SVR 75%", type: "Lending", rate: "5.14%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "None", eligibility: "All", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "4.84%", margin: "0.59%", status: "Active" },
+    { ltvBand: "60-75%", rate: "5.14%", margin: "0.89%", status: "Active" },
+    { ltvBand: "75-85%", rate: "5.64%", margin: "1.39%", status: "Active" },
+  ]},
+  { id: 4, name: "Afin Fix 2yr 90%", type: "Lending", rate: "5.29%", maxLTV: "90%", minTerm: "5yr", maxTerm: "35yr", erc: "4% / 3%", eligibility: "All", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "4.49%", margin: "1.54%", status: "Active" },
+    { ltvBand: "60-75%", rate: "4.79%", margin: "1.84%", status: "Active" },
+    { ltvBand: "75-85%", rate: "5.09%", margin: "2.14%", status: "Active" },
+    { ltvBand: "85-90%", rate: "5.29%", margin: "2.34%", status: "Active" },
+    { ltvBand: "90-95%", rate: "5.89%", margin: "2.94%", status: "FTB Only" },
+  ]},
+  { id: 5, name: "Afin Pro Fix 2yr", type: "Lending", rate: "3.99%", maxLTV: "75%", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "Professional only", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "3.69%", margin: "0.74%", status: "Active" },
+    { ltvBand: "60-75%", rate: "3.99%", margin: "1.04%", status: "Active" },
+    { ltvBand: "75-85%", rate: "4.49%", margin: "1.54%", status: "Active" },
+  ]},
+  { id: 6, name: "Afin HNW Fix 5yr", type: "Lending", rate: "4.29%", maxLTV: "85%", minTerm: "5yr", maxTerm: "35yr", erc: "5/4/3/2/1%", eligibility: "HNW only", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "3.99%", margin: "1.04%", status: "Active" },
+    { ltvBand: "60-75%", rate: "4.29%", margin: "1.34%", status: "Active" },
+    { ltvBand: "75-85%", rate: "4.69%", margin: "1.74%", status: "Active" },
+    { ltvBand: "85-90%", rate: "5.09%", margin: "2.14%", status: "Active" },
+  ]},
+  { id: 7, name: "Afin BTL Tracker", type: "Lending", rate: "5.99%", maxLTV: "75%", minTerm: "5yr", maxTerm: "25yr", erc: "3%", eligibility: "BTL only", status: "Active", tiers: [
+    { ltvBand: "≤60%", rate: "5.49%", margin: "1.24%", status: "Active" },
+    { ltvBand: "60-70%", rate: "5.79%", margin: "1.54%", status: "Active" },
+    { ltvBand: "70-75%", rate: "5.99%", margin: "1.74%", status: "Active" },
+  ]},
+  { id: 8, name: "Afin Shared Ownership", type: "Lending", rate: "5.49%", maxLTV: "95% of share", minTerm: "5yr", maxTerm: "35yr", erc: "3% / 2%", eligibility: "All", status: "Active", tiers: [
+    { ltvBand: "≤75%", rate: "5.19%", margin: "2.24%", status: "Active" },
+    { ltvBand: "75-85%", rate: "5.49%", margin: "2.54%", status: "Active" },
+    { ltvBand: "85-95%", rate: "5.89%", margin: "2.94%", status: "FTB Only" },
+  ]},
 ];
 
 const SAVINGS = [
-  { id: 9,  name: "1yr Fixed Deposit", type: "Savings", rate: "4.50%", keyTerms: "Min £1,000 — Max £500,000", eligibility: "All", status: "Active" },
-  { id: 10, name: "2yr Fixed Deposit", type: "Savings", rate: "4.85%", keyTerms: "Min £1,000 — Max £500,000", eligibility: "All", status: "Active" },
-  { id: 11, name: "3yr Fixed Deposit", type: "Savings", rate: "5.10%", keyTerms: "Min £5,000 — Max £500,000", eligibility: "All", status: "Active" },
-  { id: 12, name: "90-Day Notice", type: "Savings", rate: "3.20%", keyTerms: "Min £1,000 — No Max", eligibility: "All", status: "Active" },
+  { id: 9,  name: "1yr Fixed Deposit", type: "Savings", rate: "4.50%", keyTerms: "Min £1,000 — Max £500,000", eligibility: "All", status: "Active", tiers: [
+    { balanceBand: "£1k - £9,999", rate: "4.25%", status: "Active" },
+    { balanceBand: "£10k - £49,999", rate: "4.50%", status: "Active" },
+    { balanceBand: "£50k - £249,999", rate: "4.65%", status: "Active" },
+    { balanceBand: "£250k+", rate: "4.80%", status: "Active" },
+  ]},
+  { id: 10, name: "2yr Fixed Deposit", type: "Savings", rate: "4.85%", keyTerms: "Min £1,000 — Max £500,000", eligibility: "All", status: "Active", tiers: [
+    { balanceBand: "£1k - £9,999", rate: "4.60%", status: "Active" },
+    { balanceBand: "£10k - £49,999", rate: "4.85%", status: "Active" },
+    { balanceBand: "£50k - £249,999", rate: "5.00%", status: "Active" },
+    { balanceBand: "£250k+", rate: "5.15%", status: "Active" },
+  ]},
+  { id: 11, name: "3yr Fixed Deposit", type: "Savings", rate: "5.10%", keyTerms: "Min £5,000 — Max £500,000", eligibility: "All", status: "Active", tiers: [
+    { balanceBand: "£5k - £24,999", rate: "4.90%", status: "Active" },
+    { balanceBand: "£25k - £99,999", rate: "5.10%", status: "Active" },
+    { balanceBand: "£100k - £249,999", rate: "5.25%", status: "Active" },
+    { balanceBand: "£250k+", rate: "5.40%", status: "Active" },
+  ]},
+  { id: 12, name: "90-Day Notice", type: "Savings", rate: "3.20%", keyTerms: "Min £1,000 — No Max", eligibility: "All", status: "Active", tiers: [
+    { balanceBand: "£1k - £24,999", rate: "3.00%", status: "Active" },
+    { balanceBand: "£25k - £99,999", rate: "3.20%", status: "Active" },
+    { balanceBand: "£100k+", rate: "3.35%", status: "Active" },
+  ]},
 ];
 
 const INSURANCE = [
@@ -214,6 +271,16 @@ const statusBadge = (status) => {
   return <span style={{ background: isActive ? T.successBg : T.borderLight, color: isActive ? T.success : T.textMuted, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 5 }}>{status}</span>;
 };
 
+const tierStatusBadge = (status) => {
+  const map = {
+    Active: { bg: T.successBg, color: T.success },
+    "FTB Only": { bg: "#DBEAFE", color: "#1E40AF" },
+    Paused: { bg: "#FEF3C7", color: "#92400E" },
+  };
+  const s = map[status] || { bg: T.borderLight, color: T.textMuted };
+  return <span style={{ background: s.bg, color: s.color, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4 }}>{status}</span>;
+};
+
 const thStyle = { textAlign: "left", padding: "10px 14px", fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, borderBottom: `1px solid ${T.border}` };
 const tdStyle = { padding: "12px 14px", fontSize: 13, color: T.text, borderBottom: `1px solid ${T.borderLight}` };
 
@@ -228,6 +295,18 @@ function ProductWizard({ onClose }) {
   const [params, setParams] = useState({});
   const [common, setCommon] = useState({ status: "Draft", channel: "Direct + Broker", eligibility: "All", code: "" });
   const [compliance, setCompliance] = useState({ fairValueRating: "Good", consumerDutyOutcome: "Price & Value", kfiTemplate: "Standard" });
+  const [tiers, setTiers] = useState([]);
+
+  const isLendingCategory = category === "Lending";
+  const addTier = () => {
+    if (isLendingCategory) {
+      setTiers(prev => [...prev, { ltvBand: "", rate: "", margin: "", status: "Active" }]);
+    } else {
+      setTiers(prev => [...prev, { balanceBand: "", rate: "", status: "Active" }]);
+    }
+  };
+  const removeTier = (idx) => setTiers(prev => prev.filter((_, i) => i !== idx));
+  const updateTier = (idx, key, val) => setTiers(prev => prev.map((t, i) => i === idx ? { ...t, [key]: val } : t));
 
   const typeFields = PRODUCT_TYPE_FIELDS[productType] || [];
   const availableTypes = PRODUCT_TYPE_GROUPS[category] || [];
@@ -370,6 +449,81 @@ function ProductWizard({ onClose }) {
               </div>
               {typeFields.length === 0 && (
                 <div style={{ padding: 24, textAlign: "center", color: T.textMuted, fontSize: 13 }}>No parameters defined for this product type.</div>
+              )}
+
+              {/* Pricing Tiers Editor */}
+              {(category === "Lending" || category === "Savings") && (
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.border}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Pricing Tiers</div>
+                      <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+                        {isLendingCategory ? "Define rate tiers by LTV band" : "Define rate tiers by balance band"}
+                      </div>
+                    </div>
+                    <Btn small iconNode={Ico.plus(14)} onClick={addTier}>Add Tier</Btn>
+                  </div>
+
+                  {tiers.length === 0 && (
+                    <div style={{ padding: "16px 0", textAlign: "center", color: T.textMuted, fontSize: 12, background: T.bg, borderRadius: 8, border: `1px dashed ${T.border}` }}>
+                      No tiers added yet. Click "Add Tier" to define pricing bands.
+                    </div>
+                  )}
+
+                  {tiers.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {/* Header row */}
+                      <div style={{ display: "grid", gridTemplateColumns: isLendingCategory ? "1fr 90px 90px 120px 32px" : "1fr 90px 120px 32px", gap: 8, paddingBottom: 4 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                          {isLendingCategory ? "LTV Band" : "Balance Band"}
+                        </div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>Rate %</div>
+                        {isLendingCategory && (
+                          <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>Margin %</div>
+                        )}
+                        <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4 }}>Status</div>
+                        <div />
+                      </div>
+
+                      {/* Tier rows */}
+                      {tiers.map((tier, idx) => (
+                        <div key={idx} style={{ display: "grid", gridTemplateColumns: isLendingCategory ? "1fr 90px 90px 120px 32px" : "1fr 90px 120px 32px", gap: 8, alignItems: "center" }}>
+                          <input
+                            type="text" value={tier.ltvBand || tier.balanceBand || ""}
+                            placeholder={isLendingCategory ? "e.g. ≤60%" : "e.g. £1k - £9,999"}
+                            onChange={e => updateTier(idx, isLendingCategory ? "ltvBand" : "balanceBand", e.target.value)}
+                            style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
+                          />
+                          <input
+                            type="number" value={tier.rate} placeholder="4.49"
+                            onChange={e => updateTier(idx, "rate", e.target.value)}
+                            style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
+                          />
+                          {isLendingCategory && (
+                            <input
+                              type="number" value={tier.margin || ""} placeholder="1.54"
+                              onChange={e => updateTier(idx, "margin", e.target.value)}
+                              style={{ width: "100%", padding: "7px 10px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
+                            />
+                          )}
+                          <select
+                            value={tier.status} onChange={e => updateTier(idx, "status", e.target.value)}
+                            style={{ width: "100%", padding: "7px 8px", border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 11, fontFamily: T.font, background: T.card, color: T.text, outline: "none" }}
+                          >
+                            <option value="Active">Active</option>
+                            <option value="FTB Only">FTB Only</option>
+                            <option value="Paused">Paused</option>
+                          </select>
+                          <button onClick={() => removeTier(idx)} style={{
+                            width: 28, height: 28, borderRadius: 6, border: `1px solid ${T.border}`, background: T.card,
+                            color: T.textMuted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 16, fontWeight: 600, lineHeight: 1,
+                          }} title="Remove tier">&times;</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -527,6 +681,67 @@ function ProductCatalogue() {
                             <div style={{ fontSize: 14, color: T.text }}>{p.type === "Lending" ? "£999 arrangement, £250 valuation" : "No fees"}</div>
                           </div>
                         </div>
+                        {/* Pricing Tiers */}
+                        {p.tiers && p.tiers.length > 0 && (
+                          <div style={{ marginBottom: 20 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                              {Ico.chart(16)} Pricing Tiers
+                              <span style={{ fontSize: 11, fontWeight: 500, color: T.textMuted }}>({p.tiers.length} tiers)</span>
+                            </div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 14 }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}`, borderRadius: "6px 0 0 0" }}>
+                                    {p.type === "Lending" ? "LTV Band" : "Balance Band"}
+                                  </th>
+                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}` }}>Rate</th>
+                                  {p.type === "Lending" && (
+                                    <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}` }}>Margin</th>
+                                  )}
+                                  <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, background: T.card, borderBottom: `1px solid ${T.border}`, borderRadius: "0 6px 0 0" }}>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {p.tiers.map((tier, idx) => (
+                                  <tr key={idx} style={{ background: idx % 2 === 0 ? "transparent" : `${T.card}80` }}>
+                                    <td style={{ padding: "8px 12px", fontWeight: 600, color: T.text, borderBottom: `1px solid ${T.borderLight}` }}>
+                                      {tier.ltvBand || tier.balanceBand}
+                                    </td>
+                                    <td style={{ padding: "8px 12px", fontWeight: 700, color: T.primary, borderBottom: `1px solid ${T.borderLight}` }}>{tier.rate}</td>
+                                    {p.type === "Lending" && (
+                                      <td style={{ padding: "8px 12px", color: T.textSecondary, borderBottom: `1px solid ${T.borderLight}` }}>{tier.margin}</td>
+                                    )}
+                                    <td style={{ padding: "8px 12px", borderBottom: `1px solid ${T.borderLight}` }}>{tierStatusBadge(tier.status)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {/* Mini rate bar visualization */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                              {p.tiers.map((tier, idx) => {
+                                const rateNum = parseFloat(tier.rate);
+                                const maxRate = Math.max(...p.tiers.map(t => parseFloat(t.rate)));
+                                const pct = maxRate > 0 ? (rateNum / maxRate) * 100 : 0;
+                                return (
+                                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <div style={{ width: 80, fontSize: 10, fontWeight: 600, color: T.textMuted, textAlign: "right", flexShrink: 0 }}>
+                                      {tier.ltvBand || tier.balanceBand}
+                                    </div>
+                                    <div style={{ flex: 1, height: 14, background: T.borderLight, borderRadius: 4, overflow: "hidden" }}>
+                                      <div style={{
+                                        width: `${pct}%`, height: "100%", borderRadius: 4,
+                                        background: tier.status === "Active" ? `linear-gradient(90deg, ${T.primary}, ${T.accent})` : tier.status === "FTB Only" ? "linear-gradient(90deg, #3B82F6, #60A5FA)" : "#F59E0B",
+                                        transition: "width 0.3s ease",
+                                      }} />
+                                    </div>
+                                    <div style={{ width: 44, fontSize: 10, fontWeight: 700, color: T.text, flexShrink: 0 }}>{tier.rate}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
                         <Btn primary>Save Changes</Btn>
                       </div>
                     </td>
