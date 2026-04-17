@@ -624,12 +624,14 @@ function ProductCatalogue() {
             <tr>
               <th style={thStyle}>Product Name</th>
               <th style={thStyle}>Type</th>
-              <th style={thStyle}>Rate / Premium</th>
+              <th style={thStyle}>Rate</th>
+              <th style={thStyle}>Max LTV</th>
+              <th style={thStyle}>Term</th>
+              <th style={thStyle}>ERC</th>
               <th style={thStyle}>Credit Profiles</th>
-              <th style={thStyle}>Key Terms</th>
               <th style={thStyle}>Eligibility</th>
               <th style={thStyle}>Status</th>
-              <th style={thStyle}>Actions</th>
+              <th style={{...thStyle, textAlign: "center", width: 60}}></th>
             </tr>
           </thead>
           <tbody>
@@ -638,7 +640,10 @@ function ProductCatalogue() {
                 <tr key={p.id} onClick={() => setExpanded(expanded === p.id ? null : p.id)} style={{ cursor: "pointer", background: expanded === p.id ? T.primaryLight : "transparent" }}>
                   <td style={{ ...tdStyle, fontWeight: 600 }}>{p.name}</td>
                   <td style={tdStyle}>{typeBadge(p.type)}</td>
-                  <td style={tdStyle}>{p.rate}</td>
+                  <td style={{ ...tdStyle, fontWeight: 600 }}>{p.rate}</td>
+                  <td style={{ ...tdStyle, fontSize: 12 }}>{p.maxLTV || "—"}</td>
+                  <td style={{ ...tdStyle, fontSize: 12, whiteSpace: "nowrap" }}>{p.type === "Lending" ? `${p.minTerm}–${p.maxTerm}` : p.keyTerms?.split("—")[0]?.trim() || "—"}</td>
+                  <td style={{ ...tdStyle, fontSize: 11 }}>{p.erc || "—"}</td>
                   <td style={{ ...tdStyle, fontSize: 11 }}>
                     {p.creditAccepted ? (
                       <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
@@ -648,13 +653,12 @@ function ProductCatalogue() {
                       </div>
                     ) : <span style={{ color: T.textMuted }}>All</span>}
                   </td>
-                  <td style={{ ...tdStyle, fontSize: 12 }}>{keyTermsFor(p)}</td>
                   <td style={{ ...tdStyle, fontSize: 12 }}>{p.eligibility}</td>
                   <td style={tdStyle}>{statusBadge(p.status)}</td>
-                  <td style={tdStyle}>
-                    <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                      <Btn small ghost icon="settings">Edit</Btn>
-                      <Btn small ghost icon="download">Archive</Btn>
+                  <td style={{ ...tdStyle, textAlign: "center" }}>
+                    <div style={{ display: "flex", gap: 4, justifyContent: "center" }} onClick={e => e.stopPropagation()}>
+                      <div style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textMuted, background: T.bg, border: `1px solid ${T.borderLight}` }} title="Edit">{Ico.settings(14)}</div>
+                      <div style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textMuted, background: T.bg, border: `1px solid ${T.borderLight}` }} title="Archive">{Ico.download(14)}</div>
                     </div>
                   </td>
                 </tr>
