@@ -289,7 +289,7 @@ const tdStyle = { padding: "12px 14px", fontSize: 13, color: T.text, borderBotto
 // ─────────────────────────────────────────────
 // Product Wizard — adapts to product type
 // ─────────────────────────────────────────────
-function ProductWizard({ onClose }) {
+function ProductWizard({ onClose, onPublish }) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Lending");
@@ -346,7 +346,7 @@ function ProductWizard({ onClose }) {
         {f.suffix && <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: T.textMuted, fontWeight: 600, pointerEvents: "none" }}>
           {f.suffix === "£" ? "£" : ""}
         </span>}
-        <input type={f.type === "number" ? "number" : "text"}
+        <input key={`field-${f.name}`} id={`field-${f.name}`} type={f.type === "number" ? "number" : "text"}
           value={value || ""} placeholder={f.placeholder || ""}
           onChange={e => onChange(f.name, e.target.value)}
           style={{
@@ -469,7 +469,7 @@ function ProductWizard({ onClose }) {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
                     <Field label="Base Rate (at ≤60% LTV, Clean credit)">
                       <div style={{ position: "relative" }}>
-                        <input type="number" step="0.01" value={params.baseRate || ""} placeholder="4.19"
+                        <input key="base-rate-input" id="base-rate-input" type="number" step="0.01" value={params.baseRate || ""} placeholder="4.19"
                           onChange={e => setParam("baseRate", e.target.value)}
                           style={{ width: "100%", padding: "9px 12px", border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 14, fontFamily: T.font, background: T.card, color: T.text, outline: "none", fontWeight: 700 }} />
                         <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: T.textMuted }}>%</span>
@@ -597,7 +597,19 @@ function ProductWizard({ onClose }) {
             {step < 3 && <Btn primary onClick={() => setStep(step + 1)}>Continue</Btn>}
             {step === 3 && <>
               <Btn onClick={onClose}>Save as Draft</Btn>
-              <Btn primary onClick={onClose}>Publish Product</Btn>
+              <Btn primary onClick={() => onPublish?.({
+                name: name || "New Product",
+                type: category,
+                rate: params.baseRate ? params.baseRate + "%" : "—",
+                maxLTV: params.maxLTV ? params.maxLTV + "%" : "—",
+                minTerm: params.minTerm || "5yr",
+                maxTerm: params.maxTerm || "35yr",
+                erc: params.erc || "—",
+                eligibility: common.eligibility || "All",
+                creditAccepted: category === "Lending" ? ["clean", "near_prime", "light_adverse"] : null,
+                tiers: category === "Savings" ? tiers : null,
+                keyTerms: category !== "Lending" ? `Min £1,000 — Max £500,000` : null,
+              })}>Publish Product</Btn>
             </>}
           </div>
         </div>
@@ -611,12 +623,14 @@ function ProductCatalogue() {
   const [expanded, setExpanded] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showDimensionsInfo, setShowDimensionsInfo] = useState(false);
+  const [newProducts, setNewProducts] = useState([]);
 
   const filters = ["All", "Lending", "Savings", "Insurance", "Archived"];
-  const shown = filter === "All" ? ALL_PRODUCTS : filter === "Archived" ? [] : ALL_PRODUCTS.filter(p => p.type === filter);
+  const allProducts = [...ALL_PRODUCTS, ...newProducts];
+  const shown = filter === "All" ? allProducts : filter === "Archived" ? [] : allProducts.filter(p => p.type === filter);
 
-  const activeCount = ALL_PRODUCTS.filter(p => p.status === "Active").length;
-  const archivedCount = ALL_PRODUCTS.length - activeCount;
+  const activeCount = allProducts.filter(p => p.status === "Active").length;
+  const archivedCount = allProducts.length - activeCount;
 
   const keyTermsFor = (p) => {
     if (p.type === "Lending") return `LTV ${p.maxLTV}, ${p.minTerm}–${p.maxTerm}, ERC ${p.erc}`;
@@ -844,7 +858,10 @@ function ProductCatalogue() {
       </Card>
 
       {/* Create Product Wizard */}
-      {showModal && <ProductWizard onClose={() => setShowModal(false)} />}
+      {showModal && <ProductWizard onClose={() => setShowModal(false)} onPublish={(product) => {
+        setNewProducts(prev => [...prev, { ...product, id: Date.now(), status: "Active" }]);
+        setShowModal(false);
+      }} />}
 
       {/* Pricing Dimensions Info Popout */}
       {showDimensionsInfo && (
