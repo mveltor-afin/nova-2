@@ -132,12 +132,21 @@ const rateColor = (r) => {
   return "#DC2626";
 };
 
+let codeCounter = Date.now();
+function generateCode(bucketName, term) {
+  codeCounter++;
+  const bPrefix = (bucketName || "SAV").replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+  const tMap = { "Instant Access": "IA", "30-Day Notice": "N30", "60-Day Notice": "N60", "90-Day Notice": "N90", "120-Day Notice": "N12", "1 Year Fixed": "1Y", "2 Year Fixed": "2Y", "3 Year Fixed": "3Y", "5 Year Fixed": "5Y" };
+  const tCode = tMap[term] || term.replace(/[^A-Z0-9]/gi, "").slice(0, 3).toUpperCase();
+  return `${bPrefix}-${tCode}-${String(codeCounter).slice(-3)}`;
+}
+
 // ─────────────────────────────────────────────
 // INLINE PRODUCT WIZARD
 // ─────────────────────────────────────────────
-function ProductWizard({ product, onSave, onCancel }) {
+function ProductWizard({ product, bucketName, onSave, onCancel }) {
   const [form, setForm] = useState(product
-    ? { ...product }
+    ? { ...product, baseRate: product.baseRate != null ? String(product.baseRate) : "" }
     : { name: "", term: "1 Year Fixed", code: "", wrapper: "", eligibility: "", baseRate: "" }
   );
   const inputSt = {
@@ -147,10 +156,18 @@ function ProductWizard({ product, onSave, onCancel }) {
   };
   const labelSt = { display: "block", fontSize: 11, fontWeight: 600, color: T.textSecondary, marginBottom: 4 };
 
+  const canSave = form.name.trim() && form.baseRate !== "" && !isNaN(parseFloat(form.baseRate));
+
+  const doSave = () => {
+    if (!canSave) return;
+    const code = form.code || generateCode(bucketName || "SAV", form.term);
+    onSave({ ...form, baseRate: parseFloat(form.baseRate), code });
+  };
+
   return (
     <div style={{ padding: "16px 18px", background: T.bg, borderRadius: 10, border: `1px solid ${T.border}`, marginBottom: 12 }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 12 }}>{product ? "Edit Product" : "Add New Product"}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10, marginBottom: 10 }}>
         <div>
           <label style={labelSt}>Product Name</label>
           <input style={inputSt} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. 1yr Fixed Standard" />
@@ -161,15 +178,11 @@ function ProductWizard({ product, onSave, onCancel }) {
             {TERM_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
-        <div>
-          <label style={labelSt}>Code</label>
-          <input style={inputSt} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="FTD1-S" />
-        </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
         <div>
           <label style={labelSt}>Base Rate (AER %)</label>
-          <input style={inputSt} type="number" step="0.01" value={form.baseRate} onChange={e => setForm({ ...form, baseRate: parseFloat(e.target.value) || "" })} placeholder="4.25" />
+          <input style={inputSt} type="number" step="0.01" value={form.baseRate} onChange={e => setForm({ ...form, baseRate: e.target.value })} placeholder="4.25" />
         </div>
         <div>
           <label style={labelSt}>Wrapper</label>
@@ -182,9 +195,11 @@ function ProductWizard({ product, onSave, onCancel }) {
           <input style={inputSt} value={form.eligibility || ""} onChange={e => setForm({ ...form, eligibility: e.target.value })} placeholder="e.g. Ltd companies" />
         </div>
       </div>
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+        {form.code && <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>Code: {form.code}</span>}
+        {!form.code && form.name && <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>Code: {generateCode(bucketName || "SAV", form.term)} (auto)</span>}
         <Btn onClick={onCancel}>Cancel</Btn>
-        <Btn primary onClick={() => { if (!form.name.trim() || !form.baseRate) return; onSave(form); }}>{product ? "Save" : "Add Product"}</Btn>
+        <Btn primary onClick={doSave} disabled={!canSave}>{product ? "Save" : "Add Product"}</Btn>
       </div>
     </div>
   );
@@ -463,8 +478,8 @@ export default function SavingsBuckets() {
             </div>
 
             {/* Inline add/edit product wizard */}
-            {addingProduct && <ProductWizard onSave={handleSaveProduct} onCancel={() => setAddingProduct(false)} />}
-            {editingProductIdx != null && <ProductWizard product={bucket.products[editingProductIdx]} onSave={handleSaveProduct} onCancel={() => setEditingProductIdx(null)} />}
+            {addingProduct && <ProductWizard bucketName={bucket.name} onSave={handleSaveProduct} onCancel={() => setAddingProduct(false)} />}
+            {editingProductIdx != null && <ProductWizard product={bucket.products[editingProductIdx]} bucketName={bucket.name} onSave={handleSaveProduct} onCancel={() => setEditingProductIdx(null)} />}
 
             {/* Rate table grouped by term */}
             {terms.length > 0 ? terms.map(term => {

@@ -412,9 +412,18 @@ const emptyBucket = () => ({
   products: [],
 });
 
+let lendingCodeCounter = Date.now();
 const emptyProduct = () => ({
   type: "", code: "", erc: "", rates: {},
 });
+const autoLendingCode = (bucketName, productType) => {
+  lendingCodeCounter++;
+  const bMap = { "Prime": "P", "Prime High LTV": "H", "Professional": "D", "High-Net-Worth": "M", "Buy-to-Let": "B" };
+  const prefix = bMap[bucketName] || bucketName.replace(/[^A-Z]/gi, "").slice(0, 2).toUpperCase();
+  const tMap = { "2-Year Fixed": "2F", "5-Year Fixed": "5F", "2-Year Tracker": "TR", "Tracker": "TR" };
+  const suffix = tMap[productType] || productType.replace(/[^A-Z0-9]/gi, "").slice(0, 2).toUpperCase();
+  return `${prefix}${suffix}`;
+};
 
 // ─────────────────────────────────────────────
 // BUCKET FORM MODAL
@@ -1020,7 +1029,19 @@ function ProductsTab({ bucket, onUpdateProducts }) {
     commit(next);
   };
 
-  const addProduct = () => commit([...products, emptyProduct()]);
+  const addProduct = () => {
+    const newProd = emptyProduct();
+    commit([...products, newProd]);
+  };
+
+  // Auto-generate code when type changes and code is empty or was auto-generated
+  const updateProductType = (idx, val) => {
+    commit(products.map((p, i) => {
+      if (i !== idx) return p;
+      const needsAutoCode = !p.code || p.code === autoLendingCode(bucket.name, p.type);
+      return { ...p, type: val, code: needsAutoCode ? autoLendingCode(bucket.name, val) : p.code };
+    }));
+  };
   const removeProduct = (idx) => commit(products.filter((_, i) => i !== idx));
 
   const maxLTV = bucket.maxLTV || 75;
@@ -1060,7 +1081,7 @@ function ProductsTab({ bucket, onUpdateProducts }) {
             {products.map((prod, idx) => (
               <tr key={idx} style={{ borderBottom: `1px solid ${T.borderLight}`, background: idx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
                 <td style={{ padding: "6px" }}>
-                  <input style={{ ...inputSt, width: "100%" }} value={prod.type} onChange={(e) => updateProduct(idx, "type", e.target.value)} placeholder="e.g. 2-Year Fixed" />
+                  <input style={{ ...inputSt, width: "100%" }} value={prod.type} onChange={(e) => updateProductType(idx, e.target.value)} placeholder="e.g. 2-Year Fixed" />
                 </td>
                 <td style={{ padding: "6px" }}>
                   <input style={{ ...inputSt, width: 64 }} value={prod.code} onChange={(e) => updateProduct(idx, "code", e.target.value)} placeholder="P2F" />
