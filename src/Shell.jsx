@@ -9,7 +9,7 @@ import MessagesScreen from "./shared/MessagesScreen";
 import ErrorBoundary from "./shared/ErrorBoundary";
 // Customers
 import CustomerHub from "./customers/CustomerHub";
-import CustomerPortal from "./customers/CustomerPortal";
+// CustomerPortal replaced by CustomerApp (customer-app/CustomerApp.jsx)
 import NeedsAttentionScreen from "./customers/NeedsAttentionScreen";
 import AllCustomersScreen from "./customers/AllCustomersScreen";
 // Products
@@ -121,6 +121,8 @@ import ComplianceEngine from "./shared/ComplianceEngine";
 import ThemeEditor from "./admin/ThemeEditor";
 import ApiObservatory from "./admin/ApiObservatory";
 import MyInbox from "./shared/MyInbox";
+// Customer App (v2.20)
+import CustomerApp from "./customer-app/CustomerApp";
 // Agentic AI features (v2.19)
 import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
 import RetentionAgent from "./shared/RetentionAgent";
@@ -685,7 +687,7 @@ export default function Shell({ userType }) {
               setShowServicingModal(true);
             }}
           /> : <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
-      case "customerportal":  return <CustomerPortal />;
+      case "customerportal":  return <CustomerApp />;
       // Products
       case "mortgages":       return <MortgagesScreen
             onViewCustomer={(cust) => { setContextCustomer(cust); setScreen("customerhub"); }}
