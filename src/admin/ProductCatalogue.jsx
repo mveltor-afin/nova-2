@@ -766,10 +766,52 @@ function ProductWizard({ onClose, onPublish }) {
   );
 }
 
-// Simplified — ProductCatalogue now just renders ProductBuckets
-// Products are created/managed inside buckets, not standalone
+// ─────────────────────────────────────────────
+// PRODUCT CATALOGUE — Multi-type with subtabs
+// ─────────────────────────────────────────────
+import SavingsBuckets from "./SavingsBuckets";
+import SharedOwnershipCatalogue from "./SharedOwnershipCatalogue";
+import InsuranceCatalogue from "./InsuranceCatalogue";
+
+const PRODUCT_TYPES = [
+  { id: "lending", label: "Lending", icon: "shield", color: "#059669" },
+  { id: "savings", label: "Savings", icon: "dollar", color: "#3B82F6" },
+  { id: "sharedOwnership", label: "Shared Ownership", icon: "users", color: "#8B5CF6" },
+  { id: "insurance", label: "Insurance", icon: "lock", color: "#F59E0B" },
+];
+
 function ProductCatalogue() {
-  return <ProductBuckets />;
+  const [activeType, setActiveType] = useState("lending");
+
+  return (
+    <div style={{ fontFamily: T.font }}>
+      {/* Product type subtabs */}
+      <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 24 }}>
+        {PRODUCT_TYPES.map(pt => (
+          <button
+            key={pt.id}
+            onClick={() => setActiveType(pt.id)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "12px 24px", border: "none", background: "none", cursor: "pointer",
+              fontSize: 14, fontWeight: activeType === pt.id ? 700 : 500, fontFamily: T.font,
+              color: activeType === pt.id ? pt.color : T.textMuted,
+              borderBottom: activeType === pt.id ? `3px solid ${pt.color}` : "3px solid transparent",
+              marginBottom: -2, transition: "all 0.15s",
+            }}
+          >
+            {Ico[pt.icon]?.(16)} {pt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {activeType === "lending" && <ProductBuckets />}
+      {activeType === "savings" && <SavingsBuckets />}
+      {activeType === "sharedOwnership" && <SharedOwnershipCatalogue />}
+      {activeType === "insurance" && <InsuranceCatalogue />}
+    </div>
+  );
 }
 
 export default ProductCatalogue;
