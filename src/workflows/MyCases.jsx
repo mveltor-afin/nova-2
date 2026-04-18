@@ -15,17 +15,17 @@ const UW_USER = "UW-01"; // James Mitchell
 // UW-relevant statuses (cases that need underwriter attention)
 const UW_STATUSES = ["Submitted", "KYC_In_Progress", "Underwriting", "Referred", "DIP_Approved"];
 
-// Ops stage map — covers the full lifecycle ops tracks
+// Ops stage map — aligned 1:1 with the Ops Case Wizard steps
 const OPS_STAGE_MAP = {
-  Submitted:        { stage: "Awaiting UW",            step: 0 },
-  KYC_In_Progress:  { stage: "KYC",                    step: 0 },
-  Underwriting:     { stage: "Awaiting UW",            step: 0 },
-  Referred:         { stage: "Awaiting UW",            step: 0 },
-  DIP_Approved:     { stage: "Awaiting UW",            step: 0 },
+  Submitted:        { stage: "UW Review",              step: 0 },
+  KYC_In_Progress:  { stage: "UW Review",              step: 0 },
+  Underwriting:     { stage: "UW Review",              step: 0 },
+  Referred:         { stage: "UW Review",              step: 0 },
+  DIP_Approved:     { stage: "UW Review",              step: 0 },
   Approved:         { stage: "Valuation",              step: 1 },
-  Offer_Issued:     { stage: "Solicitor & Conveyancing", step: 3 },
+  Offer_Issued:     { stage: "Instruct Solicitor",     step: 3 },
   Offer_Accepted:   { stage: "Pre-Completion",         step: 5 },
-  Disbursed:        { stage: "Complete",               step: 6 },
+  Disbursed:        { stage: "Disbursement",           step: 6 },
 };
 
 // UW stage map — UW only cares about underwriting decision
@@ -54,9 +54,11 @@ const DAYS_IN_STAGE = {
 };
 
 const SLA_LIMITS = {
+  "UW Review": 24,
   Valuation: 5,
   "Offer & ESIS": 3,
-  "Solicitor & Conveyancing": 10,
+  "Instruct Solicitor": 2,
+  Conveyancing: 10,
   "Pre-Completion": 5,
   Disbursement: 2,
 };
@@ -68,7 +70,8 @@ function getSLAStatus(stageName, daysInStage) {
   return { label: "Breaching", color: T.danger, bg: T.dangerBg };
 }
 
-const OPS_STAGE_ORDER = ["Awaiting UW", "KYC", "Valuation", "Offer & ESIS", "Solicitor & Conveyancing", "Pre-Completion", "Complete"];
+// Must match the Ops Case Wizard steps exactly
+const OPS_STAGE_ORDER = ["UW Review", "Valuation", "Offer & ESIS", "Instruct Solicitor", "Conveyancing", "Pre-Completion", "Disbursement"];
 const UW_STAGE_ORDER = ["New — Awaiting Review", "KYC in Progress", "Under Assessment", "Referred — Needs L2", "DIP — Awaiting Full App", "Decision Made"];
 
 const STAGE_ICONS = {
@@ -239,12 +242,10 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
                       <Btn primary small onClick={() => onOpenCase?.(c)}>
                         Open Workstation
                       </Btn>
-                    ) : c.stageInfo.step === 0 ? (
+                    ) : c.stageInfo.stage === "UW Review" ? (
                       <Btn small disabled style={{ opacity: 0.5 }}>
                         Awaiting UW
                       </Btn>
-                    ) : c.stageInfo.stage === "Complete" ? (
-                      <span style={{ fontSize: 11, fontWeight: 700, color: T.success, padding: "6px 12px" }}>✓ Complete</span>
                     ) : (
                       <Btn primary small onClick={() => onOpenWizard?.(c, c.stageInfo.step)}>
                         Continue Processing
