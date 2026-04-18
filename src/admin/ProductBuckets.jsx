@@ -1784,8 +1784,8 @@ function TiersTab({ bucket, onUpdateTiers }) {
 // ─────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
-export default function ProductBuckets() {
-  const [buckets, setBuckets] = useState(loadBuckets);
+export default function ProductBuckets({ filterBuckets }) {
+  const [allBuckets, setAllBuckets] = useState(loadBuckets);
   const [expandedIdx, setExpandedIdx] = useState(null);
   const [bucketTab, setBucketTab] = useState({});
   const [editingIdx, setEditingIdx] = useState(null);
@@ -1793,8 +1793,20 @@ export default function ProductBuckets() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    saveBuckets(buckets);
-  }, [buckets]);
+    saveBuckets(allBuckets);
+  }, [allBuckets]);
+
+  // Filter buckets if a filter is provided, otherwise show all
+  const buckets = filterBuckets
+    ? allBuckets.filter(b => filterBuckets.includes(b.name))
+    : allBuckets;
+
+  // Map filtered index back to allBuckets index for mutations
+  const toAllIdx = (filteredIdx) => {
+    if (!filterBuckets) return filteredIdx;
+    const bucket = buckets[filteredIdx];
+    return allBuckets.findIndex(b => b.name === bucket.name);
+  };
 
   const toggleBucket = (i) => {
     setExpandedIdx(expandedIdx === i ? null : i);
@@ -1804,53 +1816,59 @@ export default function ProductBuckets() {
   const setTab = (i, tab) => setBucketTab((prev) => ({ ...prev, [i]: tab }));
 
   const handleSaveNew = (form) => {
-    setBuckets((prev) => [...prev, form]);
+    setAllBuckets((prev) => [...prev, form]);
     setShowCreateModal(false);
   };
 
   const handleSaveEdit = (form) => {
-    setBuckets((prev) => {
+    const realIdx = toAllIdx(editingIdx);
+    setAllBuckets((prev) => {
       const next = [...prev];
-      next[editingIdx] = form;
+      next[realIdx] = form;
       return next;
     });
     setEditingIdx(null);
   };
 
   const handleDelete = (idx) => {
-    setBuckets((prev) => prev.filter((_, i) => i !== idx));
+    const realIdx = toAllIdx(idx);
+    setAllBuckets((prev) => prev.filter((_, i) => i !== realIdx));
     setDeleteConfirm(null);
     if (expandedIdx === idx) setExpandedIdx(null);
   };
 
   const updateBucketProducts = (bIdx, products) => {
-    setBuckets((prev) => {
+    const realIdx = toAllIdx(bIdx);
+    setAllBuckets((prev) => {
       const next = [...prev];
-      next[bIdx] = { ...next[bIdx], products };
+      next[realIdx] = { ...next[realIdx], products };
       return next;
     });
   };
 
   const updateBucketFees = (bIdx, fees) => {
-    setBuckets((prev) => {
+    const realIdx = toAllIdx(bIdx);
+    setAllBuckets((prev) => {
       const next = [...prev];
-      next[bIdx] = { ...next[bIdx], fees };
+      next[realIdx] = { ...next[realIdx], fees };
       return next;
     });
   };
 
   const updateBucketTierOverrides = (bIdx, tierOverrides) => {
-    setBuckets((prev) => {
+    const realIdx = toAllIdx(bIdx);
+    setAllBuckets((prev) => {
       const next = [...prev];
-      next[bIdx] = { ...next[bIdx], tierOverrides };
+      next[realIdx] = { ...next[realIdx], tierOverrides };
       return next;
     });
   };
 
   const updateBucketTiers = (bIdx, tiers) => {
-    setBuckets((prev) => {
+    const realIdx = toAllIdx(bIdx);
+    setAllBuckets((prev) => {
       const next = [...prev];
-      next[bIdx] = { ...next[bIdx], tiers };
+      next[realIdx] = { ...next[realIdx], tiers };
       return next;
     });
   };
