@@ -78,7 +78,7 @@ function sortCases(cases, sortBy) {
   return sorted;
 }
 
-export default function PipelineView() {
+export default function PipelineView({ onProcessCase }) {
   const [activeTab, setActiveTab] = useState("All Stages");
   const [sortBy, setSortBy] = useState("By Status");
 
@@ -157,6 +157,7 @@ export default function PipelineView() {
                 <th style={thStyle}>Solicitor</th>
                 <th style={thStyle}>Adviser</th>
                 <th style={thStyle}>Risk</th>
+                {onProcessCase && <th style={{ ...thStyle, textAlign: "center" }}>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -208,6 +209,11 @@ export default function PipelineView() {
                         }}>{c.riskScore}</span>
                         <span style={{ fontSize: 10, color: risk.color, fontWeight: 600 }}>{c.riskLevel}</span>
                       </div>
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: "center" }}>
+                      {onProcessCase && (
+                        <Btn small primary onClick={() => onProcessCase(c)}>Process</Btn>
+                      )}
                     </td>
                   </tr>
                 );

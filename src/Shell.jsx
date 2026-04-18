@@ -129,6 +129,7 @@ import ConveyancingTracker from "./shared/ConveyancingTracker";
 // Offers & Pipeline (v2.22)
 import OffersScreen from "./workflows/OffersScreen";
 import PipelineView from "./workflows/PipelineView";
+import OpsCaseWizard from "./workflows/OpsCaseWizard";
 // Agentic AI features (v2.19)
 import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
 import RetentionAgent from "./shared/RetentionAgent";
@@ -170,6 +171,7 @@ export default function Shell({ userType }) {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [servicingAccountId, setServicingAccountId] = useState(null);
   const [showServicingModal, setShowServicingModal] = useState(false);
+  const [opsWizardLoan, setOpsWizardLoan] = useState(null);
   const [showCaseModal, setShowCaseModal] = useState(false);
   const [caseLoanForModal, setCaseLoanForModal] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -376,17 +378,11 @@ export default function Shell({ userType }) {
         ]},
       ]
     : [
-        // Ops & Admin — restructured for clarity
+        // Ops & Admin — follows the case lifecycle
         { group:"PIPELINE", items:[
           { id:"pipeline",        label:"Pipeline",             icon:"chart" },
+          { id:"intake",          label:"Incoming",             icon:"zap", badge:3 },
           { id:"offers",          label:"Offers & ESIS",        icon:"file" },
-        ]},
-        { group:"PROCESSING", items:[
-          { id:"intake",          label:"Intake & Processing",  icon:"zap", badge:3 },
-          { id:"approvals",       label:"Approvals",            icon:"check" },
-          ...(persona === "Ops" || persona === "Admin" ? [
-            { id:"valuations",    label:"Valuations",           icon:"eye" },
-          ] : []),
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",      icon:"alert", badge:needsAttentionCount },
@@ -737,7 +733,7 @@ export default function Shell({ userType }) {
         if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
       }} />;
       case "approvals":       return <ApprovalsScreen />;
-      case "pipeline":        return <PipelineView />;
+      case "pipeline":        return <PipelineView onProcessCase={(loan) => setOpsWizardLoan(loan)} />;
       case "offers":          return <OffersScreen />;
       case "caseworkbench":   return <CaseWorkbench />;
       case "valuations":      return <ValuationScreen />;
@@ -954,6 +950,7 @@ export default function Shell({ userType }) {
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
       <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.18.0"); }} />
       <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
+      {opsWizardLoan && <OpsCaseWizard loan={opsWizardLoan} onClose={() => setOpsWizardLoan(null)} />}
       <StatusBar persona={persona} />
 
       {/* ─── Loan Wizard Modal ─── */}
