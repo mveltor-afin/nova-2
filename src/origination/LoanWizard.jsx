@@ -57,20 +57,90 @@ function LoanWizard({ onCancel, onComplete }) {
   };
 
   // ── STEP RENDERERS ──
+  const LENDING_TYPES = [
+    { id: "residential", label: "Residential", desc: "Owner-occupied home purchase or remortgage", icon: Ico.shield(28), color: "#059669" },
+    { id: "btl", label: "Buy-to-Let", desc: "Single investment property or portfolio", icon: Ico.products(28), color: "#F59E0B" },
+    { id: "commercial", label: "Commercial", desc: "Business premises — office, retail, industrial", icon: Ico.dashboard(28), color: "#3B82F6" },
+    { id: "bridging", label: "Bridging", desc: "Short-term finance — auction, refurb, chain-break", icon: Ico.zap(28), color: "#8B5CF6" },
+    { id: "development", label: "Development", desc: "New build or conversion — staged drawdown", icon: Ico.chart(28), color: "#0EA5E9" },
+  ];
+
+  const [lendingType, setLendingType] = useState("residential");
+  const [companyName, setCompanyName] = useState("");
+  const [companyNumber, setCompanyNumber] = useState("");
+  const [companyType, setCompanyType] = useState("Individual");
+  const [portfolioSize, setPortfolioSize] = useState("");
+  const [rentalIncome, setRentalIncome] = useState("");
+
   const StepType = () => (
-    <div style={{ maxWidth: 560, margin: "0 auto" }}>
-      <SectionLabel icon={Ico.users(22)} text="How many applicants?" sub="Single or joint application" />
-      <div style={{ display: "flex", gap: 16 }}>
-        {[{ val: false, label: "Single Applicant", desc: "One borrower on the mortgage", icon: Ico.user(36) },
-          { val: true,  label: "Joint Applicants", desc: "Two borrowers on the mortgage", icon: Ico.users(36) }].map(opt => (
+    <div style={{ maxWidth: 820, margin: "0 auto" }}>
+      {/* Lending type selector */}
+      <SectionLabel icon={Ico.products(22)} text="What type of lending?" sub="Select the product category for this application" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10, marginBottom: 28 }}>
+        {LENDING_TYPES.map(lt => (
+          <div key={lt.id} onClick={() => setLendingType(lt.id)} style={{
+            padding: "18px 12px", borderRadius: 14, cursor: "pointer", textAlign: "center", transition: "all 0.2s",
+            border: `2px solid ${lendingType === lt.id ? lt.color : T.border}`,
+            background: lendingType === lt.id ? lt.color + "0A" : T.card,
+          }}>
+            <div style={{ color: lendingType === lt.id ? lt.color : T.textMuted, marginBottom: 8 }}>{lt.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: lendingType === lt.id ? lt.color : T.navy, marginBottom: 2 }}>{lt.label}</div>
+            <div style={{ fontSize: 10, color: T.textMuted, lineHeight: 1.3 }}>{lt.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Commercial/BTL entity type */}
+      {(lendingType === "btl" || lendingType === "commercial" || lendingType === "development") && (
+        <div style={{ marginBottom: 24 }}>
+          <SectionLabel icon={Ico.shield(22)} text="Borrowing Entity" sub="Individual, Ltd company, or SPV?" />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+            {[
+              { id: "Individual", label: "Individual", desc: "Personal name" },
+              { id: "Ltd", label: "Ltd Company", desc: "Existing trading company" },
+              { id: "SPV", label: "SPV", desc: "Special Purpose Vehicle" },
+              { id: "Partnership", label: "Partnership", desc: "LLP or general partnership" },
+            ].map(ct => (
+              <div key={ct.id} onClick={() => setCompanyType(ct.id)} style={{
+                padding: "14px 12px", borderRadius: 12, cursor: "pointer", textAlign: "center",
+                border: `2px solid ${companyType === ct.id ? T.primary : T.border}`,
+                background: companyType === ct.id ? T.primaryLight : T.card, transition: "all 0.15s",
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: companyType === ct.id ? T.primary : T.navy }}>{ct.label}</div>
+                <div style={{ fontSize: 10, color: T.textMuted }}>{ct.desc}</div>
+              </div>
+            ))}
+          </div>
+          {companyType !== "Individual" && (
+            <Card>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+                <Input label="Company Name" value={companyName} onChange={setCompanyName} placeholder="GreenLeaf Properties Ltd" required />
+                <Input label="Company Number" value={companyNumber} onChange={setCompanyNumber} placeholder="12345678" required />
+              </div>
+              {lendingType === "btl" && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+                  <Input label="Portfolio Size (properties)" value={portfolioSize} onChange={setPortfolioSize} placeholder="5" />
+                  <Input label="Total Monthly Rental Income" value={rentalIncome} onChange={setRentalIncome} prefix="£" placeholder="8,500" />
+                </div>
+              )}
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Applicant count */}
+      <SectionLabel icon={Ico.users(22)} text="How many applicants?" sub={companyType !== "Individual" ? "Directors / guarantors on this application" : "Single or joint application"} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {[{ val: false, label: companyType !== "Individual" ? "Single Director" : "Single Applicant", desc: companyType !== "Individual" ? "One director/guarantor" : "One borrower on the mortgage", icon: Ico.user(36) },
+          { val: true,  label: companyType !== "Individual" ? "Multiple Directors" : "Joint Applicants", desc: companyType !== "Individual" ? "Two or more directors/guarantors" : "Two borrowers on the mortgage", icon: Ico.users(36) }].map(opt => (
           <div key={String(opt.val)} onClick={() => setJoint(opt.val)} style={{
-            flex: 1, padding: 28, borderRadius: 14, cursor: "pointer", textAlign: "center", transition: "all 0.2s",
+            padding: 24, borderRadius: 14, cursor: "pointer", textAlign: "center", transition: "all 0.2s",
             border: `2px solid ${joint === opt.val ? T.primary : T.border}`,
             background: joint === opt.val ? T.primaryLight : T.card,
           }}>
-            <div style={{ color: joint === opt.val ? T.primary : T.textMuted, marginBottom: 12 }}>{opt.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{opt.label}</div>
-            <div style={{ fontSize: 12, color: T.textSecondary }}>{opt.desc}</div>
+            <div style={{ color: joint === opt.val ? T.primary : T.textMuted, marginBottom: 10 }}>{opt.icon}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{opt.label}</div>
+            <div style={{ fontSize: 11, color: T.textSecondary }}>{opt.desc}</div>
           </div>
         ))}
       </div>
@@ -78,7 +148,7 @@ function LoanWizard({ onCancel, onComplete }) {
   );
 
   const ApplicantForm = ({ num }) => (
-    <div style={{ maxWidth: 640, margin: "0 auto" }}>
+    <div style={{ maxWidth: 820, margin: "0 auto" }}>
       <SectionLabel icon={Ico.user(22)} text={`Applicant ${num} Details`} sub="All fields required for the credit check" />
       <Card>
         <div style={{ display: "grid", gridTemplateColumns: "120px 1fr 1fr", gap: "0 16px" }}>
@@ -126,7 +196,7 @@ function LoanWizard({ onCancel, onComplete }) {
   );
 
   const StepCredit = () => (
-    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+    <div style={{ maxWidth: 820, margin: "0 auto" }}>
       <SectionLabel icon={Ico.shield(22)} text="Credit Check" sub="Soft search — no credit file impact" />
       {!creditStatus && (
         <Card style={{ textAlign: "center", padding: 40 }}>
@@ -260,7 +330,7 @@ function LoanWizard({ onCancel, onComplete }) {
   };
 
   const StepAdditional = () => (
-    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+    <div style={{ maxWidth: 820, margin: "0 auto" }}>
       <SectionLabel icon={Ico.zap(22)} text="Additional Information" sub="Determines eligibility for specialist products" />
       <Card>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Professional Qualification</div>
@@ -431,7 +501,7 @@ function LoanWizard({ onCancel, onComplete }) {
   );
 
   const StepSubmit = () => (
-    <div style={{ maxWidth: 640, margin: "0 auto" }}>
+    <div style={{ maxWidth: 820, margin: "0 auto" }}>
       <SectionLabel icon={Ico.send(22)} text="Review & Submit" sub="Review your application summary before submitting" />
       <Card style={{ marginBottom: 20 }}>
         {[
