@@ -615,7 +615,7 @@ function LoanWizard({ onCancel, onComplete }) {
             <div style={{ width: 8, height: 8, borderRadius: 4, background: T.success }} />
           </div>
         </div>
-        <div ref={scrollRef} style={{ flex: 1, overflow: "auto", padding: "28px 32px" }}>{renderStep()}</div>
+        <div ref={scrollRef} style={{ flex: 1, overflow: "auto", padding: "20px 36px 28px" }}>{renderStep()}</div>
         <div style={{ padding: "14px 28px", borderTop: `1px solid ${T.border}`, background: T.card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", gap: 8 }}>
             {step > 0 && <Btn ghost onClick={prev} iconNode={Ico.arrowLeft(16)}>Back</Btn>}

@@ -942,10 +942,10 @@ export default function Shell({ userType }) {
       {mode === "wizard" && (
         <div style={{ position:"fixed", inset:0, zIndex:300, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <div onClick={() => setMode("shell")} style={{ position:"absolute", inset:0, background:"rgba(12,45,59,0.55)", backdropFilter:"blur(6px)" }} />
-          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"94vw", maxWidth:1200, height:"92vh", maxHeight:900,
+          <div style={{ position:"relative", background:T.card, borderRadius:18, width:"96vw", maxWidth:1400, height:"94vh",
             boxShadow:"0 20px 80px rgba(0,0,0,0.3)", border:`1px solid ${T.border}`, display:"flex", flexDirection:"column", overflow:"hidden" }}>
             {/* Modal header */}
-            <div style={{ padding:"16px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:`linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color:"#fff" }}>
+            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:`linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color:"#fff", flexShrink:0 }}>
               <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                 <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {Ico.plus(20)}
