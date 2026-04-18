@@ -126,6 +126,9 @@ import CustomerApp from "./customer-app/CustomerApp";
 // Solicitor Management (v2.21)
 import SolicitorPanel from "./admin/SolicitorPanel";
 import ConveyancingTracker from "./shared/ConveyancingTracker";
+// Offers & Pipeline (v2.22)
+import OffersScreen from "./workflows/OffersScreen";
+import PipelineView from "./workflows/PipelineView";
 // Agentic AI features (v2.19)
 import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
 import RetentionAgent from "./shared/RetentionAgent";
@@ -262,6 +265,8 @@ export default function Shell({ userType }) {
         { group:"UNDERWRITING", items:[
           { id:"uwqueue",           label:"Smart Queue",           icon:"shield", badge:5 },
           { id:"approvals",         label:"Approvals",             icon:"check" },
+          { id:"pipeline",          label:"Pipeline",              icon:"chart" },
+          { id:"offers",            label:"Offers",                icon:"file" },
         ]},
         { group:"CUSTOMERS", items:[
           { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
@@ -379,6 +384,8 @@ export default function Shell({ userType }) {
         ]},
         { group:"WORKFLOWS", items:[
           { id:"intake",          label:"Intake Queue",        icon:"zap", badge:3 },
+          { id:"pipeline",        label:"Pipeline",            icon:"chart" },
+          { id:"offers",          label:"Offers",              icon:"file" },
           { id:"approvals",       label:"Approvals",           icon:"check" },
           ...(persona === "Ops" || persona === "Admin" ? [
             { id:"valuations",    label:"Valuations & Property",icon:"eye" },
@@ -729,6 +736,8 @@ export default function Shell({ userType }) {
         if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
       }} />;
       case "approvals":       return <ApprovalsScreen />;
+      case "pipeline":        return <PipelineView />;
+      case "offers":          return <OffersScreen />;
       case "caseworkbench":   return <CaseWorkbench />;
       case "valuations":      return <ValuationScreen />;
       case "property":        return <PropertyScreen />;
