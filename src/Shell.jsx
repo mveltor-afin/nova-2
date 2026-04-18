@@ -724,7 +724,10 @@ export default function Shell({ userType }) {
       case "collections":     return <CollectionsScreen />;
       case "rateswitch":      return <RateSwitchPortal />;
       // Workflows
-      case "intake":          return <IntakeQueue />;
+      case "intake":          return <IntakeQueue onOpenCase={(caseRef) => {
+        const loan = MOCK_LOANS.find(l => l.id === caseRef);
+        if (loan) { setSelectedLoan(loan); setScreen("uwworkstation"); }
+      }} />;
       case "approvals":       return <ApprovalsScreen />;
       case "caseworkbench":   return <CaseWorkbench />;
       case "valuations":      return <ValuationScreen />;

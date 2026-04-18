@@ -9,19 +9,19 @@ import { CUSTOMERS, PRODUCTS, PRODUCT_TYPES } from "../data/customers";
 
 const INCOMING_CASES = [
   {
-    id: "INQ-001", customerId: "CUS-007", customerName: "Tom & Lucy Brennan",
+    id: "INQ-001", caseRef: "AFN-2026-00115", customerId: "CUS-007", customerName: "Tom & Lucy Brennan",
     productType: "Mortgage", productName: "2-Year Fixed", bucket: "Prime High LTV", submitted: "09:12 today",
     checks: { kyc: "pending", credit: "pass", avm: "pass", sanctions: "pass", docs: { parsed: 4, total: 6 } },
     aiAssessment: "First-time buyers, dual income, fast-track eligible based on LTI ratio 3.2x.",
   },
   {
-    id: "INQ-002", customerId: "CUS-002", customerName: "James & Sarah Mitchell",
+    id: "INQ-002", caseRef: "AFN-2026-00142", customerId: "CUS-002", customerName: "James & Sarah Mitchell",
     productType: "Insurance", productName: "Life Cover -- £350k", submitted: "08:45 today",
     checks: { kyc: "pass", credit: "pass", avm: null, sanctions: "pass", docs: { parsed: 2, total: 2 } },
     aiAssessment: "Existing mortgage customer, quote ready for review. Standard health declaration received.",
   },
   {
-    id: "INQ-003", customerId: "CUS-004", customerName: "David Chen",
+    id: "INQ-003", caseRef: "AFN-2026-00135", customerId: "CUS-004", customerName: "David Chen",
     productType: "Shared Ownership", productName: "Shared Ownership 40%", submitted: "Yesterday 16:30",
     checks: { kyc: "pass", credit: "pass", avm: "pass", sanctions: "pass", docs: { parsed: 5, total: 7 } },
     aiAssessment: "Platinum customer, awaiting Bristol Housing association response on eligibility.",
@@ -77,8 +77,9 @@ const filterType = (tab) => {
   return null;
 };
 
-export default function IntakeQueue() {
+export default function IntakeQueue({ onOpenCase }) {
   const [activeTab, setActiveTab] = useState("All");
+  const [processing, setProcessing] = useState(null);
 
   const filtered = activeTab === "All"
     ? INCOMING_CASES
@@ -182,7 +183,16 @@ export default function IntakeQueue() {
 
               {/* Right: Action */}
               <div style={{ display: "flex", alignItems: "center" }}>
-                <Btn primary small onClick={() => {}}>Start Processing &rarr;</Btn>
+                <Btn primary small
+                  disabled={processing === c.id}
+                  onClick={() => {
+                    setProcessing(c.id);
+                    setTimeout(() => {
+                      setProcessing(null);
+                      if (c.caseRef && onOpenCase) onOpenCase(c.caseRef);
+                    }, 1200);
+                  }}
+                >{processing === c.id ? "Assigning..." : "Start Processing →"}</Btn>
               </div>
             </div>
 
