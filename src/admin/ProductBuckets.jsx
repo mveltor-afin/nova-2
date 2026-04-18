@@ -591,11 +591,19 @@ const emptyProduct = () => ({
 });
 const autoLendingCode = (bucketName, productType) => {
   lendingCodeCounter++;
-  const bMap = { "Prime": "P", "Prime High LTV": "H", "Professional": "D", "High-Net-Worth": "M", "Buy-to-Let": "B" };
+  const bMap = {
+    "Prime": "P", "Prime High LTV": "H", "Professional": "D", "High-Net-Worth": "M",
+    "Buy-to-Let": "B", "Residential Bridging": "RB", "Unregulated Bridging": "UB",
+    "Commercial Mortgage": "CM", "Development Finance": "DF",
+  };
   const prefix = bMap[bucketName] || bucketName.replace(/[^A-Z]/gi, "").slice(0, 2).toUpperCase();
-  const tMap = { "2-Year Fixed": "2F", "5-Year Fixed": "5F", "2-Year Tracker": "TR", "Tracker": "TR" };
-  const suffix = tMap[productType] || productType.replace(/[^A-Z0-9]/gi, "").slice(0, 2).toUpperCase();
-  return `${prefix}${suffix}`;
+  const tMap = {
+    "2-Year Fixed": "2F", "5-Year Fixed": "5F", "2-Year Tracker": "TR", "Tracker": "TR",
+    "Regulated Bridge": "RG", "Unregulated Bridge": "UG", "Heavy Refurb Bridge": "HR",
+    "Development Facility": "DF", "Mezzanine Finance": "MZ",
+  };
+  const suffix = tMap[productType] || productType.replace(/[^A-Z0-9]/gi, "").slice(0, 3).toUpperCase();
+  return `${prefix}-${suffix}`;
 };
 
 // ─────────────────────────────────────────────
@@ -974,11 +982,24 @@ function BucketFormModal({ bucket, onSave, onCancel }) {
             <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 32px", gap: 8, marginBottom: 8, alignItems: "end" }}>
               <div>
                 {pIdx === 0 && <label style={labelSt}>Type</label>}
-                <input style={inputSt} value={prod.type} onChange={(e) => setProduct(pIdx, "type", e.target.value)} placeholder="e.g. 2-Year Fixed" />
+                <input style={inputSt} value={prod.type} onChange={(e) => {
+                  const newType = e.target.value;
+                  const newCode = autoLendingCode(form.name, newType);
+                  setForm(prev => {
+                    const next = JSON.parse(JSON.stringify(prev));
+                    next.products[pIdx].type = newType;
+                    if (!next.products[pIdx].code || next.products[pIdx].code === autoLendingCode(form.name, prod.type)) {
+                      next.products[pIdx].code = newCode;
+                    }
+                    return next;
+                  });
+                }} placeholder="e.g. 2-Year Fixed" />
               </div>
               <div>
                 {pIdx === 0 && <label style={labelSt}>Code</label>}
-                <input style={inputSt} value={prod.code} onChange={(e) => setProduct(pIdx, "code", e.target.value)} placeholder="P2F" />
+                <div style={{ ...inputSt, display: "flex", alignItems: "center", background: "#F1F5F9", color: T.textMuted, fontFamily: "monospace", fontSize: 12 }}>
+                  {prod.code || autoLendingCode(form.name, prod.type) || "—"}
+                </div>
               </div>
               <div>
                 {pIdx === 0 && <label style={labelSt}>ERC</label>}
@@ -1269,7 +1290,9 @@ function ProductsTab({ bucket, onUpdateProducts }) {
                   <input style={{ ...inputSt, width: "100%" }} value={prod.type} onChange={(e) => updateProductType(idx, e.target.value)} placeholder="e.g. 2-Year Fixed" />
                 </td>
                 <td style={{ padding: "6px" }}>
-                  <input style={{ ...inputSt, width: 64 }} value={prod.code} onChange={(e) => updateProduct(idx, "code", e.target.value)} placeholder="P2F" />
+                  <div style={{ width: 80, padding: "7px 8px", fontSize: 11, fontFamily: "monospace", color: T.textMuted, background: "#F1F5F9", borderRadius: 7, border: `1px solid ${T.borderLight}` }}>
+                    {prod.code || autoLendingCode(bucket.name, prod.type) || "—"}
+                  </div>
                 </td>
                 <td style={{ padding: "6px" }}>
                   <input style={{ ...inputSt, width: "100%", minWidth: 80 }} value={prod.erc} onChange={(e) => updateProduct(idx, "erc", e.target.value)} placeholder="3%, 2%" />
