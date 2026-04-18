@@ -741,7 +741,10 @@ export default function Shell({ userType }) {
       case "approvals":       return <ApprovalsScreen />;
       case "pipeline":        return <PipelineView />;
       case "offers":          return <OffersScreen />;
-      case "mycases":         return <MyCases persona={persona} onOpenWizard={(loan, startStep) => { setOpsWizardLoan(loan); }} />;
+      case "mycases":         return <MyCases persona={persona}
+        onOpenWizard={(loan) => { setOpsWizardLoan(loan); }}
+        onOpenCase={(loan) => { setSelectedLoan(loan); setScreen("uwworkstation"); }}
+      />;
       case "teamview":        return <TeamView role={persona === "Underwriter" ? "underwriter" : "ops"} />;
       case "caseworkbench":   return <CaseWorkbench />;
       case "valuations":      return <ValuationScreen />;

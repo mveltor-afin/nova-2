@@ -8,20 +8,30 @@ import { MOCK_LOANS } from "../data/loans";
 // Shows cases assigned to OPS-01 grouped by stage.
 // ─────────────────────────────────────────────
 
-const LOGGED_IN_USER = "OPS-01"; // Tom Walker
+// Ops user
+const OPS_USER = "OPS-01"; // Tom Walker
+// UW user
+const UW_USER = "UW-01"; // James Mitchell
 
-// Map loan status → ops stage + wizard step
-const STAGE_MAP = {
-  Approved:         { stage: "Valuation",              step: 1, label: "Valuation" },
-  Underwriting:     { stage: "Valuation",              step: 1, label: "Valuation" },
-  KYC_In_Progress:  { stage: "Valuation",              step: 1, label: "Valuation" },
-  DIP_Approved:     { stage: "Valuation",              step: 1, label: "Valuation" },
-  Offer_Issued:     { stage: "Solicitor & Conveyancing", step: 3, label: "Solicitor & Conveyancing" },
-  Offer_Accepted:   { stage: "Pre-Completion",         step: 4, label: "Pre-Completion" },
-  Disbursed:        { stage: "Disbursement",           step: 5, label: "Disbursement" },
-  Submitted:        { stage: "Valuation",              step: 1, label: "Valuation" },
-  Referred:         { stage: "Offer & ESIS",           step: 2, label: "Offer & ESIS" },
+// Ops stage map
+const OPS_STAGE_MAP = {
+  Approved:         { stage: "Valuation",              step: 1 },
+  Offer_Issued:     { stage: "Solicitor & Conveyancing", step: 3 },
+  Offer_Accepted:   { stage: "Pre-Completion",         step: 5 },
+  Disbursed:        { stage: "Complete",               step: 6 },
 };
+
+// UW stage map — UW only cares about underwriting decision
+const UW_STAGE_MAP = {
+  Submitted:        { stage: "New — Awaiting Review",  step: 0 },
+  KYC_In_Progress:  { stage: "KYC in Progress",       step: 0 },
+  Underwriting:     { stage: "Under Assessment",       step: 0 },
+  Referred:         { stage: "Referred — Needs L2",    step: 0 },
+  Approved:         { stage: "Decision Made",          step: 0 },
+  DIP_Approved:     { stage: "DIP — Awaiting Full App", step: 0 },
+};
+
+const STAGE_MAP = {}; // will be set per persona
 
 function getStageInfo(status) {
   return STAGE_MAP[status] || { stage: "Valuation", step: 1, label: "Valuation" };
@@ -61,15 +71,29 @@ const STAGE_ICONS = {
   Disbursement: Ico.dollar,
 };
 
-export default function MyCases({ persona, onOpenWizard }) {
+export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
   const [filter, setFilter] = useState("all");
 
-  // Get cases assigned to OPS-01
-  const myCases = MOCK_LOANS.filter(l => l.squad?.ops === LOGGED_IN_USER);
+  const isUW = persona === "Underwriter";
+  const stageMap = isUW ? UW_STAGE_MAP : OPS_STAGE_MAP;
+  const userId = isUW ? UW_USER : OPS_USER;
+  const squadKey = isUW ? "underwriter" : "ops";
+
+  // Get cases assigned to this user
+  const myCases = MOCK_LOANS.filter(l => l.squad?.[squadKey] === userId);
+
+  // For UW — only show cases that need a decision (not already approved/disbursed for ops)
+  const relevantCases = isUW
+    ? myCases.filter(l => ["Submitted", "KYC_In_Progress", "Underwriting", "Referred", "DIP_Approved"].includes(l.status))
+    : myCases.filter(l => ["Approved", "Offer_Issued", "Offer_Accepted", "Disbursed"].includes(l.status) || stageMap[l.status]);
+
+  function getStageInfoLocal(status) {
+    return stageMap[status] || { stage: isUW ? "Under Assessment" : "Valuation", step: isUW ? 0 : 1 };
+  }
 
   // Enrich with stage info
-  const enriched = myCases.map(loan => {
-    const stageInfo = getStageInfo(loan.status);
+  const enriched = relevantCases.map(loan => {
+    const stageInfo = getStageInfoLocal(loan.status);
     const days = DAYS_IN_STAGE[loan.id] || Math.floor(Math.random() * 7) + 1;
     const sla = getSLAStatus(stageInfo.stage, days);
     return { ...loan, stageInfo, daysInStage: days, sla };
@@ -102,8 +126,8 @@ export default function MyCases({ persona, onOpenWizard }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
         {Ico.loans(22)}
         <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>My Cases</h2>
-          <div style={{ fontSize: 12, color: T.textMuted }}>{totalActive} active case{totalActive !== 1 ? "s" : ""} assigned to you</div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{isUW ? "My UW Cases" : "My Cases"}</h2>
+          <div style={{ fontSize: 12, color: T.textMuted }}>{totalActive} {isUW ? "case" : "active case"}{totalActive !== 1 ? "s" : ""} {isUW ? "pending your decision" : "assigned to you"}</div>
         </div>
         <div style={{
           padding: "6px 14px", borderRadius: 8, background: T.primaryLight,
@@ -201,9 +225,15 @@ export default function MyCases({ persona, onOpenWizard }) {
                     </div>
 
                     {/* Right: action */}
-                    <Btn primary small onClick={() => onOpenWizard?.(c, c.stageInfo.step)}>
-                      Continue Processing
-                    </Btn>
+                    {isUW ? (
+                      <Btn primary small onClick={() => onOpenCase?.(c)}>
+                        Open Workstation
+                      </Btn>
+                    ) : (
+                      <Btn primary small onClick={() => onOpenWizard?.(c, c.stageInfo.step)}>
+                        Continue Processing
+                      </Btn>
+                    )}
                   </div>
                 </Card>
               ))}
