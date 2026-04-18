@@ -8,10 +8,12 @@ import { MOCK_LOANS } from "../data/loans";
 // Shows cases assigned to OPS-01 grouped by stage.
 // ─────────────────────────────────────────────
 
-// Ops user
+// Logged-in users per persona
 const OPS_USER = "OPS-01"; // Tom Walker
-// UW user
 const UW_USER = "UW-01"; // James Mitchell
+
+// UW-relevant statuses (cases that need underwriter attention)
+const UW_STATUSES = ["Submitted", "KYC_In_Progress", "Underwriting", "Referred", "DIP_Approved"];
 
 // Ops stage map
 const OPS_STAGE_MAP = {
@@ -61,7 +63,8 @@ function getSLAStatus(stageName, daysInStage) {
   return { label: "Breaching", color: T.danger, bg: T.dangerBg };
 }
 
-const STAGE_ORDER = ["Valuation", "Offer & ESIS", "Solicitor & Conveyancing", "Pre-Completion", "Disbursement"];
+const OPS_STAGE_ORDER = ["Valuation", "Offer & ESIS", "Solicitor & Conveyancing", "Pre-Completion", "Disbursement"];
+const UW_STAGE_ORDER = ["New — Awaiting Review", "KYC in Progress", "Under Assessment", "Referred — Needs L2", "DIP — Awaiting Full App", "Decision Made"];
 
 const STAGE_ICONS = {
   Valuation: Ico.search,
@@ -82,10 +85,11 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
   // Get cases assigned to this user
   const myCases = MOCK_LOANS.filter(l => l.squad?.[squadKey] === userId);
 
-  // For UW — only show cases that need a decision (not already approved/disbursed for ops)
+  // For UW — show ALL cases needing UW decision (assigned to me + unassigned)
+  // For Ops — show post-approval cases assigned to me
   const relevantCases = isUW
-    ? myCases.filter(l => ["Submitted", "KYC_In_Progress", "Underwriting", "Referred", "DIP_Approved"].includes(l.status))
-    : myCases.filter(l => ["Approved", "Offer_Issued", "Offer_Accepted", "Disbursed"].includes(l.status) || stageMap[l.status]);
+    ? MOCK_LOANS.filter(l => UW_STATUSES.includes(l.status) && (l.squad?.[squadKey] === userId || !l.squad?.[squadKey]))
+    : myCases.filter(l => ["Approved", "Offer_Issued", "Offer_Accepted"].includes(l.status) || OPS_STAGE_MAP[l.status]);
 
   function getStageInfoLocal(status) {
     return stageMap[status] || { stage: isUW ? "Under Assessment" : "Valuation", step: isUW ? 0 : 1 };
@@ -99,26 +103,28 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
     return { ...loan, stageInfo, daysInStage: days, sla };
   });
 
+  // Use persona-specific stage order
+  const stageOrder = isUW ? UW_STAGE_ORDER : OPS_STAGE_ORDER;
+
   // Group by stage
   const grouped = {};
-  STAGE_ORDER.forEach(s => { grouped[s] = []; });
+  stageOrder.forEach(s => { grouped[s] = []; });
   enriched.forEach(c => {
     const stage = c.stageInfo.stage;
     if (grouped[stage]) grouped[stage].push(c);
-    else grouped[stage] = [c];
+    else {
+      grouped[stage] = [c];
+      if (!stageOrder.includes(stage)) stageOrder.push(stage);
+    }
   });
 
   // KPI counts
   const totalActive = enriched.length;
-  const inValuation = grouped["Valuation"].length;
-  const inOffer = grouped["Offer & ESIS"].length;
-  const inConveyancing = grouped["Solicitor & Conveyancing"].length;
-  const inPreCompletion = grouped["Pre-Completion"].length;
 
   // Filter
   const filteredStages = filter === "all"
-    ? STAGE_ORDER
-    : STAGE_ORDER.filter(s => s === filter);
+    ? stageOrder.filter(s => (grouped[s] || []).length > 0)
+    : stageOrder.filter(s => s === filter);
 
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
@@ -139,16 +145,15 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
 
       {/* KPI Strip */}
       <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
-        <KPICard label="Total Active" value={totalActive} color={T.primary} />
-        <KPICard label="In Valuation" value={inValuation} sub="step 1" color={T.accent} />
-        <KPICard label="In Offer" value={inOffer} sub="step 2" color="#F59E0B" />
-        <KPICard label="In Conveyancing" value={inConveyancing} sub="step 3" color="#8B5CF6" />
-        <KPICard label="In Pre-Completion" value={inPreCompletion} sub="step 4" color="#0EA5E9" />
+        <KPICard label="Total" value={totalActive} color={T.primary} />
+        {stageOrder.filter(s => (grouped[s] || []).length > 0).map(s => (
+          <KPICard key={s} label={s} value={(grouped[s] || []).length} color={T.accent} />
+        ))}
       </div>
 
       {/* Stage filter tabs */}
       <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
-        {[{ id: "all", label: "All Stages" }, ...STAGE_ORDER.map(s => ({ id: s, label: s }))].map(f => (
+        {[{ id: "all", label: "All" }, ...stageOrder.filter(s => (grouped[s] || []).length > 0).map(s => ({ id: s, label: s }))].map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
             fontFamily: T.font, fontSize: 12, fontWeight: 600,
@@ -200,12 +205,12 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         {/* Stage progress dots */}
                         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                          {STAGE_ORDER.map((s, i) => (
+                          {stageOrder.map((s, i) => (
                             <div key={s} style={{
-                              width: i <= STAGE_ORDER.indexOf(c.stageInfo.stage) ? 18 : 8,
+                              width: i <= stageOrder.indexOf(c.stageInfo.stage) ? 18 : 8,
                               height: 6, borderRadius: 3,
-                              background: i < STAGE_ORDER.indexOf(c.stageInfo.stage) ? T.success
-                                : i === STAGE_ORDER.indexOf(c.stageInfo.stage) ? T.primary
+                              background: i < stageOrder.indexOf(c.stageInfo.stage) ? T.success
+                                : i === stageOrder.indexOf(c.stageInfo.stage) ? T.primary
                                 : T.borderLight,
                               transition: "all 0.2s",
                             }} title={s} />
