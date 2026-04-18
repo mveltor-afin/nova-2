@@ -123,6 +123,9 @@ import ApiObservatory from "./admin/ApiObservatory";
 import MyInbox from "./shared/MyInbox";
 // Customer App (v2.20)
 import CustomerApp from "./customer-app/CustomerApp";
+// Solicitor Management (v2.21)
+import SolicitorPanel from "./admin/SolicitorPanel";
+import ConveyancingTracker from "./shared/ConveyancingTracker";
 // Agentic AI features (v2.19)
 import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
 import RetentionAgent from "./shared/RetentionAgent";
@@ -417,6 +420,7 @@ export default function Shell({ userType }) {
             { id:"doctemplates",   label:"Doc Templates",       icon:"file" },
             { id:"casejourney",    label:"Case Journey",        icon:"clock" },
             { id:"complianceengine",label:"Compliance Engine",  icon:"shield" },
+            { id:"solicitorpanel", label:"Solicitor Panel",       icon:"users" },
             { id:"brokeronboard", label:"Broker Onboarding",    icon:"assign" },
             { id:"segmentation",  label:"Segmentation",          icon:"customers" },
           ],
@@ -792,6 +796,7 @@ export default function Shell({ userType }) {
       // incomeanalysis is now a tab inside UWWorkstation
       case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
+      case "solicitorpanel":  return <SolicitorPanel />;
       case "brokeronboard":   return <BrokerOnboarding />;
       case "segmentation":    return <SegmentationEngine />;
       case "dataexport":      return <DataExportCentre />;

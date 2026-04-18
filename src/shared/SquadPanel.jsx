@@ -7,9 +7,10 @@ const ROLE_COLORS = {
   adviser:     { bg:"#E6F7F3", text:T.success,  label:"Mortgage Adviser" },
   underwriter: { bg:"#EDE9FE", text:"#7C3AED",  label:"Underwriter" },
   ops:         { bg:"#DBEAFE", text:"#1E40AF",   label:"Customer Care" },
+  solicitor:   { bg:"#FFF7ED", text:"#9A3412",   label:"Solicitor" },
 };
 
-const allMembers = { ...Object.fromEntries(TEAM_MEMBERS.advisors.map(m=>[m.id,m])), ...Object.fromEntries(TEAM_MEMBERS.underwriters.map(m=>[m.id,m])), ...Object.fromEntries(TEAM_MEMBERS.ops.map(m=>[m.id,m])) };
+const allMembers = { ...Object.fromEntries(TEAM_MEMBERS.advisors.map(m=>[m.id,m])), ...Object.fromEntries(TEAM_MEMBERS.underwriters.map(m=>[m.id,m])), ...Object.fromEntries(TEAM_MEMBERS.ops.map(m=>[m.id,m])), ...Object.fromEntries((TEAM_MEMBERS.solicitors||[]).map(m=>[m.id,m])) };
 
 const getMember = (id) => allMembers[id] || null;
 
@@ -33,6 +34,7 @@ export default function SquadPanel({ squad, onReassign, compact }) {
     { key:"adviser", member:getMember(squad.adviser), pool:TEAM_MEMBERS.advisors },
     { key:"underwriter", member:getMember(squad.underwriter), pool:TEAM_MEMBERS.underwriters },
     { key:"ops", member:getMember(squad.ops), pool:TEAM_MEMBERS.ops },
+    ...(squad.solicitor ? [{ key:"solicitor", member:getMember(squad.solicitor), pool:TEAM_MEMBERS.solicitors || [] }] : []),
   ];
 
   if (compact) {
@@ -61,9 +63,9 @@ export default function SquadPanel({ squad, onReassign, compact }) {
       <div style={{ padding:"12px 18px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", gap:8 }}>
         {Ico.users(16)}
         <span style={{ fontSize:14, fontWeight:700, color:T.text }}>Case Squad</span>
-        <span style={{ fontSize:11, color:T.textMuted, marginLeft:4 }}>3 members assigned</span>
+        <span style={{ fontSize:11, color:T.textMuted, marginLeft:4 }}>{roles.length} members assigned</span>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:0 }}>
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${roles.length}, 1fr)`, gap:0 }}>
         {roles.map((r, i) => {
           const rc = ROLE_COLORS[r.key];
           const m = r.member;
