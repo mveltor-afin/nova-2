@@ -22,6 +22,13 @@ function LoanWizard({ onCancel, onComplete }) {
   const [applicantCredit, setApplicantCredit] = useState("clean");
   const [applicantPropertyType, setApplicantPropertyType] = useState("Standard");
   const [applicantEpc, setApplicantEpc] = useState("D");
+  // Commercial lending state
+  const [lendingType, setLendingType] = useState("residential");
+  const [companyName, setCompanyName] = useState("");
+  const [companyNumber, setCompanyNumber] = useState("");
+  const [companyType, setCompanyType] = useState("Individual");
+  const [portfolioSize, setPortfolioSize] = useState("");
+  const [rentalIncome, setRentalIncome] = useState("");
 
   // Dynamic products from pricing engine
   // Map lending type to bucket names for filtering
@@ -75,13 +82,6 @@ function LoanWizard({ onCancel, onComplete }) {
     { id: "bridging", label: "Bridging", desc: "Short-term finance — auction, refurb, chain-break", icon: Ico.zap(28), color: "#8B5CF6" },
     { id: "development", label: "Development", desc: "New build or conversion — staged drawdown", icon: Ico.chart(28), color: "#0EA5E9" },
   ];
-
-  const [lendingType, setLendingType] = useState("residential");
-  const [companyName, setCompanyName] = useState("");
-  const [companyNumber, setCompanyNumber] = useState("");
-  const [companyType, setCompanyType] = useState("Individual");
-  const [portfolioSize, setPortfolioSize] = useState("");
-  const [rentalIncome, setRentalIncome] = useState("");
 
   const StepType = () => (
     <div style={{ maxWidth: 820, margin: "0 auto" }}>
