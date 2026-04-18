@@ -51,6 +51,9 @@ const DAYS_IN_STAGE = {
   "AFN-2026-00119": 5,
   "AFN-2026-00146": 3,
   "AFN-2026-00139": 6,
+  "AFN-2026-00150": 1,
+  "AFN-2026-00151": 4,
+  "AFN-2026-00152": 2,
 };
 
 const SLA_LIMITS = {
@@ -94,10 +97,19 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
   const myCases = MOCK_LOANS.filter(l => l.squad?.[squadKey] === userId);
 
   // For UW — cases needing UW decision (assigned to me + unassigned)
-  // For Ops — ALL cases assigned to me across the full lifecycle
+  // For Ops — ALL cases assigned to me + demo cases to fill every stage
+  const OPS_DEMO_CASES = !isUW ? [
+    { id: "AFN-2026-00150", names: "Chris & Amy Parker", product: "2-Year Fixed", bucket: "Prime", bucketColor: "#059669", tier: "Standard", code: "P-2F", amount: "£310,000", rate: "4.49%", ltv: 68, riskScore: 15, riskLevel: "Low", status: "Approved", type: "C&I", term: "25 yrs",
+      squad: { adviser: "ADV-01", underwriter: "UW-01", ops: OPS_USER, solicitor: "SOL-01" } },
+    { id: "AFN-2026-00151", names: "Daniel & Fiona Wright", product: "5-Year Fixed", bucket: "Professional", bucketColor: "#3B82F6", tier: "Standard", code: "D-5F", amount: "£480,000", rate: "4.39%", ltv: 62, riskScore: 20, riskLevel: "Low", status: "Offer_Issued", type: "C&I", term: "25 yrs",
+      squad: { adviser: "ADV-03", underwriter: "UW-02", ops: OPS_USER, solicitor: "SOL-03" } },
+    { id: "AFN-2026-00152", names: "Karen Singh", product: "2-Year Fixed", bucket: "Prime High LTV", bucketColor: "#31B897", tier: "Standard", code: "H-2F", amount: "£275,000", rate: "5.29%", ltv: 85, riskScore: 32, riskLevel: "Medium", status: "Offer_Accepted", type: "C&I", term: "30 yrs",
+      squad: { adviser: "ADV-02", underwriter: "UW-03", ops: OPS_USER, solicitor: "SOL-05" } },
+  ] : [];
+
   const relevantCases = isUW
     ? MOCK_LOANS.filter(l => UW_STATUSES.includes(l.status) && (l.squad?.[squadKey] === userId || !l.squad?.[squadKey]))
-    : myCases;
+    : [...myCases, ...OPS_DEMO_CASES];
 
   function getStageInfoLocal(status) {
     return stageMap[status] || { stage: isUW ? "Under Assessment" : "Valuation", step: isUW ? 0 : 1 };
@@ -129,9 +141,9 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
   // KPI counts
   const totalActive = enriched.length;
 
-  // Filter
+  // Filter — always show all tabs, even empty
   const filteredStages = filter === "all"
-    ? stageOrder.filter(s => (grouped[s] || []).length > 0)
+    ? stageOrder
     : stageOrder.filter(s => s === filter);
 
   return (
@@ -152,16 +164,16 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
       </div>
 
       {/* KPI Strip */}
-      <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
         <KPICard label="Total" value={totalActive} color={T.primary} />
-        {stageOrder.filter(s => (grouped[s] || []).length > 0).map(s => (
-          <KPICard key={s} label={s} value={(grouped[s] || []).length} color={T.accent} />
+        {stageOrder.map(s => (
+          <KPICard key={s} label={s} value={(grouped[s] || []).length} color={(grouped[s] || []).length > 0 ? T.accent : T.textMuted} />
         ))}
       </div>
 
       {/* Stage filter tabs */}
       <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
-        {[{ id: "all", label: "All" }, ...stageOrder.filter(s => (grouped[s] || []).length > 0).map(s => ({ id: s, label: s }))].map(f => (
+        {[{ id: "all", label: "All" }, ...stageOrder.map(s => ({ id: s, label: s }))].map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
             fontFamily: T.font, fontSize: 12, fontWeight: 600,
