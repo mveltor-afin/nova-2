@@ -179,7 +179,7 @@ export default function Shell({ userType }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
     const seen = localStorage.getItem("nova_whats_new_seen");
-    return seen !== "2.18.0";
+    return seen !== "2.25.0";
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -959,7 +959,7 @@ export default function Shell({ userType }) {
       <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} persona={persona} />
       <UniversalSearch open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
-      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.18.0"); }} />
+      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.25.0"); }} />
       <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
       {opsWizardLoan && <OpsCaseWizard loan={opsWizardLoan} onClose={() => setOpsWizardLoan(null)} />}
       <StatusBar persona={persona} />

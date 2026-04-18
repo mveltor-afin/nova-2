@@ -7,6 +7,94 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.25.0",
+    date: "18 Apr 2026",
+    title: "Ops Case Wizard, Team Routing & Pipeline Restructure",
+    items: [
+      { type: "New", text: "Ops Case Wizard — single 7-step modal covering the full post-UW lifecycle: UW Review → Valuation → Offer & ESIS → Instruct Solicitor → Conveyancing → Pre-Completion → Disbursement" },
+      { type: "New", text: "My Cases — personal case queue for UW and Ops. Cases grouped by wizard step with Continue Processing / Open Workstation buttons. All 7 tabs always visible." },
+      { type: "New", text: "Team View — team capacity dashboard with per-member cards, specialism pills, capacity bars, and expandable active case lists" },
+      { type: "New", text: "AI Case Router — auto-assigns cases based on specialism match (+40), capacity (+30), mandate (+20), performance (+10). Accept individual or batch assignments." },
+      { type: "Improved", text: "Ops nav restructured: Pipeline (read-only) → Incoming (UW-approved) → My Cases → Team. Replaced 12+ scattered screens with focused workflow." },
+      { type: "Improved", text: "Incoming screen now shows UW decision summary per case: who approved, conditions, risk score, before ops starts processing" },
+    ]
+  },
+  {
+    version: "2.24.0",
+    date: "18 Apr 2026",
+    title: "Offers Management, Pipeline View & ESIS Generation",
+    items: [
+      { type: "New", text: "Offers Screen — track all active offers with 90-day validity countdown, ESIS status, chase/extend buttons" },
+      { type: "New", text: "ESIS document viewer — generates European Standardised Information Sheet with lender details, key features, monthly payment, total payable, ERC schedule, repossession warning" },
+      { type: "New", text: "Pipeline View — full case pipeline visible to UW and Ops with 12 columns: DIP status, ESIS, Offer, Solicitor, Adviser, Risk score" },
+      { type: "Improved", text: "Pipeline and Offers added to both UW and Ops nav groups" },
+    ]
+  },
+  {
+    version: "2.23.0",
+    date: "18 Apr 2026",
+    title: "Solicitor Panel, Conveyancing Tracker & Squad Enhancement",
+    items: [
+      { type: "New", text: "Solicitor added to squad — 4th team member on every case (orange colour scheme). 5 firms on panel: Harrison & Co, Blake Lewis, Carter & Webb, Deacon Marsh, Ellis Wright" },
+      { type: "New", text: "Solicitor Panel Management — firm table with SRA numbers, specialism, avg completion days, rating, capacity. Status management: Active/Suspended/Under Review" },
+      { type: "New", text: "Conveyancing Tracker — 9-stage milestone timeline (Instructed → Completion) with SLA monitoring, buyer/seller solicitor cards, Chase Solicitor button" },
+      { type: "Improved", text: "Squad Panel dynamically shows 3 or 4 columns based on whether solicitor is assigned" },
+    ]
+  },
+  {
+    version: "2.22.0",
+    date: "18 Apr 2026",
+    title: "Commercial Lending, Bridging Finance & Loan Wizard Enhancement",
+    items: [
+      { type: "New", text: "4 new lending buckets: Residential Bridging (regulated), Unregulated Bridging, Commercial Mortgage (office/retail/industrial), Development Finance (staged drawdown)" },
+      { type: "New", text: "Loan Wizard lending type selector: Residential, Buy-to-Let, Commercial, Bridging, Development — with entity type for commercial (Ltd/SPV/Partnership)" },
+      { type: "New", text: "4 commercial cases in pipeline: BTL portfolio (GreenLeaf Properties), Commercial (Bright Futures), Regulated Bridge (Reynolds), Development SPV (Orion Developments)" },
+      { type: "New", text: "Product Catalogue split: Residential tab (Prime, HNW, BTL, Regulated Bridging) and Commercial tab (Unregulated Bridging, Commercial Mortgage, Development Finance)" },
+      { type: "Improved", text: "Auto-generated product codes for all lending products (P-2F, B-TR, RB-RG, CM-5F, DF-MZ)" },
+      { type: "Improved", text: "Wizard filters products by lending type — selecting Commercial only shows commercial products" },
+    ]
+  },
+  {
+    version: "2.21.0",
+    date: "18 Apr 2026",
+    title: "Customer App, Agentic AI & Platform Cleanup",
+    items: [
+      { type: "New", text: "Customer App — mobile-first fintech mortgage companion with 8 screens: Home, Eligibility Check, Case Tracker, Mortgage Dashboard (overpayment calculator, rate switch), Savings Hub, Messaging, AI Adviser, Profile" },
+      { type: "New", text: "AI Underwriting Copilot — conversational AI in UW Workstation answering case questions with source citations and confidence scores" },
+      { type: "New", text: "Smart Document Extraction — LLM document parsing with cross-document validation (employer, income, NI across 4 docs) and 8 anomaly checks (gambling, payday loans, crypto)" },
+      { type: "New", text: "Case Orchestration Agent — autonomous workflow management with auto badge, approve/reject for human decisions" },
+      { type: "New", text: "Retention Agent — monitors rate expiries, auto-generates offers, churn risk scoring" },
+      { type: "New", text: "Collections Agent — graduated 6-step contact strategy with vulnerability detection" },
+      { type: "Improved", text: "Platform cleanup — all product names updated to bucket-style, dead code removed, data consistency across 12 files, Change Product modal wired to bucket engine" },
+      { type: "Fixed", text: "Broker view stuck on case detail when clicking nav — mode reset on navigation" },
+      { type: "Fixed", text: "Change Product not working — pricing engine now seeds bucket defaults in localStorage" },
+    ]
+  },
+  {
+    version: "2.20.0",
+    date: "18 Apr 2026",
+    title: "Savings Catalogue Redesign & UW Workstation Overhaul",
+    items: [
+      { type: "New", text: "Savings Product Catalogue redesigned — bucket = category (Fixed Term, Notice, Easy Access, LISA), term as product field, balance-based rate tiers (toggle), condition tier wizard with loyalty/wrapper selectors" },
+      { type: "New", text: "UW Overview tab — case journey timeline at top, 3-column layout (Product & Pricing, AI Assessment, Applicant), lifecycle removed (not relevant pre-completion)" },
+      { type: "New", text: "Savings, Shared Ownership & Insurance product catalogues with subtabs" },
+      { type: "Improved", text: "UW tabs simplified to text-only labels. Lifecycle tab removed." },
+      { type: "Improved", text: "Permissions expanded to 197 across 8 roles including Product Manager, Risk Analyst, BDM" },
+    ]
+  },
+  {
+    version: "2.19.0",
+    date: "17 Apr 2026",
+    title: "Product Buckets Wired End-to-End & Tier Redesign",
+    items: [
+      { type: "New", text: "Bucket-aware eligibility wired to all screens — Eligibility Calculator, Smart Apply, Loan Wizard, UW Workstation, Broker Pipeline, Mortgages Screen, Customer Hub" },
+      { type: "New", text: "Product × Tier rows in Rates tab — each tier gets its own row with adjustment shown" },
+      { type: "Improved", text: "Criteria consolidated — merged redundant dimensions section into Credit, Employment, Property sections" },
+      { type: "Improved", text: "Rate Matrix and Pricing Config rewired to read bucket data from localStorage instead of old PRODUCTS_PRICING" },
+      { type: "Fixed", text: "All unicode escapes (£, ≤, ·, —, –) replaced with actual characters across 10 files" },
+    ]
+  },
+  {
     version: "2.18.0",
     date: "17 Apr 2026",
     title: "Broker Help Centre & Product AI Assistant",

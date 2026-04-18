@@ -2,10 +2,23 @@ import { useState, useEffect } from "react";
 import { T, Ico } from "./tokens";
 import { Btn, Card } from "./primitives";
 
-const CURRENT_VERSION = "2.18.0";
+const CURRENT_VERSION = "2.25.0";
 const LS_KEY = "nova_whats_new_seen";
 
 const releases = [
+  {
+    version: "2.25.0",
+    date: "18 Apr 2026",
+    items: [
+      { tag: "New", text: "Ops Case Wizard — 7-step guided flow for post-UW processing: UW Review, Valuation, Offer & ESIS, Solicitor, Conveyancing, Pre-Completion, Disbursement" },
+      { tag: "New", text: "My Cases — personal queue with tabs matching wizard steps. Team View with AI-powered case routing based on specialism and capacity." },
+      { tag: "New", text: "Commercial lending: Residential Bridging, Unregulated Bridging, Commercial Mortgage, Development Finance — with 4 commercial pipeline cases" },
+      { tag: "New", text: "Solicitor Panel + Conveyancing Tracker + solicitor added to squad on every case" },
+      { tag: "New", text: "Customer App — 8-screen mobile-first fintech mortgage companion with AI Adviser" },
+      { tag: "New", text: "6 agentic AI features: UW Copilot, Smart Doc Extraction, Case Orchestration, Retention & Collections Agents" },
+      { tag: "Improved", text: "Ops nav restructured around workflow: Pipeline → Incoming → My Cases → Team" },
+    ],
+  },
   {
     version: "2.18.0",
     date: "17 Apr 2026",
