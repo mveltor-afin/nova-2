@@ -5,6 +5,7 @@ import { TEAM_MEMBERS } from "../data/loans";
 import { MOCK_SURVEYORS } from "../data/valuations";
 
 const STEPS = [
+  { id: "uwreview", label: "UW Review" },
   { id: "valuation", label: "Valuation" },
   { id: "offer", label: "Offer & ESIS" },
   { id: "solicitor", label: "Instruct Solicitor" },
@@ -12,6 +13,15 @@ const STEPS = [
   { id: "precompletion", label: "Pre-Completion" },
   { id: "disbursement", label: "Disbursement" },
 ];
+
+// UW decision data (same as IntakeQueue)
+const UW_DECISIONS = {
+  "AFN-2026-00142": { decision: "Approved", uwName: "James Mitchell", uwDate: "26 Feb 2026", mandate: "L1", conditions: ["None"], riskScore: 14, riskNote: "Strong profile. Employed 7yrs, credit 742, LTV 72%. All docs verified. AI recommends: Approve, no conditions.", dimensions: [{ label: "Borrower", score: 92 }, { label: "Affordability", score: 88 }, { label: "Collateral", score: 95 }, { label: "Policy", score: 100 }] },
+  "AFN-2026-00139": { decision: "Approved", uwName: "Rebecca Lewis", uwDate: "18 Mar 2026", mandate: "L1", conditions: ["P60 discrepancy noted on file"], riskScore: 78, riskNote: "Near prime credit. Tracker product. Offer issued.", dimensions: [{ label: "Borrower", score: 65 }, { label: "Affordability", score: 72 }, { label: "Collateral", score: 90 }, { label: "Policy", score: 95 }] },
+  "AFN-2026-00125": { decision: "Approved", uwName: "Amir Hassan", uwDate: "14 Mar 2026", mandate: "L2", conditions: ["None — within L2 mandate"], riskScore: 22, riskNote: "Above £500k. L2 second approval obtained. Professional bucket.", dimensions: [{ label: "Borrower", score: 90 }, { label: "Affordability", score: 85 }, { label: "Collateral", score: 92 }, { label: "Policy", score: 100 }] },
+  "AFN-2026-00145": { decision: "Approved", uwName: "James Mitchell", uwDate: "12 Apr 2026", mandate: "L1", conditions: ["Cashflow verification required"], riskScore: 25, riskNote: "Commercial mortgage. Owner-occupied office. Clean credit. Ltd company.", dimensions: [{ label: "Borrower", score: 88 }, { label: "Affordability", score: 82 }, { label: "Collateral", score: 90 }, { label: "Policy", score: 95 }] },
+  "AFN-2026-00144": { decision: "Approved", uwName: "Amir Hassan", uwDate: "16 Apr 2026", mandate: "L1", conditions: ["Portfolio assessment complete"], riskScore: 38, riskNote: "BTL portfolio landlord. 5 properties. ICR 168%. Ltd company.", dimensions: [{ label: "Borrower", score: 80 }, { label: "Affordability", score: 78 }, { label: "Collateral", score: 85 }, { label: "Policy", score: 92 }] },
+};
 
 const VAL_TYPES = ["AVM Only", "Desktop", "Drive-by", "Full", "Structural"];
 
@@ -652,15 +662,94 @@ export default function OpsCaseWizard({ loan, onClose }) {
 
   const renderStep = () => {
     switch (step) {
-      case 0: return <StepValuation loan={loan} />;
-      case 1: return <StepOffer loan={loan} />;
-      case 2: return <StepSolicitor loan={loan} />;
-      case 3: return <StepConveyancing loan={loan} />;
-      case 4: return <StepPreCompletion />;
-      case 5: return <StepDisbursement loan={loan} onClose={onClose} />;
+      case 0: return <StepUWReview loan={loan} />;
+      case 1: return <StepValuation loan={loan} />;
+      case 2: return <StepOffer loan={loan} />;
+      case 3: return <StepSolicitor loan={loan} />;
+      case 4: return <StepConveyancing loan={loan} />;
+      case 5: return <StepPreCompletion />;
+      case 6: return <StepDisbursement loan={loan} onClose={onClose} />;
       default: return null;
     }
   };
+
+  function StepUWReview({ loan }) {
+    const uw = UW_DECISIONS[loan.id] || { decision: "Approved", uwName: "Unknown", uwDate: "—", mandate: "L1", conditions: [], riskScore: loan.riskScore || 0, riskNote: "No UW notes available.", dimensions: [] };
+    return (
+      <div>
+        {/* UW Decision card */}
+        <div style={{ padding: "18px 20px", borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}08, ${T.accent}08)`, border: `1px solid ${T.primary}20`, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 20, background: T.successBg, display: "flex", alignItems: "center", justifyContent: "center", color: T.success, fontSize: 20, fontWeight: 700 }}>✓</div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#065F46" }}>{uw.decision}</div>
+                <div style={{ fontSize: 12, color: T.textMuted }}>by {uw.uwName} · {uw.uwDate} · Mandate {uw.mandate}</div>
+              </div>
+            </div>
+            <div style={{ padding: "8px 16px", borderRadius: 10, background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff", textAlign: "center" }}>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>{uw.riskScore}/100</div>
+              <div style={{ fontSize: 10, opacity: 0.8 }}>Risk Score</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6 }}>{uw.riskNote}</div>
+        </div>
+
+        {/* Risk dimensions */}
+        {uw.dimensions.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 10 }}>Risk Assessment Dimensions</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+              {uw.dimensions.map(d => (
+                <div key={d.label} style={{ padding: "12px 14px", borderRadius: 10, background: T.card, border: `1px solid ${T.borderLight}`, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: d.score >= 90 ? "#059669" : d.score >= 75 ? "#D97706" : "#DC2626" }}>{d.score}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted }}>{d.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Conditions */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 8 }}>UW Conditions</div>
+          {(uw.conditions || []).map((c, i) => (
+            <div key={i} style={{
+              padding: "10px 14px", borderRadius: 8, marginBottom: 4,
+              background: c === "None" || c.includes("None") ? "#F0FDF4" : "#FEF3C7",
+              border: `1px solid ${c === "None" || c.includes("None") ? "#A7F3D0" : "#FDE68A"}`,
+              fontSize: 12, fontWeight: 600,
+              color: c === "None" || c.includes("None") ? "#065F46" : "#92400E",
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <span>{c === "None" || c.includes("None") ? "✓" : "!"}</span> {c}
+            </div>
+          ))}
+        </div>
+
+        {/* Case summary */}
+        <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 8 }}>Case Summary</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          {[
+            { label: "Product", value: loan.product },
+            { label: "Bucket", value: loan.bucket || "—" },
+            { label: "Tier", value: loan.tier || "Standard" },
+            { label: "Amount", value: loan.amount },
+            { label: "Rate", value: loan.rate },
+            { label: "LTV", value: loan.ltv ? `${loan.ltv}%` : "—" },
+            { label: "Term", value: loan.term },
+            { label: "Credit", value: loan.creditProfile || "—" },
+            { label: "EPC", value: loan.epcRating || "—" },
+          ].map(f => (
+            <div key={f.label} style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>{f.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.navy }}>{f.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
