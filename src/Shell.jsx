@@ -430,6 +430,7 @@ export default function Shell({ userType }) {
         },
         {
           group:"PLATFORM", collapsed:true, items:[
+            { id:"customerportal", label:"Customer App Preview",  icon:"customers" },
             { id:"workflows",      label:"Workflow Builder",      icon:"zap" },
             { id:"products",       label:"Product Catalogue",     icon:"products" },
             { id:"themeeditor",    label:"Theme Editor",          icon:"settings" },
