@@ -137,6 +137,293 @@ const rateColor = (r) => {
 
 const TIER_COLORS = ["#059669", "#8B5CF6", "#F59E0B", "#E03A3A", "#0EA5E9"];
 
+const COLOUR_PRESETS = [
+  { label: "Green", value: "#059669" },
+  { label: "Teal", value: "#31B897" },
+  { label: "Blue", value: "#3B82F6" },
+  { label: "Purple", value: "#8B5CF6" },
+  { label: "Amber", value: "#F59E0B" },
+  { label: "Red", value: "#DC2626" },
+  { label: "Sky", value: "#0EA5E9" },
+];
+
+function emptySavingsProduct() {
+  const rates = {};
+  ALL_DEPOSIT_BANDS.forEach(b => { rates[b] = ""; });
+  return { term: "", code: "", rates };
+}
+
+function emptySavingsBucket() {
+  return {
+    name: "",
+    color: "#059669",
+    desc: "",
+    minDeposit: "",
+    maxBalance: "",
+    fscsProtected: true,
+    interestPayment: "Monthly",
+    withdrawalRules: "",
+    tiers: [],
+    products: [],
+  };
+}
+
+// ─────────────────────────────────────────────
+// SAVINGS BUCKET FORM MODAL
+// ─────────────────────────────────────────────
+function SavingsBucketFormModal({ bucket, onSave, onCancel }) {
+  const [form, setForm] = useState(() => {
+    if (!bucket) return emptySavingsBucket();
+    return JSON.parse(JSON.stringify(bucket));
+  });
+
+  const set = (field, val) => setForm(prev => ({ ...prev, [field]: val }));
+
+  const labelSt = { display: "block", fontSize: 11, fontWeight: 600, color: T.textSecondary, marginBottom: 4 };
+  const inputSt = {
+    width: "100%", padding: "8px 10px", borderRadius: 7,
+    border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font,
+    color: T.text, background: T.card, outline: "none", boxSizing: "border-box",
+  };
+  const sectionTitleSt = {
+    fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 12, marginTop: 24,
+    paddingBottom: 6, borderBottom: `2px solid ${T.borderLight}`,
+  };
+  const row2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 };
+  const fieldWrap = { marginBottom: 12 };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)" }}
+      onClick={onCancel}
+    >
+      <div
+        style={{ width: 640, maxHeight: "90vh", overflow: "auto", background: T.card, borderRadius: 16, padding: 32, boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: T.font }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ fontSize: 18, fontWeight: 700, color: T.navy, marginBottom: 4 }}>
+          {bucket ? "Edit Savings Bucket" : "Create Savings Bucket"}
+        </div>
+        <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 8 }}>
+          {bucket ? "Modify the savings bucket configuration below." : "Fill in the details for the new savings bucket."}
+        </div>
+
+        {/* SECTION 1: IDENTITY */}
+        <div style={sectionTitleSt}>1. Identity</div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Name</label>
+          <input style={inputSt} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Fixed Term Deposits" />
+        </div>
+        <div style={{ ...row2, marginBottom: 12 }}>
+          <div>
+            <label style={labelSt}>Colour</label>
+            <select style={inputSt} value={form.color} onChange={(e) => set("color", e.target.value)}>
+              {COLOUR_PRESETS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelSt}>Preview</label>
+            <div style={{ height: 36, borderRadius: 7, background: form.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
+              {form.name || "Bucket"}
+            </div>
+          </div>
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Description</label>
+          <input style={inputSt} value={form.desc} onChange={(e) => set("desc", e.target.value)} placeholder="Short description of this bucket" />
+        </div>
+
+        {/* SECTION 2: ACCOUNT DETAILS */}
+        <div style={sectionTitleSt}>2. Account Details</div>
+        <div style={row2}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Minimum Deposit</label>
+            <input style={inputSt} value={form.minDeposit} onChange={(e) => set("minDeposit", e.target.value)} placeholder="£1,000" />
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Maximum Balance</label>
+            <input style={inputSt} value={form.maxBalance} onChange={(e) => set("maxBalance", e.target.value)} placeholder="£1,000,000" />
+          </div>
+        </div>
+        <div style={row2}>
+          <div style={fieldWrap}>
+            <label style={labelSt}>Interest Payment Frequency</label>
+            <select style={inputSt} value={form.interestPayment} onChange={(e) => set("interestPayment", e.target.value)}>
+              {INTEREST_FREQ.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+          <div style={fieldWrap}>
+            <label style={labelSt}>FSCS Protected</label>
+            <select style={inputSt} value={form.fscsProtected ? "yes" : "no"} onChange={(e) => set("fscsProtected", e.target.value === "yes")}>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelSt}>Withdrawal Rules</label>
+          <textarea
+            style={{ ...inputSt, minHeight: 60, resize: "vertical" }}
+            value={form.withdrawalRules}
+            onChange={(e) => set("withdrawalRules", e.target.value)}
+            placeholder="Describe withdrawal conditions and penalties..."
+          />
+        </div>
+
+        {/* ACTIONS */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 28, paddingTop: 16, borderTop: `1px solid ${T.borderLight}` }}>
+          <Btn onClick={onCancel}>Cancel</Btn>
+          <Btn primary onClick={() => onSave(form)} disabled={!form.name.trim()}>
+            {bucket ? "Save Changes" : "Create Bucket"}
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// DELETE CONFIRMATION DIALOG
+// ─────────────────────────────────────────────
+function SavingsDeleteConfirmDialog({ bucketName, onConfirm, onCancel }) {
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)" }}
+      onClick={onCancel}
+    >
+      <div
+        style={{ width: 420, background: T.card, borderRadius: 14, padding: 28, boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: T.font, textAlign: "center" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ width: 48, height: 48, borderRadius: 24, background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16", color: T.danger }}>
+          {Ico.alert(24)}
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.navy, marginBottom: 8 }}>
+          Delete Savings Bucket
+        </div>
+        <div style={{ fontSize: 13, color: T.textMuted, marginBottom: 24, lineHeight: 1.5 }}>
+          Are you sure you want to delete <strong style={{ color: T.text }}>{bucketName}</strong>? This will remove all products and rate configurations. This action cannot be undone.
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+          <Btn onClick={onCancel}>Cancel</Btn>
+          <Btn danger onClick={onConfirm}>Delete Bucket</Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// SAVINGS PRODUCTS EDIT TAB
+// ─────────────────────────────────────────────
+function SavingsProductsTab({ bucket, onUpdateProducts }) {
+  const [products, setProducts] = useState(bucket.products || []);
+
+  const commit = (next) => { setProducts(next); onUpdateProducts(next); };
+
+  const updateProduct = (idx, field, val) => {
+    commit(products.map((p, i) => i === idx ? { ...p, [field]: val } : p));
+  };
+
+  const updateRate = (idx, band, val) => {
+    const next = products.map((p, i) => {
+      if (i !== idx) return p;
+      const rates = { ...(p.rates || {}) };
+      const v = parseFloat(val);
+      if (isNaN(v) || val === "") { delete rates[band]; } else { rates[band] = v; }
+      return { ...p, rates };
+    });
+    commit(next);
+  };
+
+  const addProduct = () => commit([...products, emptySavingsProduct()]);
+  const removeProduct = (idx) => commit(products.filter((_, i) => i !== idx));
+
+  const inputSt = {
+    padding: "7px 10px", borderRadius: 7,
+    border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font,
+    color: T.text, background: T.card, outline: "none", boxSizing: "border-box",
+  };
+  const labelSt = { fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, padding: "8px 6px" };
+  const rateInputSt = {
+    width: 68, padding: "6px 4px", borderRadius: 6, textAlign: "center",
+    border: `1px solid ${T.border}`, fontSize: 12, fontFamily: T.font,
+    color: T.text, background: T.card, outline: "none",
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>
+        Edit product rates per deposit band. Empty cells mean the product is not offered at that band.
+      </div>
+
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.font }}>
+          <thead>
+            <tr style={{ borderBottom: `2px solid ${T.border}` }}>
+              <th style={labelSt}>Term / Product</th>
+              <th style={labelSt}>Code</th>
+              {ALL_DEPOSIT_BANDS.map(b => <th key={b} style={{ ...labelSt, textAlign: "center" }}>{b}</th>)}
+              <th style={{ width: 32 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((prod, idx) => (
+              <tr key={idx} style={{ borderBottom: `1px solid ${T.borderLight}`, background: idx % 2 === 0 ? "#FAFAF8" : "#FFF" }}>
+                <td style={{ padding: "6px" }}>
+                  <select
+                    style={{ ...inputSt, width: "100%", minWidth: 140 }}
+                    value={prod.term}
+                    onChange={(e) => updateProduct(idx, "term", e.target.value)}
+                  >
+                    <option value="">Select term...</option>
+                    {ALL_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
+                    {prod.term && !ALL_TERMS.includes(prod.term) && <option value={prod.term}>{prod.term}</option>}
+                  </select>
+                </td>
+                <td style={{ padding: "6px" }}>
+                  <input style={{ ...inputSt, width: 64 }} value={prod.code} onChange={(e) => updateProduct(idx, "code", e.target.value)} placeholder="FTD1" />
+                </td>
+                {ALL_DEPOSIT_BANDS.map(band => (
+                  <td key={band} style={{ padding: "6px", textAlign: "center" }}>
+                    <input
+                      style={rateInputSt}
+                      type="number" step="0.01"
+                      value={(prod.rates && prod.rates[band] != null) ? prod.rates[band] : ""}
+                      placeholder="--"
+                      onChange={(e) => updateRate(idx, band, e.target.value)}
+                    />
+                  </td>
+                ))}
+                <td style={{ padding: "6px" }}>
+                  <span
+                    onClick={() => removeProduct(idx)}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, cursor: "pointer", color: T.danger, background: "transparent", transition: "background 0.15s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    {Ico.x(14)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {products.length === 0 && (
+        <div style={{ padding: "24px 0", textAlign: "center", color: T.textMuted, fontSize: 12, fontStyle: "italic" }}>
+          No products configured yet. Add a product to get started.
+        </div>
+      )}
+
+      <Btn small onClick={addProduct} style={{ marginTop: 8 }}>
+        + Add Product
+      </Btn>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────
 // RATES TAB — Term × Deposit Band × Tier rows
 // ─────────────────────────────────────────────
@@ -305,18 +592,58 @@ export default function SavingsBuckets() {
   const [buckets, setBuckets] = useState(loadBuckets);
   const [selected, setSelected] = useState(0);
   const [tab, setTab] = useState("rates");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingIdx, setEditingIdx] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => { saveBuckets(buckets); }, [buckets]);
+
+  const handleSaveNew = (form) => {
+    setBuckets(prev => [...prev, form]);
+    setShowCreateModal(false);
+  };
+
+  const handleSaveEdit = (form) => {
+    setBuckets(prev => {
+      const next = [...prev];
+      next[editingIdx] = form;
+      return next;
+    });
+    setEditingIdx(null);
+  };
+
+  const handleDelete = (idx) => {
+    setBuckets(prev => prev.filter((_, i) => i !== idx));
+    setDeleteConfirm(null);
+    if (selected === idx) setSelected(0);
+    else if (selected > idx) setSelected(s => s - 1);
+  };
+
+  const updateBucketProducts = (products) => {
+    setBuckets(prev => {
+      const next = [...prev];
+      next[selected] = { ...next[selected], products };
+      return next;
+    });
+  };
 
   const bucket = buckets[selected] || buckets[0];
   const TABS = [
     { id: "rates", label: "Rates" },
+    { id: "products", label: "Edit Products" },
     { id: "criteria", label: "Criteria & Rules" },
     { id: "tiers", label: "Tiers" },
   ];
 
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
+      {/* Create button */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <Btn primary small onClick={() => setShowCreateModal(true)}>
+          + Create Bucket
+        </Btn>
+      </div>
+
       {/* Bucket selector */}
       <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
         {buckets.map((b, i) => (
@@ -327,12 +654,32 @@ export default function SavingsBuckets() {
               flex: "1 1 0", minWidth: 160, padding: "14px 16px", borderRadius: 12, cursor: "pointer",
               border: selected === i ? `2px solid ${b.color}` : `1px solid ${T.borderLight}`,
               background: selected === i ? b.color + "08" : T.card,
-              transition: "all 0.2s",
+              transition: "all 0.2s", position: "relative",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <div style={{ width: 10, height: 10, borderRadius: 5, background: b.color }} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{b.name}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: T.navy, flex: 1 }}>{b.name}</span>
+              {/* Edit button */}
+              <span
+                title="Edit bucket"
+                onClick={(e) => { e.stopPropagation(); setEditingIdx(i); }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 5, cursor: "pointer", color: T.textMuted, background: "transparent", transition: "background 0.15s", flexShrink: 0 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = T.primaryLight)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                {Ico.settings(12)}
+              </span>
+              {/* Delete button */}
+              <span
+                title="Delete bucket"
+                onClick={(e) => { e.stopPropagation(); setDeleteConfirm(i); }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 5, cursor: "pointer", color: T.textMuted, background: "transparent", transition: "background 0.15s", flexShrink: 0 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                {Ico.x(12)}
+              </span>
             </div>
             <div style={{ fontSize: 11, color: T.textMuted, lineHeight: 1.4 }}>{b.desc}</div>
             <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
@@ -358,6 +705,12 @@ export default function SavingsBuckets() {
 
       {/* Tab content */}
       {tab === "rates" && <SavingsRatesTab bucket={bucket} />}
+      {tab === "products" && (
+        <SavingsProductsTab
+          bucket={bucket}
+          onUpdateProducts={updateBucketProducts}
+        />
+      )}
       {tab === "criteria" && <SavingsCriteriaTab bucket={bucket} />}
       {tab === "tiers" && (
         <div>
@@ -395,6 +748,21 @@ export default function SavingsBuckets() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── MODALS ── */}
+      {showCreateModal && (
+        <SavingsBucketFormModal bucket={null} onSave={handleSaveNew} onCancel={() => setShowCreateModal(false)} />
+      )}
+      {editingIdx !== null && (
+        <SavingsBucketFormModal bucket={buckets[editingIdx]} onSave={handleSaveEdit} onCancel={() => setEditingIdx(null)} />
+      )}
+      {deleteConfirm !== null && (
+        <SavingsDeleteConfirmDialog
+          bucketName={buckets[deleteConfirm]?.name}
+          onConfirm={() => handleDelete(deleteConfirm)}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       )}
     </div>
   );
