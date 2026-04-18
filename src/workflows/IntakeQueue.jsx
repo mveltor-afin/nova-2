@@ -77,9 +77,19 @@ const filterType = (tab) => {
   return null;
 };
 
+const OPS_CHECKLIST = [
+  { id: "kyc", label: "Complete KYC / ID Verification", desc: "Trigger biometric check via Mitek", icon: "shield" },
+  { id: "aml", label: "AML & Sanctions Screening", desc: "Run ComplyAdvantage check", icon: "lock" },
+  { id: "valuation", label: "Order Valuation", desc: "Instruct surveyor — full or desktop", icon: "search" },
+  { id: "solicitor", label: "Instruct Solicitor", desc: "Assign from panel and send instruction pack", icon: "users" },
+  { id: "docs", label: "Chase Outstanding Documents", desc: "Request missing docs from broker", icon: "file" },
+  { id: "assign", label: "Assign to Underwriter", desc: "Route to UW queue based on mandate and capacity", icon: "zap" },
+];
+
 export default function IntakeQueue({ onOpenCase }) {
   const [activeTab, setActiveTab] = useState("All");
-  const [processing, setProcessing] = useState(null);
+  const [processingId, setProcessingId] = useState(null);
+  const [checkedItems, setCheckedItems] = useState({});
 
   const filtered = activeTab === "All"
     ? INCOMING_CASES
@@ -182,17 +192,10 @@ export default function IntakeQueue({ onOpenCase }) {
               </div>
 
               {/* Right: Action */}
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Btn primary small
-                  disabled={processing === c.id}
-                  onClick={() => {
-                    setProcessing(c.id);
-                    setTimeout(() => {
-                      setProcessing(null);
-                      if (c.caseRef && onOpenCase) onOpenCase(c.caseRef);
-                    }, 1200);
-                  }}
-                >{processing === c.id ? "Assigning..." : "Start Processing →"}</Btn>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Btn primary small onClick={() => setProcessingId(processingId === c.id ? null : c.id)}>
+                  {processingId === c.id ? "Close" : "Start Processing →"}
+                </Btn>
               </div>
             </div>
 
@@ -202,9 +205,65 @@ export default function IntakeQueue({ onOpenCase }) {
               background: T.primaryLight, fontSize: 12, color: T.textSecondary,
               display: "flex", alignItems: "center", gap: 8,
             }}>
-              {Ico.bot(14)}
+              {Ico.sparkle?.(14) || "✦"}
               <span>{c.aiAssessment}</span>
             </div>
+
+            {/* Ops Processing Panel */}
+            {processingId === c.id && (
+              <div style={{ marginTop: 14, padding: "16px 18px", borderRadius: 10, background: "#FAFAF8", border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 12 }}>Processing Checklist — {c.customerName}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {OPS_CHECKLIST.map(item => {
+                    const caseChecks = checkedItems[c.id] || {};
+                    const done = caseChecks[item.id];
+                    // Auto-check items that already passed in the intake checks
+                    const autoChecked = (item.id === "kyc" && c.checks.kyc === "pass") || (item.id === "aml" && c.checks.sanctions === "pass");
+                    const isChecked = done || autoChecked;
+                    return (
+                      <div key={item.id}
+                        onClick={() => {
+                          if (autoChecked) return;
+                          setCheckedItems(prev => ({
+                            ...prev,
+                            [c.id]: { ...(prev[c.id] || {}), [item.id]: !done }
+                          }));
+                        }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                          borderRadius: 8, cursor: autoChecked ? "default" : "pointer",
+                          background: isChecked ? "#F0FDF4" : T.card,
+                          border: `1px solid ${isChecked ? "#A7F3D0" : T.borderLight}`,
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        <div style={{
+                          width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                          background: isChecked ? T.success : "transparent",
+                          border: `2px solid ${isChecked ? T.success : T.border}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "#fff", fontSize: 12, fontWeight: 700,
+                        }}>
+                          {isChecked && "✓"}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: isChecked ? T.success : T.navy, textDecoration: isChecked ? "line-through" : "none" }}>{item.label}</div>
+                          <div style={{ fontSize: 11, color: T.textMuted }}>{item.desc}</div>
+                        </div>
+                        {autoChecked && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#D1FAE5", color: "#065F46" }}>AUTO</span>}
+                        {Ico[item.icon]?.(14)}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }}>
+                  <Btn small onClick={() => setProcessingId(null)}>Close</Btn>
+                  <Btn small primary onClick={() => {
+                    if (c.caseRef && onOpenCase) onOpenCase(c.caseRef);
+                  }}>Complete & Assign to UW →</Btn>
+                </div>
+              </div>
+            )}
           </Card>
         ))}
 
