@@ -668,12 +668,12 @@ import SavingsBuckets from "./SavingsBuckets";
 import SharedOwnershipCatalogue from "./SharedOwnershipCatalogue";
 import InsuranceCatalogue from "./InsuranceCatalogue";
 
-const RESIDENTIAL_BUCKETS = ["Prime", "Prime High LTV", "Professional", "High-Net-Worth"];
-const COMMERCIAL_BUCKETS = ["Buy-to-Let", "Residential Bridging", "Commercial Mortgage", "Development Finance"];
+const RESIDENTIAL_BUCKETS = ["Prime", "Prime High LTV", "Professional", "High-Net-Worth", "Residential Bridging", "Buy-to-Let"];
+const COMMERCIAL_BUCKETS = ["Commercial Mortgage", "Development Finance"];
 
 const PRODUCT_TYPES = [
   { id: "residential", label: "Residential", icon: "shield", color: "#059669" },
-  { id: "commercial", label: "Commercial & BTL", icon: "dashboard", color: "#6366F1" },
+  { id: "commercial", label: "Commercial", icon: "dashboard", color: "#6366F1" },
   { id: "savings", label: "Savings", icon: "dollar", color: "#3B82F6" },
   { id: "sharedOwnership", label: "Shared Ownership", icon: "users", color: "#8B5CF6" },
   { id: "insurance", label: "Insurance", icon: "lock", color: "#F59E0B" },
