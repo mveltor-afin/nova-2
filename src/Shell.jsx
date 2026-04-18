@@ -533,7 +533,7 @@ export default function Shell({ userType }) {
               </div>
             )}
             {!(collapsedGroups[group.group] ?? group.collapsed) && group.items.map(item => (
-              <div key={item.id} onClick={() => { setScreen(item.id); setScreenHistory(h => [{ id:item.id, label:item.label, time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) }, ...h.filter(x=>x.id!==item.id)].slice(0,5)); if (isMobile) setSidebarOpen(false); }}
+              <div key={item.id} onClick={() => { setMode("shell"); setSelectedLoan(null); setScreen(item.id); setScreenHistory(h => [{ id:item.id, label:item.label, time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) }, ...h.filter(x=>x.id!==item.id)].slice(0,5)); if (isMobile) setSidebarOpen(false); }}
                 style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
                   cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
                   color: screen===item.id ? "#fff" : "#7B8BA3",
