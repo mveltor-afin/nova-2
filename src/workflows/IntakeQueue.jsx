@@ -17,7 +17,7 @@ const allAdvisers = Object.fromEntries((TEAM_MEMBERS.advisors || []).map(a => [a
 // UW decision mock data per case
 const UW_DECISIONS = {
   "AFN-2026-00142": { decision: "Approved", uwName: "James Mitchell", uwDate: "26 Feb 2026", conditions: "None", riskNote: "Strong profile. All checks passed. Fast-track eligible." },
-  "AFN-2026-00139": { decision: "Approved", uwName: "Rebecca Lewis", uwDate: "18 Mar 2026", conditions: "P60 discrepancy noted on file", riskNote: "Near prime credit. Offer issued, awaiting acceptance." },
+  "AFN-2026-00139": { decision: "Approved", uwName: "Simrat Gill", uwDate: "18 Mar 2026", conditions: "P60 discrepancy noted on file", riskNote: "Near prime credit. Offer issued, awaiting acceptance." },
   "AFN-2026-00135": { decision: "Approved", uwName: "Amir Hassan", uwDate: "10 Mar 2026", conditions: "IO retirement plan evidence required", riskNote: "Interest only, high LTV. Income strong." },
   "AFN-2026-00125": { decision: "Approved", uwName: "Amir Hassan", uwDate: "14 Mar 2026", conditions: "None — within L2 mandate", riskNote: "Above £500k. L2 second approval obtained." },
   "AFN-2026-00145": { decision: "Approved", uwName: "James Mitchell", uwDate: "12 Apr 2026", conditions: "Cashflow verification required", riskNote: "Commercial mortgage. Owner-occupied. Clean credit." },

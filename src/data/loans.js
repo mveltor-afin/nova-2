@@ -8,12 +8,12 @@ export const TEAM_MEMBERS = {
   underwriters: [
     { id:"UW-01", name:"James Mitchell",  role:"Underwriter",        initials:"JM", active:6, capacity:10, mandate:"L1", specialism:["Standard","First Time"], phone:"+44 7700 200001", email:"j.mitchell@afinbank.com" },
     { id:"UW-02", name:"Amir Hassan",     role:"Senior Underwriter", initials:"AH", active:4, capacity:8,  mandate:"L2", specialism:["Self-employed","Complex","BTL"], phone:"+44 7700 200002", email:"a.hassan@afinbank.com" },
-    { id:"UW-03", name:"Rebecca Lewis",   role:"Underwriter",        initials:"RL", active:5, capacity:10, mandate:"L1", specialism:["Standard","Remortgage"], phone:"+44 7700 200003", email:"r.lewis@afinbank.com" },
+    { id:"UW-03", name:"Simrat Gill",      role:"Underwriter",        initials:"SG", active:5, capacity:10, mandate:"L1", specialism:["Standard","Remortgage"], phone:"+44 7700 200003", email:"s.gill@afinbank.com" },
   ],
   ops: [
     { id:"OPS-01", name:"Tom Walker",      role:"Customer Care",    initials:"TW", active:5, capacity:12, specialism:["KYC","Documents"], phone:"+44 7700 300001", email:"t.walker@afinbank.com" },
     { id:"OPS-02", name:"Lucy Fernandez",  role:"Customer Care",    initials:"LF", active:3, capacity:12, specialism:["KYC","Valuations"], phone:"+44 7700 300002", email:"l.fernandez@afinbank.com" },
-    { id:"OPS-03", name:"Emma Chen",       role:"Senior Ops",       initials:"EC", active:7, capacity:10, specialism:["Complex","Complaints"], phone:"+44 7700 300003", email:"e.chen@afinbank.com" },
+    { id:"OPS-03", name:"Rebecca Lewis",   role:"Head of Operations", initials:"RL", active:7, capacity:10, specialism:["Complex","Complaints","Escalations"], phone:"+44 7700 300003", email:"r.lewis@afinbank.com" },
   ],
   solicitors: [
     { id:"SOL-01", name:"Harrison & Co",       role:"Conveyancer",     initials:"HC", firm:"Harrison & Co Solicitors",  sra:"SRA-612345", active:8,  capacity:20, specialism:["Residential","Remortgage"], phone:"+44 20 7946 0001", email:"completions@harrison-law.co.uk", avgDays:28, rating:4.6 },
