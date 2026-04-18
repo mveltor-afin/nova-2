@@ -217,6 +217,7 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
                     )}
                   </div>
                   <span style={{ fontSize: 11, color: T.textMuted }}>{Ico.clock(12)} {loan.updated}</span>
+                  <Btn small primary onClick={() => onOpenCase?.(loan)}>Open Case</Btn>
                 </div>
               </Card>
             );

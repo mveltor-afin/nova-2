@@ -4,6 +4,7 @@ import { Btn, Card, KPICard } from "../shared/primitives";
 import { MOCK_DOCS, MOCK_TIMELINE } from "../data/loans";
 import { MOCK_SVC_ACCOUNTS, MOCK_SVC_TIMELINE } from "../data/servicing";
 import { MOCK_VALUATIONS, MOCK_SURVEYORS } from "../data/valuations";
+import { getBucketEligibleProducts, calcMonthlyPayment } from "../data/pricing";
 
 const VAL_STATUS_COLOR = {
   "AVM Only":        { bg:T.bg,         txt:T.textMuted },
@@ -65,11 +66,31 @@ const AI_UW_SECTIONS = [
     ]},
 ];
 
-function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicing }) {
+function ApplicationDetail({ loan: initialLoan, persona, onBack, onCreateLoan, onViewServicing }) {
+  const [loan, setLoan] = useState(initialLoan);
   const [appTab, setAppTab] = useState("main");
   const [aiUWGenerated, setAiUWGenerated] = useState(false);
   const [aiUWLoading, setAiUWLoading] = useState(false);
   const [aiUWExpandedSection, setAiUWExpandedSection] = useState("borrower");
+  const [showProductSelector, setShowProductSelector] = useState(false);
+
+  // Get eligible products for Change Product
+  const eligibleProducts = getBucketEligibleProducts({
+    ltv: loan.ltv || 72, credit: loan.creditProfile || "clean",
+    employment: "Employed", property: loan.propertyType || "Standard",
+    epc: loan.epcRating || "D", loanAmount: parseInt(String(loan.amount).replace(/[^0-9]/g, "")) || 350000,
+    termYears: parseInt(loan.term) || 25,
+  }).filter(p => p.available);
+
+  const handleSelectProduct = (prod) => {
+    setLoan(prev => ({
+      ...prev,
+      product: prod.product, bucket: prod.bucket, bucketColor: prod.bucketColor,
+      tier: prod.tier, code: prod.code, erc: prod.erc, rate: prod.rate + "%",
+      productFee: prod.fees?.productFee,
+    }));
+    setShowProductSelector(false);
+  };
 
   const linkedSvcAccount = loan.servicingId ? MOCK_SVC_ACCOUNTS.find(a => a.id === loan.servicingId) : null;
   const isUW = persona === "Underwriter" || persona === "Admin";
@@ -103,7 +124,7 @@ function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicin
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Card>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>Loan Details</div>
-          {[["Amount",loan.amount],["Product",loan.product],["Rate",loan.rate],["Term",loan.term],["Type",loan.type]].map(([k,v],i) => (
+          {[["Amount",loan.amount],["Product",loan.product],["Bucket",loan.bucket || "—"],["Tier",loan.tier || "—"],["Rate",loan.rate],["Term",loan.term],["Type",loan.type],["Code",loan.code || "—"],["ERC",loan.erc || "—"],["Fee",loan.productFee || "—"]].map(([k,v],i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${T.borderLight}`, fontSize: 13 }}>
               <span style={{ color: T.textSecondary }}>{k}</span><span style={{ fontWeight: 500 }}>{v}</span>
             </div>
@@ -626,10 +647,22 @@ function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicin
           <p style={{ margin: 0, fontSize: 13, color: T.textSecondary }}>{loan.names} · {loan.product} · {loan.amount} @ {loan.rate}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <Btn>Change Product</Btn>
+          <Btn onClick={() => setShowProductSelector(true)}>Change Product</Btn>
           <Btn primary iconNode={Ico.send(16)}>Submit Application</Btn>
         </div>
       </div>
+      {/* No product warning */}
+      {(!loan.product || loan.product === "—") && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderRadius: 10, marginBottom: 16, background: "#FEF3C7", border: "1.5px solid #FDE68A" }}>
+          <span style={{ color: "#92400E", flexShrink: 0 }}>{Ico.alert(20)}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#92400E" }}>No product assigned</div>
+            <div style={{ fontSize: 12, color: "#92400E", opacity: 0.8 }}>This case needs a product before it can proceed. Use "Change Product" to select one.</div>
+          </div>
+          <Btn small primary onClick={() => setShowProductSelector(true)}>Select Product</Btn>
+        </div>
+      )}
+
       <Card noPad style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", borderBottom: `1px solid ${T.border}`, padding: "0 20px", overflowX:"auto" }}>
           {tabs.map(t => (
@@ -641,6 +674,63 @@ function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicin
         </div>
         <div style={{ padding: 20 }}>{renderTab()}</div>
       </Card>
+
+      {/* Product Selector Modal */}
+      {showProductSelector && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)" }} onClick={() => setShowProductSelector(false)}>
+          <div style={{ width: 700, maxHeight: "80vh", overflow: "auto", background: T.card, borderRadius: 16, padding: 28, boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: T.font }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: T.navy }}>Select Product</div>
+                <div style={{ fontSize: 12, color: T.textMuted }}>Choose a product based on this applicant's profile. {eligibleProducts.length} products available.</div>
+              </div>
+              <button onClick={() => setShowProductSelector(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted }}>{Ico.x(20)}</button>
+            </div>
+            {eligibleProducts.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: T.textMuted, fontStyle: "italic" }}>No eligible products found for this profile. Check applicant details.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {eligibleProducts.map((prod, i) => {
+                  const monthly = calcMonthlyPayment(parseInt(String(loan.amount).replace(/[^0-9]/g, "")) || 350000, prod.rate, parseInt(loan.term) || 25);
+                  const isCurrentProduct = loan.product === prod.product && loan.bucket === prod.bucket;
+                  return (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px",
+                      borderRadius: 10, border: isCurrentProduct ? `2px solid ${T.primary}` : `1px solid ${T.borderLight}`,
+                      background: isCurrentProduct ? T.primaryLight : T.card, transition: "all 0.15s",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{prod.product}</span>
+                            <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: (prod.bucketColor || T.primary) + "14", color: prod.bucketColor || T.primary }}>{prod.bucket}</span>
+                            {prod.tier && prod.tier !== "Base" && <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 5, background: "#EDE9FE", color: "#6D28D9" }}>{prod.tier}</span>}
+                            {prod.code && <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>{prod.code}</span>}
+                          </div>
+                          <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+                            ERC: {prod.erc || "—"} · Fee: {prod.fees?.productFee || "—"}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: prod.rate < 4.5 ? "#059669" : prod.rate <= 5.5 ? "#D97706" : "#DC2626" }}>{prod.rate.toFixed(2)}%</div>
+                          <div style={{ fontSize: 11, color: T.textMuted }}>£{monthly.toLocaleString()}/mo</div>
+                        </div>
+                        {isCurrentProduct ? (
+                          <span style={{ fontSize: 11, fontWeight: 700, color: T.primary, padding: "6px 12px" }}>Current</span>
+                        ) : (
+                          <Btn small primary onClick={() => handleSelectProduct(prod)}>Select</Btn>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
