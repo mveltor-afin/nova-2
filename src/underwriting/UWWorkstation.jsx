@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { T, Ico, StatusBadge } from "../shared/tokens";
 import { Btn, Card, KPICard, Input, Select } from "../shared/primitives";
-import { MOCK_LOANS, TEAM_MEMBERS } from "../data/loans";
+import { MOCK_LOANS, TEAM_MEMBERS, MOCK_TIMELINE } from "../data/loans";
 import SquadPanel from "../shared/SquadPanel";
 // OutcomeTracker is now only used in ConsumerDutyTab
 import DecisionEngine from "./DecisionEngine";
@@ -203,7 +203,7 @@ const Td = ({ children, style }) => (
 function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
   const activeLoan = loan || MOCK_LOANS[0];
 
-  const [caseTab, setCaseTab] = useState("evidence");
+  const [caseTab, setCaseTab] = useState("overview");
   const [activeScoreDim, setActiveScoreDim] = useState(null);
   const [decision, setDecision] = useState(null);
   const [reasonCode, setReasonCode] = useState("");
@@ -280,7 +280,8 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
       {/* ══════ CASE TABS ══════ */}
       <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.border}`, marginBottom: 20 }}>
         {[
-          { id: "evidence", label: "Evidence", icon: "shield" },
+          { id: "overview", label: "Overview", icon: "dashboard" },
+          { id: "evidence", label: "Applicant & Property", icon: "user" },
           { id: "income", label: "Income", icon: "dollar" },
           { id: "decision", label: "Decision Engine", icon: "zap" },
           { id: "documents", label: "Documents", icon: "file" },
@@ -308,7 +309,162 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
         {/* ─── TAB CONTENT (left) ─── */}
         <div style={{ flex: 1, minWidth: 0 }}>
 
-        {/* ═══ TAB: EVIDENCE ═══ */}
+        {/* ═══ TAB: OVERVIEW ═══ */}
+        {caseTab === "overview" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Row 1: Key Metrics */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+            <KPICard label="Loan Amount" value={activeLoan.amount} color={T.primary} />
+            <KPICard label="LTV" value={activeLoan.ltv ? `${activeLoan.ltv}%` : "—"} color={activeLoan.ltv > 80 ? T.warning : T.success} />
+            <KPICard label="Rate" value={activeLoan.rate} color={T.accent} />
+            <KPICard label="Term" value={activeLoan.term} color="#6366F1" />
+            <KPICard label="Risk Score" value={`${activeLoan.riskScore}/100`} color={activeLoan.riskScore > 60 ? T.danger : activeLoan.riskScore > 30 ? T.warning : T.success} />
+            <KPICard label="SLA" value="22h left" color={T.success} />
+          </div>
+
+          {/* Row 2: Product & Bucket detail + AI Summary */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {/* Product card */}
+            <Card>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                {Ico.shield(18)}
+                <span style={{ fontSize: 14, fontWeight: 700 }}>Product & Pricing</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Product</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{activeLoan.product}</div>
+                  {activeLoan.code && <div style={{ fontSize: 11, color: T.textMuted, fontFamily: "monospace", marginTop: 2 }}>{activeLoan.code}</div>}
+                </div>
+                <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Bucket</div>
+                  {activeLoan.bucket ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: activeLoan.bucketColor || T.navy }}>{activeLoan.bucket}</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 6, background: (activeLoan.bucketColor || T.primary) + "14", color: activeLoan.bucketColor || T.primary }}>Max {activeLoan.ltv <= 75 ? "75" : activeLoan.ltv <= 85 ? "85" : activeLoan.ltv <= 90 ? "90" : "95"}% LTV</span>
+                    </div>
+                  ) : <div style={{ fontSize: 14, color: T.textMuted }}>Not assigned</div>}
+                </div>
+                <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Pricing Tier</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: activeLoan.tier && activeLoan.tier !== "Standard" ? "#6D28D9" : T.navy }}>{activeLoan.tier || "Standard"}</div>
+                </div>
+                <div style={{ padding: "10px 12px", borderRadius: 8, background: T.bg }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>Product Fee</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{activeLoan.productFee || "—"}</div>
+                </div>
+              </div>
+              {/* Additional product info */}
+              <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                {activeLoan.erc && <div style={{ padding: "6px 10px", borderRadius: 8, background: "#F1F5F9", fontSize: 11 }}><span style={{ fontWeight: 700, color: T.textMuted }}>ERC:</span> <span style={{ fontWeight: 600, color: T.text }}>{activeLoan.erc}</span></div>}
+                {activeLoan.creditProfile && <div style={{ padding: "6px 10px", borderRadius: 8, background: "#ECFDF5", fontSize: 11 }}><span style={{ fontWeight: 700, color: T.textMuted }}>Credit:</span> <span style={{ fontWeight: 600, color: "#065F46" }}>{activeLoan.creditProfile}</span></div>}
+                {activeLoan.propertyType && <div style={{ padding: "6px 10px", borderRadius: 8, background: "#FFF7ED", fontSize: 11 }}><span style={{ fontWeight: 700, color: T.textMuted }}>Property:</span> <span style={{ fontWeight: 600, color: "#9A3412" }}>{activeLoan.propertyType}</span></div>}
+                {activeLoan.epcRating && <div style={{ padding: "6px 10px", borderRadius: 8, background: "#F0FDF4", fontSize: 11 }}><span style={{ fontWeight: 700, color: T.textMuted }}>EPC:</span> <span style={{ fontWeight: 600, color: "#166534" }}>{activeLoan.epcRating}</span></div>}
+              </div>
+            </Card>
+
+            {/* AI Risk Summary */}
+            <Card>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                {Ico.sparkle(18)}
+                <span style={{ fontSize: 14, fontWeight: 700 }}>AI Assessment Summary</span>
+              </div>
+              <div style={{
+                padding: "16px 18px", borderRadius: 10,
+                background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14,
+              }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>Overall Risk Score</div>
+                  <div style={{ fontSize: 28, fontWeight: 800 }}>{activeLoan.riskScore}/100</div>
+                </div>
+                <span style={{
+                  fontSize: 13, fontWeight: 700, padding: "4px 14px", borderRadius: 8,
+                  background: activeLoan.riskLevel === "Low" ? "rgba(16,185,129,0.25)" : activeLoan.riskLevel === "Medium" ? "rgba(245,158,11,0.25)" : "rgba(220,38,38,0.25)",
+                  color: "#fff",
+                }}>{activeLoan.riskLevel} Risk</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {SCORE_DIMS.slice(0, 4).map(d => (
+                  <div key={d.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, minWidth: 90 }}>{d.label}</span>
+                    <div style={{ flex: 1, height: 6, background: T.borderLight, borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ width: `${d.score}%`, height: "100%", background: d.color, borderRadius: 3 }} />
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: d.color, minWidth: 30, textAlign: "right" }}>{d.score}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{
+                marginTop: 12, padding: "10px 14px", background: "rgba(26,74,84,0.04)", borderRadius: 8,
+                borderLeft: `3px solid ${T.primary}`, fontSize: 12, color: T.textSecondary, lineHeight: 1.5,
+              }}>
+                <b>AI Recommendation:</b> {activeLoan.riskScore <= 30
+                  ? "Fast-track approval recommended. All checks passed, no flags raised."
+                  : activeLoan.riskScore <= 60
+                  ? "Manual review recommended. Some areas need underwriter attention."
+                  : "Escalation recommended. Multiple risk factors identified."}
+              </div>
+            </Card>
+          </div>
+
+          {/* Row 3: Applicant Quick View + Case Timeline */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {/* Applicant quick view */}
+            <Card>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                {Ico.user(18)}
+                <span style={{ fontSize: 14, fontWeight: 700 }}>Applicant</span>
+                <span onClick={() => onViewCustomer?.(activeLoan.names)} style={{ marginLeft: "auto", fontSize: 11, color: T.primary, cursor: "pointer", fontWeight: 600 }}>View Full Profile →</span>
+              </div>
+              {[
+                ["Name", activeLoan.names],
+                ["Employment", activeLoan.creditProfile === "clean" ? "Employed — TechCorp Ltd" : "Self-Employed"],
+                ["Income", "£70,000 + £8,000 bonus"],
+                ["Credit", activeLoan.creditProfile || "clean"],
+                ["DTI", "18.2%"],
+                ["Repayment", activeLoan.type],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${T.borderLight}` }}>
+                  <span style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>{k}</span>
+                  <span style={{ fontSize: 12, fontWeight: 500 }}>{v}</span>
+                </div>
+              ))}
+            </Card>
+
+            {/* Case Timeline */}
+            <Card>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                {Ico.clock(18)}
+                <span style={{ fontSize: 14, fontWeight: 700 }}>Case Timeline</span>
+              </div>
+              <div style={{ position: "relative", paddingLeft: 20 }}>
+                <div style={{ position: "absolute", left: 6, top: 4, bottom: 4, width: 2, background: T.borderLight }} />
+                {MOCK_TIMELINE.map((evt, i) => (
+                  <div key={i} style={{ position: "relative", paddingBottom: 14, paddingLeft: 14 }}>
+                    <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: 5, background: evt.color, border: `2px solid ${T.card}`, zIndex: 1 }} />
+                    <div style={{ fontSize: 10, color: T.textMuted, fontWeight: 600, marginBottom: 2 }}>{evt.time}</div>
+                    <div style={{ fontSize: 12, color: T.text, lineHeight: 1.4 }}>{evt.text}</div>
+                    <div style={{ fontSize: 10, color: T.textMuted }}>{evt.actor}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* Row 4: Lifecycle Predictor */}
+          <Card>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              {Ico.chart(18)}
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Lifecycle Prediction</span>
+            </div>
+            <LifecyclePredictor customerId={activeLoan.customerId || "CUS-001"} />
+          </Card>
+        </div>
+        )}
+
+        {/* ═══ TAB: APPLICANT & PROPERTY (was Evidence) ═══ */}
         {caseTab === "evidence" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
