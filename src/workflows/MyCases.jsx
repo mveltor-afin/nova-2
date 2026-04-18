@@ -15,8 +15,13 @@ const UW_USER = "UW-01"; // James Mitchell
 // UW-relevant statuses (cases that need underwriter attention)
 const UW_STATUSES = ["Submitted", "KYC_In_Progress", "Underwriting", "Referred", "DIP_Approved"];
 
-// Ops stage map
+// Ops stage map — covers the full lifecycle ops tracks
 const OPS_STAGE_MAP = {
+  Submitted:        { stage: "Awaiting UW",            step: 0 },
+  KYC_In_Progress:  { stage: "KYC",                    step: 0 },
+  Underwriting:     { stage: "Awaiting UW",            step: 0 },
+  Referred:         { stage: "Awaiting UW",            step: 0 },
+  DIP_Approved:     { stage: "Awaiting UW",            step: 0 },
   Approved:         { stage: "Valuation",              step: 1 },
   Offer_Issued:     { stage: "Solicitor & Conveyancing", step: 3 },
   Offer_Accepted:   { stage: "Pre-Completion",         step: 5 },
@@ -63,7 +68,7 @@ function getSLAStatus(stageName, daysInStage) {
   return { label: "Breaching", color: T.danger, bg: T.dangerBg };
 }
 
-const OPS_STAGE_ORDER = ["Valuation", "Offer & ESIS", "Solicitor & Conveyancing", "Pre-Completion", "Disbursement"];
+const OPS_STAGE_ORDER = ["Awaiting UW", "KYC", "Valuation", "Offer & ESIS", "Solicitor & Conveyancing", "Pre-Completion", "Complete"];
 const UW_STAGE_ORDER = ["New — Awaiting Review", "KYC in Progress", "Under Assessment", "Referred — Needs L2", "DIP — Awaiting Full App", "Decision Made"];
 
 const STAGE_ICONS = {
@@ -85,11 +90,11 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
   // Get cases assigned to this user
   const myCases = MOCK_LOANS.filter(l => l.squad?.[squadKey] === userId);
 
-  // For UW — show ALL cases needing UW decision (assigned to me + unassigned)
-  // For Ops — show post-approval cases assigned to me
+  // For UW — cases needing UW decision (assigned to me + unassigned)
+  // For Ops — ALL cases assigned to me across the full lifecycle
   const relevantCases = isUW
     ? MOCK_LOANS.filter(l => UW_STATUSES.includes(l.status) && (l.squad?.[squadKey] === userId || !l.squad?.[squadKey]))
-    : myCases.filter(l => ["Approved", "Offer_Issued", "Offer_Accepted"].includes(l.status) || OPS_STAGE_MAP[l.status]);
+    : myCases;
 
   function getStageInfoLocal(status) {
     return stageMap[status] || { stage: isUW ? "Under Assessment" : "Valuation", step: isUW ? 0 : 1 };
@@ -234,6 +239,12 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
                       <Btn primary small onClick={() => onOpenCase?.(c)}>
                         Open Workstation
                       </Btn>
+                    ) : c.stageInfo.step === 0 ? (
+                      <Btn small disabled style={{ opacity: 0.5 }}>
+                        Awaiting UW
+                      </Btn>
+                    ) : c.stageInfo.stage === "Complete" ? (
+                      <span style={{ fontSize: 11, fontWeight: 700, color: T.success, padding: "6px 12px" }}>✓ Complete</span>
                     ) : (
                       <Btn primary small onClick={() => onOpenWizard?.(c, c.stageInfo.step)}>
                         Continue Processing
