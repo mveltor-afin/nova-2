@@ -264,6 +264,7 @@ export default function Shell({ userType }) {
         ]},
         { group:"INTELLIGENCE", items:[
           { id:"uwperformance",   label:"My Performance",     icon:"chart" },
+          { id:"smartdocs",       label:"Smart Doc Extraction",icon:"sparkle" },
           { id:"mymi",            label:"My MI",              icon:"chart" },
           { id:"myreports",       label:"My Reports",         icon:"file" },
           { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
@@ -404,17 +405,12 @@ export default function Shell({ userType }) {
           { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
           { id:"myinbox",         label:"My Inbox",             icon:"bell", badge:8 },
         ]},
-        ...((persona === "Ops" || persona === "Admin" || persona === "Underwriter") ? [{
-          group:"AI AGENTS", items:[
-            { id:"orchestrationagent", label:"Case Orchestration",   icon:"sparkle" },
-            { id:"retentionagent",     label:"Retention Agent",      icon:"chart" },
-            { id:"collectionsagent",   label:"Collections Agent",    icon:"alert" },
-            { id:"smartdocs",          label:"Smart Doc Extraction", icon:"file" },
-          ],
-        }] : []),
         ...((persona === "Ops" || persona === "Admin") ? [{
           group:"OPS TOOLKIT", items:[
             { id:"commandcentre",  label:"Command Centre",      icon:"dashboard" },
+            { id:"orchestrationagent", label:"AI Case Agent",   icon:"sparkle" },
+            { id:"retentionagent", label:"Retention Agent",      icon:"chart" },
+            { id:"collectionsagent", label:"Collections Agent",  icon:"alert" },
             { id:"commscentre",    label:"Comms Centre",        icon:"send" },
             { id:"doctemplates",   label:"Doc Templates",       icon:"file" },
             { id:"casejourney",    label:"Case Journey",        icon:"clock" },
