@@ -9,7 +9,10 @@ import { CREDIT_PROFILES, PROPERTY_ADJUSTMENTS } from "../data/pricing";
 function loadBuckets() {
   try {
     const s = localStorage.getItem("product_buckets");
-    return s ? JSON.parse(s) : DEFAULT_BUCKETS;
+    if (s) return JSON.parse(s);
+    // Seed localStorage with defaults so pricing engine and other screens can read them
+    try { localStorage.setItem("product_buckets", JSON.stringify(DEFAULT_BUCKETS)); } catch {}
+    return DEFAULT_BUCKETS;
   } catch {
     return DEFAULT_BUCKETS;
   }

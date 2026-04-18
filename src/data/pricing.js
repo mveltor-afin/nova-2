@@ -215,11 +215,73 @@ export function calcMonthlyPayment(principal, annualRate, termYears) {
 // eligible products with rates, enforcing bucket-level criteria.
 // ─────────────────────────────────────────────
 
+// Fallback defaults if localStorage is empty (mirrors ProductBuckets DEFAULT_BUCKETS)
+const FALLBACK_LENDING_BUCKETS = [
+  { name:"Prime", color:"#059669", maxLTV:75,
+    acceptedCreditProfiles:["clean","near_prime"], acceptedEmployments:["Employed","Self-Employed","Contractor"],
+    acceptedProperties:["Standard","New Build","Ex-Local Authority"], acceptedEpc:["A","B","C","D","E","F","G"],
+    tiers:[
+      { name:"Standard", conditions:{credit:["clean"],employment:["Employed"]}, adjustmentType:"flat", flatAdj:0 },
+      { name:"Self-Employed", conditions:{employment:["Self-Employed","Contractor"]}, adjustmentType:"flat", flatAdj:0.15 },
+      { name:"Near Prime", conditions:{credit:["near_prime"]}, adjustmentType:"flat", flatAdj:0.25 },
+    ],
+    criteria:{ loanSize:{min:"£25,000",max:"£1,000,000"}, age:{min:21,maxAtEnd:75}, incomeMultiple:"4.49x" },
+    fees:{ productFee:"£1,495", reversion:"BBR + 3.99%", termRange:"2-40 years" },
+    products:[
+      { type:"2-Year Fixed", code:"P2F", erc:"3%, 2%", rates:{"≤60%":4.19,"60-75%":4.49} },
+      { type:"5-Year Fixed", code:"P5F", erc:"5%, 4%, 3%, 2%, 1%", rates:{"≤60%":4.59,"60-75%":4.89} },
+      { type:"2-Year Tracker", code:"PTR", erc:"No ERCs", rates:{"≤60%":4.84,"60-75%":5.14} },
+    ],
+  },
+  { name:"Prime High LTV", color:"#31B897", maxLTV:95,
+    acceptedCreditProfiles:["clean","near_prime"], acceptedEmployments:["Employed","Self-Employed","Contractor"],
+    acceptedProperties:["Standard","New Build","Ex-Local Authority"], acceptedEpc:["A","B","C","D","E","F","G"],
+    tiers:[{ name:"Standard", conditions:{}, adjustmentType:"flat", flatAdj:0 }],
+    criteria:{ loanSize:{min:"£25,000",max:"£500,000"}, age:{min:21,maxAtEnd:70}, incomeMultiple:"4.49x" },
+    fees:{ productFee:"£1,495", reversion:"BBR + 3.99%", termRange:"2-40 years" },
+    products:[
+      { type:"2-Year Fixed", code:"H2F", erc:"4%, 3%", rates:{"≤60%":4.49,"60-75%":4.79,"75-85%":5.29,"85-90%":5.59,"90-95%":5.99} },
+      { type:"5-Year Fixed", code:"H5F", erc:"5%, 4%, 3%, 2%, 1%", rates:{"≤60%":4.89,"60-75%":5.19,"75-85%":5.69,"85-90%":5.99,"90-95%":6.39} },
+    ],
+  },
+  { name:"Professional", color:"#3B82F6", maxLTV:90,
+    acceptedCreditProfiles:["clean","near_prime","light_adverse"], acceptedEmployments:["Employed","Self-Employed","Contractor","Retired"],
+    acceptedProperties:["Standard","New Build"], acceptedEpc:["A","B","C","D","E","F","G"],
+    tiers:[{ name:"Standard", conditions:{}, adjustmentType:"flat", flatAdj:0 }],
+    criteria:{ loanSize:{min:"£25,000",max:"£2,000,000"}, age:{min:21,maxAtEnd:80}, incomeMultiple:"5.50x" },
+    fees:{ productFee:"£1,495", reversion:"BBR + 2.99%", termRange:"2-40 years" },
+    products:[
+      { type:"2-Year Fixed", code:"D2F", erc:"2%, 1%", rates:{"≤60%":3.69,"60-75%":3.99,"75-85%":4.49,"85-90%":4.79} },
+      { type:"5-Year Fixed", code:"D5F", erc:"5%, 4%, 3%, 2%, 1%", rates:{"≤60%":4.09,"60-75%":4.39,"75-85%":4.89,"85-90%":5.19} },
+    ],
+  },
+  { name:"Buy-to-Let", color:"#F59E0B", maxLTV:75,
+    acceptedCreditProfiles:["clean","near_prime","light_adverse","adverse","heavy_adverse"],
+    acceptedEmployments:["Employed","Self-Employed","Contractor"],
+    acceptedProperties:["Standard","New Build","Ex-Local Authority","High-Rise (>6 floors)"],
+    acceptedEpc:["A","B","C","D","E","F","G"],
+    tiers:[
+      { name:"Standard", conditions:{}, adjustmentType:"flat", flatAdj:0 },
+      { name:"Adverse Credit", conditions:{credit:["adverse","heavy_adverse"]}, adjustmentType:"flat", flatAdj:0.50 },
+    ],
+    criteria:{ loanSize:{min:"£25,000",max:"£2,000,000"}, age:{min:21,maxAtEnd:85}, incomeMultiple:"N/A" },
+    fees:{ productFee:"£1,995", reversion:"BBR + 4.49%", termRange:"5-25 years" },
+    products:[
+      { type:"2-Year Fixed", code:"B2F", erc:"3%, 2%", rates:{"≤60%":5.19,"60-75%":5.49} },
+      { type:"5-Year Fixed", code:"B5F", erc:"5%, 4%, 3%, 2%, 1%", rates:{"≤60%":5.49,"60-75%":5.79} },
+      { type:"Tracker", code:"BTR", erc:"No ERCs", rates:{"≤60%":5.49,"60-75%":5.79} },
+    ],
+  },
+];
+
 function loadBuckets() {
   try {
     const s = localStorage.getItem("product_buckets");
-    return s ? JSON.parse(s) : null;
-  } catch { return null; }
+    if (s) return JSON.parse(s);
+    // Seed localStorage with defaults so all screens can read them
+    try { localStorage.setItem("product_buckets", JSON.stringify(FALLBACK_LENDING_BUCKETS)); } catch {}
+    return FALLBACK_LENDING_BUCKETS;
+  } catch { return FALLBACK_LENDING_BUCKETS; }
 }
 
 const LTV_BAND_MAX = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
