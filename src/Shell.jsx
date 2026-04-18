@@ -376,19 +376,28 @@ export default function Shell({ userType }) {
         ]},
       ]
     : [
-        // Ops & Admin — shared base, Admin gets extra sections
-        { group:"MY CUSTOMERS", items:[
-          { id:"needsattention",  label:"Needs Attention",     icon:"alert", badge:needsAttentionCount },
-          { id:"allcustomers",    label:"All Customers",       icon:"customers" },
-          { id:"newcustomer",     label:"New Customer",        icon:"plus" },
+        // Ops & Admin — restructured for clarity
+        { group:"PIPELINE", items:[
+          { id:"pipeline",        label:"Pipeline",             icon:"chart" },
+          { id:"offers",          label:"Offers & ESIS",        icon:"file" },
         ]},
-        { group:"WORKFLOWS", items:[
-          { id:"intake",          label:"Intake Queue",        icon:"zap", badge:3 },
-          { id:"pipeline",        label:"Pipeline",            icon:"chart" },
-          { id:"offers",          label:"Offers",              icon:"file" },
-          { id:"approvals",       label:"Approvals",           icon:"check" },
+        { group:"PROCESSING", items:[
+          { id:"intake",          label:"Intake & Processing",  icon:"zap", badge:3 },
+          { id:"approvals",       label:"Approvals",            icon:"check" },
           ...(persona === "Ops" || persona === "Admin" ? [
-            { id:"valuations",    label:"Valuations & Property",icon:"eye" },
+            { id:"valuations",    label:"Valuations",           icon:"eye" },
+          ] : []),
+        ]},
+        { group:"CUSTOMERS", items:[
+          { id:"needsattention",  label:"Needs Attention",      icon:"alert", badge:needsAttentionCount },
+          { id:"allcustomers",    label:"All Customers",        icon:"customers" },
+        ]},
+        { group:"SERVICING", items:[
+          { id:"servicing",       label:"Mortgage Servicing",   icon:"wallet" },
+          { id:"collections",     label:"Collections",          icon:"alert" },
+          { id:"rateswitch",      label:"Rate Switches",        icon:"arrow" },
+          ...(persona === "Ops" ? [
+            { id:"complaints",    label:"Complaints",           icon:"alert" },
           ] : []),
         ]},
         { group:"PRODUCTS", items:[
@@ -398,18 +407,11 @@ export default function Shell({ userType }) {
           { id:"insurance",       label:"Insurance",            icon:"shield" },
           { id:"sharedownership", label:"Shared Ownership",     icon:"assign" },
         ]},
-        { group:"SERVICING", items:[
-          { id:"servicing",       label:"Mortgage Servicing",   icon:"wallet" },
-          { id:"collections",    label:"Collections",          icon:"alert" },
-          { id:"rateswitch",     label:"Rate Switches",        icon:"arrow" },
-          ...(persona === "Ops" ? [
-            { id:"complaints",    label:"Complaints",           icon:"alert" },
-          ] : []),
-        ]},
         { group:"INTELLIGENCE", items:[
+          { id:"commandcentre",   label:"Command Centre",       icon:"dashboard" },
           { id:"aidashboard",     label:"AI Dashboard",         icon:"sparkle" },
           { id:"mymi",            label:"My MI",                icon:"chart" },
-          { id:"myreports",      label:"My Reports",           icon:"file" },
+          { id:"myreports",       label:"My Reports",           icon:"file" },
           ...(persona === "Admin" ? [
             { id:"journeyanalytics",label:"Journey Analytics",  icon:"eye" },
             { id:"forecaster",    label:"Pipeline Forecaster",  icon:"chart" },
@@ -418,18 +420,17 @@ export default function Shell({ userType }) {
           { id:"myinbox",         label:"My Inbox",             icon:"bell", badge:8 },
         ]},
         ...((persona === "Ops" || persona === "Admin") ? [{
-          group:"OPS TOOLKIT", items:[
-            { id:"commandcentre",  label:"Command Centre",      icon:"dashboard" },
+          group:"TOOLS", collapsed:true, items:[
             { id:"orchestrationagent", label:"AI Case Agent",   icon:"sparkle" },
             { id:"retentionagent", label:"Retention Agent",      icon:"chart" },
             { id:"collectionsagent", label:"Collections Agent",  icon:"alert" },
-            { id:"commscentre",    label:"Comms Centre",        icon:"send" },
-            { id:"doctemplates",   label:"Doc Templates",       icon:"file" },
-            { id:"casejourney",    label:"Case Journey",        icon:"clock" },
-            { id:"complianceengine",label:"Compliance Engine",  icon:"shield" },
-            { id:"solicitorpanel", label:"Solicitor Panel",       icon:"users" },
-            { id:"brokeronboard", label:"Broker Onboarding",    icon:"assign" },
-            { id:"segmentation",  label:"Segmentation",          icon:"customers" },
+            { id:"solicitorpanel", label:"Solicitor Panel",      icon:"users" },
+            { id:"commscentre",    label:"Comms Centre",         icon:"send" },
+            { id:"casejourney",    label:"Case Journey",         icon:"clock" },
+            { id:"complianceengine",label:"Compliance Engine",   icon:"shield" },
+            { id:"doctemplates",   label:"Doc Templates",        icon:"file" },
+            { id:"brokeronboard",  label:"Broker Onboarding",   icon:"assign" },
+            { id:"segmentation",   label:"Segmentation",         icon:"customers" },
           ],
         }] : []),
         ...(persona === "Admin" ? [{
