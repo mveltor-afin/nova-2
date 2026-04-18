@@ -79,7 +79,43 @@ const QUEUE_CASES = [
     squad: { bdm: "—", ops: "Tom Walker" },
     fastTrack: false,
   },
+  {
+    id: "AFN-2026-00144", names: "GreenLeaf Properties Ltd", amount: "£240,000", status: "Underwriting",
+    riskScore: 38, riskColor: T.warning, priority: "MEDIUM",
+    aiSummary: "BTL portfolio landlord (5 properties). ICR 168% — passes. Ltd company, clean credit. Requires portfolio assessment.",
+    badge: "Manual Review Required", badgeColor: T.warning,
+    mandate: "L1 — Within your mandate", mandateColor: T.success,
+    sla: "Decision due — 18h remaining", slaColor: T.success, slaPulse: false,
+    squad: { bdm: "—", ops: "Emma Chen" },
+    fastTrack: false,
+  },
+  {
+    id: "AFN-2026-00146", names: "Sarah & Tom Reynolds", amount: "£425,000", status: "KYC_In_Progress",
+    riskScore: 42, riskColor: T.warning, priority: "MEDIUM",
+    aiSummary: "Regulated bridge — chain-break. Exit strategy: sale of existing property (under offer). Clean credit. 12-month term.",
+    badge: "Manual Review Required", badgeColor: T.warning,
+    mandate: "L1 — Within your mandate", mandateColor: T.success,
+    sla: "KYC check — 6h remaining", slaColor: T.warning, slaPulse: false,
+    squad: { bdm: "—", ops: "Tom Walker" },
+    fastTrack: false,
+  },
+  {
+    id: "AFN-2026-00147", names: "Orion Developments Ltd (SPV)", amount: "£1,800,000", status: "Submitted",
+    riskScore: 55, riskColor: T.warning, priority: "HIGH",
+    aiSummary: "Development finance — 6 residential units. GDV £3.2M, LTGDV 56%. Experienced developer. Planning approved. Requires L2 mandate.",
+    badge: "Escalation — L2 Required", badgeColor: "#3B82F6",
+    mandate: "L2 — Requires Senior UW", mandateColor: T.warning,
+    sla: "Initial review — 24h remaining", slaColor: T.success, slaPulse: false,
+    squad: { bdm: "—", ops: "Emma Chen" },
+    fastTrack: false, escalation: true,
+  },
 ];
+
+// Merge queue display data with full MOCK_LOANS data so UW Workstation gets everything
+const RESOLVED_QUEUE = QUEUE_CASES.map(qc => {
+  const fullLoan = MOCK_LOANS.find(l => l.id === qc.id);
+  return fullLoan ? { ...fullLoan, ...qc } : qc;
+});
 
 /* ─── Helpers ─── */
 const amountNum = (s) => parseInt(s.replace(/[^0-9]/g, ""), 10);
@@ -125,7 +161,7 @@ function SmartQueue({ onOpenCase }) {
   const [filter, setFilter] = useState("all");
   const [fastTrackModal, setFastTrackModal] = useState(null);
 
-  const filtered = QUEUE_CASES.filter(filterFns[filter]).sort(sortFns[sort]);
+  const filtered = RESOLVED_QUEUE.filter(filterFns[filter]).sort(sortFns[sort]);
 
   return (
     <div style={{ fontFamily: T.font, color: T.text, maxWidth: 1060, margin: "0 auto" }}>
