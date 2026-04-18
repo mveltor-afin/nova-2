@@ -24,10 +24,21 @@ function LoanWizard({ onCancel, onComplete }) {
   const [applicantEpc, setApplicantEpc] = useState("D");
 
   // Dynamic products from pricing engine
-  const dynamicProducts = useMemo(() =>
-    getWizardProducts({ ltv: 72, credit: applicantCredit, employment: applicantEmployment, property: applicantPropertyType, epc: applicantEpc, loanAmount: 350000, term: 25 }),
-    [applicantCredit, applicantEmployment, applicantPropertyType, applicantEpc]
-  );
+  // Map lending type to bucket names for filtering
+  const LENDING_BUCKET_MAP = {
+    residential: ["Prime", "Prime High LTV", "Professional", "High-Net-Worth"],
+    btl: ["Buy-to-Let"],
+    commercial: ["Commercial Mortgage"],
+    bridging: ["Residential Bridging", "Bridging Finance"],
+    development: ["Development Finance"],
+  };
+
+  const dynamicProducts = useMemo(() => {
+    const all = getWizardProducts({ ltv: 72, credit: applicantCredit, employment: applicantEmployment, property: applicantPropertyType, epc: applicantEpc, loanAmount: 350000, term: 25 });
+    const allowedBuckets = LENDING_BUCKET_MAP[lendingType] || [];
+    if (!allowedBuckets.length) return all;
+    return all.filter(p => !p.bucket || allowedBuckets.includes(p.bucket));
+  }, [applicantCredit, applicantEmployment, applicantPropertyType, applicantEpc, lendingType]);
   const scrollRef = useRef(null);
 
   const activeSteps = WIZARD_STEPS.filter(s => !(s.id === "applicant2" && !joint));

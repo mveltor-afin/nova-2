@@ -39,6 +39,23 @@ export const MOCK_LOANS = [
   { id: "AFN-2026-00115", customerId: null, servicingId: "M-003890", names: "Sophie & Jack Brown", product: "2-Year Fixed", amount: "£320,000", term: "30 yrs", rate: "5.59%", type: "C&I", status: "DIP_Approved", updated: "6d ago", riskScore: 45, riskLevel: "Medium",
     bucket: "Prime High LTV", bucketColor: "#31B897", tier: "FTB 90%+", code: "H2F", erc: "4%, 3%", productFee: "£1,495", creditProfile: "clean", propertyType: "Standard", epcRating: "D", ltv: 90,
     squad: { adviser:"ADV-01", underwriter:"UW-03", ops:"OPS-03" } },
+  // Commercial / BTL cases
+  { id: "AFN-2026-00144", customerId: "CUS-009", servicingId: null, names: "GreenLeaf Properties Ltd", product: "Tracker", amount: "£240,000", term: "20 yrs", rate: "5.64%", type: "BTL", status: "Underwriting", updated: "4h ago", riskScore: 38, riskLevel: "Medium",
+    bucket: "Buy-to-Let", bucketColor: "#F59E0B", tier: "Portfolio (4+)", code: "BTR", erc: "No ERCs", productFee: "£1,995", creditProfile: "clean", propertyType: "Standard", epcRating: "D", ltv: 65,
+    lendingType: "btl", companyType: "Ltd", companyName: "GreenLeaf Properties Ltd", portfolioSize: 5, rentalIncome: 1820, icr: 168,
+    squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-03" } },
+  { id: "AFN-2026-00145", customerId: "CUS-010", servicingId: null, names: "Bright Futures Consulting Ltd", product: "2-Year Fixed", amount: "£340,000", term: "15 yrs", rate: "5.49%", type: "Commercial", status: "Approved", updated: "2d ago", riskScore: 25, riskLevel: "Low",
+    bucket: "Commercial Mortgage", bucketColor: "#6366F1", tier: "Owner-Occupied", code: "CM2F", erc: "3%, 2%", productFee: "£2,495", creditProfile: "clean", propertyType: "Standard", epcRating: "C", ltv: 58,
+    lendingType: "commercial", companyType: "Ltd", companyName: "Bright Futures Consulting Ltd", turnover: 680000,
+    squad: { adviser:"ADV-02", underwriter:"UW-01", ops:"OPS-02" } },
+  { id: "AFN-2026-00146", customerId: null, servicingId: null, names: "Sarah & Tom Reynolds", product: "Regulated Bridge", amount: "£425,000", term: "12 mo", rate: "0.65%/mo", type: "Bridging", status: "KYC_In_Progress", updated: "1d ago", riskScore: 42, riskLevel: "Medium",
+    bucket: "Residential Bridging", bucketColor: "#DC2626", tier: "Standard", code: "RBG-R", erc: "1 month interest", productFee: "1.5% (£6,375)", creditProfile: "clean", propertyType: "Standard", epcRating: "D", ltv: 70,
+    lendingType: "bridging", exitStrategy: "Sale of existing property — under offer, completion expected 8 weeks",
+    squad: { adviser:"ADV-01", underwriter:"UW-02", ops:"OPS-01" } },
+  { id: "AFN-2026-00147", customerId: null, servicingId: null, names: "Orion Developments Ltd (SPV)", product: "Development Facility", amount: "£1,800,000", term: "18 mo", rate: "7.20%", type: "Development", status: "Submitted", updated: "3d ago", riskScore: 55, riskLevel: "Medium",
+    bucket: "Development Finance", bucketColor: "#0EA5E9", tier: "Experienced Developer", code: "DEV-F", erc: "None", productFee: "2% (£36,000)", creditProfile: "clean", propertyType: "New Build", epcRating: "A", ltv: 60,
+    lendingType: "development", companyType: "SPV", companyName: "Orion Developments Ltd", gdv: 3200000, units: 6, planningRef: "PP/2025/04821",
+    squad: { adviser:"ADV-03", underwriter:"UW-02", ops:"OPS-03" } },
 ];
 
 export const MOCK_DOCS = [
