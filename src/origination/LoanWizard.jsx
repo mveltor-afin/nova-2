@@ -101,8 +101,8 @@ function LoanWizard({ onCancel, onComplete }) {
         ))}
       </div>
 
-      {/* Commercial/BTL entity type */}
-      {(lendingType === "btl" || lendingType === "commercial" || lendingType === "development") && (
+      {/* Entity type — only for commercial and development */}
+      {(lendingType === "commercial" || lendingType === "development") && (
         <div style={{ marginBottom: 24 }}>
           <SectionLabel icon={Ico.shield(22)} text="Borrowing Entity" sub="Individual, Ltd company, or SPV?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
@@ -128,22 +128,32 @@ function LoanWizard({ onCancel, onComplete }) {
                 <Input label="Company Name" value={companyName} onChange={setCompanyName} placeholder="GreenLeaf Properties Ltd" required />
                 <Input label="Company Number" value={companyNumber} onChange={setCompanyNumber} placeholder="12345678" required />
               </div>
-              {lendingType === "btl" && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
-                  <Input label="Portfolio Size (properties)" value={portfolioSize} onChange={setPortfolioSize} placeholder="5" />
-                  <Input label="Total Monthly Rental Income" value={rentalIncome} onChange={setRentalIncome} prefix="£" placeholder="8,500" />
-                </div>
-              )}
             </Card>
           )}
         </div>
       )}
 
+      {/* BTL property details */}
+      {lendingType === "btl" && (
+        <div style={{ marginBottom: 24 }}>
+          <SectionLabel icon={Ico.dollar(22)} text="Buy-to-Let Details" sub="Investment property information" />
+          <Card>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+              <Input label="Number of Properties Owned" value={portfolioSize} onChange={setPortfolioSize} placeholder="1" />
+              <Input label="Expected Monthly Rental Income" value={rentalIncome} onChange={setRentalIncome} prefix="£" placeholder="1,200" />
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Applicant count */}
-      <SectionLabel icon={Ico.users(22)} text="How many applicants?" sub={companyType !== "Individual" ? "Directors / guarantors on this application" : "Single or joint application"} />
+      {(() => {
+        const isCorpEntity = (lendingType === "commercial" || lendingType === "development") && companyType !== "Individual";
+        return (<>
+      <SectionLabel icon={Ico.users(22)} text="How many applicants?" sub={isCorpEntity ? "Directors / guarantors on this application" : "Single or joint application"} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {[{ val: false, label: companyType !== "Individual" ? "Single Director" : "Single Applicant", desc: companyType !== "Individual" ? "One director/guarantor" : "One borrower on the mortgage", icon: Ico.user(36) },
-          { val: true,  label: companyType !== "Individual" ? "Multiple Directors" : "Joint Applicants", desc: companyType !== "Individual" ? "Two or more directors/guarantors" : "Two borrowers on the mortgage", icon: Ico.users(36) }].map(opt => (
+        {[{ val: false, label: isCorpEntity ? "Single Director" : "Single Applicant", desc: isCorpEntity ? "One director/guarantor" : "One borrower on the mortgage", icon: Ico.user(36) },
+          { val: true,  label: isCorpEntity ? "Multiple Directors" : "Joint Applicants", desc: isCorpEntity ? "Two or more directors/guarantors" : "Two borrowers on the mortgage", icon: Ico.users(36) }].map(opt => (
           <div key={String(opt.val)} onClick={() => setJoint(opt.val)} style={{
             padding: 24, borderRadius: 14, cursor: "pointer", textAlign: "center", transition: "all 0.2s",
             border: `2px solid ${joint === opt.val ? T.primary : T.border}`,
@@ -155,6 +165,8 @@ function LoanWizard({ onCancel, onComplete }) {
           </div>
         ))}
       </div>
+      </>);
+      })()}
     </div>
   );
 
