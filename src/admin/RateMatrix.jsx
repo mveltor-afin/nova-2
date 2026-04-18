@@ -1,33 +1,61 @@
 import React, { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
-import { PRODUCTS_PRICING, LTV_ADJUSTMENTS, getRate } from "../data/pricing";
+import { LTV_ADJUSTMENTS } from "../data/pricing";
 
-const FILTERS = ["All", "Lending", "Savings", "Insurance"];
+const FILTERS = ["All", "Lending", "Savings"];
 
-const LTV_BANDS = LTV_ADJUSTMENTS.map(l => l.band);
-const LTV_MIDS = LTV_ADJUSTMENTS.map(l => Math.round((l.min + l.max) / 2) || 30);
+const ALL_LTV_BANDS = ["≤60%", "60-75%", "75-85%", "85-90%", "90-95%"];
 
-// Generate mortgage rate grid from the pricing engine
-const MORTGAGE_DATA = Object.entries(PRODUCTS_PRICING).map(([name, prod]) => ({
-  name,
-  rates: LTV_MIDS.map(ltv => {
-    const r = getRate({ product: name, ltv, credit: "clean" });
-    return r.available ? r.rate : null;
-  }),
-  maxLtv: prod.maxLTV + "%",
-  erc: prod.ercSchedule,
-  note: prod.eligibility || null,
-}));
+// Read lending buckets from localStorage
+function loadLendingBuckets() {
+  try { const s = localStorage.getItem("product_buckets"); return s ? JSON.parse(s) : []; } catch { return []; }
+}
 
-const SAVINGS_BANDS = ["£1k-£9.9k", "£10k-£49.9k", "£50k-£249.9k", "£250k+"];
+// Read savings buckets from localStorage
+function loadSavingsBuckets() {
+  try { const s = localStorage.getItem("savings_buckets_v3"); return s ? JSON.parse(s) : []; } catch { return []; }
+}
 
-const SAVINGS_DATA = [
-  { name: "1yr Fixed", rates: [4.25, 4.50, 4.65, 4.80], minDeposit: "£1,000", term: "12 months" },
-  { name: "2yr Fixed", rates: [4.60, 4.85, 5.00, 5.15], minDeposit: "£1,000", term: "24 months" },
-  { name: "3yr Fixed", rates: [4.85, 5.10, 5.25, 5.40], minDeposit: "£5,000", term: "36 months" },
-  { name: "90-Day Notice", rates: [2.95, 3.20, 3.45, 3.60], minDeposit: "£1,000", term: "Notice" },
-];
+// Generate lending data from buckets
+function getLendingData() {
+  const buckets = loadLendingBuckets();
+  const rows = [];
+  for (const bucket of buckets) {
+    const ltvBandMax = { "≤60%": 60, "60-75%": 75, "75-85%": 85, "85-90%": 90, "90-95%": 95 };
+    for (const prod of (bucket.products || [])) {
+      rows.push({
+        name: prod.type,
+        bucket: bucket.name,
+        bucketColor: bucket.color,
+        code: prod.code,
+        rates: ALL_LTV_BANDS.map(b => ltvBandMax[b] <= (bucket.maxLTV || 75) ? (prod.rates?.[b] ?? null) : null),
+        maxLtv: bucket.maxLTV + "%",
+        erc: prod.erc,
+      });
+    }
+  }
+  return rows;
+}
+
+// Generate savings data from buckets
+function getSavingsData() {
+  const buckets = loadSavingsBuckets();
+  const rows = [];
+  for (const bucket of buckets) {
+    for (const prod of (bucket.products || [])) {
+      rows.push({
+        name: prod.name,
+        bucket: bucket.name,
+        bucketColor: bucket.color,
+        term: prod.term,
+        baseRate: prod.baseRate,
+        code: prod.code,
+      });
+    }
+  }
+  return rows;
+}
 
 const MARKET_COMPARE = [
   { product: "2yr Fix 75% LTV", ours: "4.49%", market: "4.55%", rank: "#3 of 12", below: true },
@@ -59,6 +87,8 @@ const tdStyle = {
 
 export default function RateMatrix() {
   const [filter, setFilter] = useState("All");
+  const MORTGAGE_DATA = getLendingData();
+  const SAVINGS_DATA = getSavingsData();
 
   const showLending = filter === "All" || filter === "Lending";
   const showSavings = filter === "All" || filter === "Savings";
@@ -108,18 +138,27 @@ export default function RateMatrix() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th style={thStyle}>Product Name</th>
-                  {LTV_BANDS.map(b => <th key={b} style={{ ...thStyle, textAlign: "center" }}>{b}</th>)}
+                  <th style={thStyle}>Product</th>
+                  <th style={thStyle}>Bucket</th>
+                  {ALL_LTV_BANDS.map(b => <th key={b} style={{ ...thStyle, textAlign: "center" }}>{b}</th>)}
                   <th style={{ ...thStyle, textAlign: "center" }}>Max LTV</th>
                   <th style={{ ...thStyle, textAlign: "center" }}>ERC</th>
                 </tr>
               </thead>
               <tbody>
+                {MORTGAGE_DATA.length === 0 && (
+                  <tr><td colSpan={9} style={{ ...tdStyle, textAlign: "center", color: T.textMuted, fontStyle: "italic" }}>No lending buckets configured. Create buckets in Product Catalogue.</td></tr>
+                )}
                 {MORTGAGE_DATA.map((p, i) => (
                   <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "#FAFAF7" }}>
-                    <td style={{ ...tdStyle, fontWeight: 600, minWidth: 180 }}>
-                      {p.name}
-                      {p.note && <div style={{ fontSize: 10, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>{p.note}</div>}
+                    <td style={{ ...tdStyle, fontWeight: 600, minWidth: 160 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        {p.name}
+                        {p.code && <span style={{ fontSize: 9, color: T.textMuted, fontFamily: "monospace" }}>{p.code}</span>}
+                      </div>
+                    </td>
+                    <td style={{ ...tdStyle, fontSize: 11 }}>
+                      <span style={{ fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: (p.bucketColor || T.primary) + "14", color: p.bucketColor || T.primary }}>{p.bucket}</span>
                     </td>
                     {p.rates.map((r, j) => (
                       <td key={j} style={{ ...tdStyle, textAlign: "center" }}>
@@ -127,7 +166,7 @@ export default function RateMatrix() {
                           <span style={{
                             display: "inline-block", padding: "4px 10px", borderRadius: 6,
                             fontSize: 13, fontWeight: 600, ...rateColor(r),
-                          }}>{r != null ? r.toFixed(2) + "%" : "—"}</span>
+                          }}>{r.toFixed(2) + "%"}</span>
                         ) : (
                           <span style={{ color: T.textMuted }}>—</span>
                         )}
@@ -147,11 +186,9 @@ export default function RateMatrix() {
       {showSavings && (
         <Card style={{ marginBottom: 24 }} noPad>
           <div style={{ padding: "20px 24px 0" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
-              Savings Products — Rate by Balance Band
-            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Savings Products</div>
             <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>
-              Colour coding: <span style={{ color: "#065F46" }}>green</span> &gt; 4.5% · <span style={{ color: "#92400E" }}>amber</span> 3.5-4.5% · <span style={{ color: "#64748B" }}>grey</span> &lt; 3.5%
+              Colour coding: <span style={{ color: "#065F46" }}>green</span> ≥ 5.0% · <span style={{ color: "#92400E" }}>amber</span> 3.5–4.99% · <span style={{ color: "#64748B" }}>grey</span> &lt; 3.5%
             </div>
           </div>
           <div style={{ overflowX: "auto" }}>
@@ -159,37 +196,34 @@ export default function RateMatrix() {
               <thead>
                 <tr>
                   <th style={thStyle}>Product</th>
-                  {SAVINGS_BANDS.map(b => <th key={b} style={{ ...thStyle, textAlign: "center" }}>{b}</th>)}
-                  <th style={{ ...thStyle, textAlign: "center" }}>Min Deposit</th>
+                  <th style={thStyle}>Bucket</th>
                   <th style={{ ...thStyle, textAlign: "center" }}>Term</th>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Base Rate (AER)</th>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Code</th>
                 </tr>
               </thead>
               <tbody>
+                {SAVINGS_DATA.length === 0 && (
+                  <tr><td colSpan={5} style={{ ...tdStyle, textAlign: "center", color: T.textMuted, fontStyle: "italic" }}>No savings buckets configured.</td></tr>
+                )}
                 {SAVINGS_DATA.map((p, i) => (
                   <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "#FAFAF7" }}>
-                    <td style={{ ...tdStyle, fontWeight: 600, minWidth: 140 }}>{p.name}</td>
-                    {p.rates.map((r, j) => (
-                      <td key={j} style={{ ...tdStyle, textAlign: "center" }}>
-                        <span style={{
-                          display: "inline-block", padding: "4px 10px", borderRadius: 6,
-                          fontSize: 13, fontWeight: 600, ...savingsColor(r),
-                        }}>{r != null ? r.toFixed(2) + "%" : "—"}</span>
-                      </td>
-                    ))}
-                    <td style={{ ...tdStyle, textAlign: "center", fontSize: 12 }}>{p.minDeposit}</td>
-                    <td style={{ ...tdStyle, textAlign: "center", fontSize: 12, color: T.textMuted }}>{p.term}</td>
+                    <td style={{ ...tdStyle, fontWeight: 600, minWidth: 160 }}>{p.name}</td>
+                    <td style={{ ...tdStyle, fontSize: 11 }}>
+                      <span style={{ fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: (p.bucketColor || T.primary) + "14", color: p.bucketColor || T.primary }}>{p.bucket}</span>
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: "center", fontSize: 12 }}>{p.term}</td>
+                    <td style={{ ...tdStyle, textAlign: "center" }}>
+                      {p.baseRate != null ? (
+                        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 6, fontSize: 13, fontWeight: 600, ...savingsColor(p.baseRate) }}>{p.baseRate.toFixed(2)}%</span>
+                      ) : <span style={{ color: T.textMuted }}>—</span>}
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: "center", fontSize: 11, color: T.textMuted, fontFamily: "monospace" }}>{p.code}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Card>
-      )}
-
-      {/* Insurance placeholder */}
-      {showInsurance && (
-        <Card style={{ marginBottom: 24, textAlign: "center", padding: 48 }}>
-          <div style={{ fontSize: 14, color: T.textMuted }}>Insurance products coming soon</div>
         </Card>
       )}
 

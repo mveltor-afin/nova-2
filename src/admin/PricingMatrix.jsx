@@ -2,31 +2,49 @@ import { useState, useMemo, useEffect } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 import {
-  PRODUCTS_PRICING, LTV_ADJUSTMENTS, CREDIT_PROFILES as CREDIT_PROFILES_DATA,
-  EMPLOYMENT_ADJUSTMENTS, LOYALTY_ADJUSTMENTS, PURPOSE_ADJUSTMENTS, getRate,
-  saveDimension, resetAllDimensions,
+  LTV_ADJUSTMENTS, CREDIT_PROFILES as CREDIT_PROFILES_DATA,
+  EMPLOYMENT_ADJUSTMENTS, LOYALTY_ADJUSTMENTS, PURPOSE_ADJUSTMENTS,
+  saveDimension, resetAllDimensions, getBucketEligibleProducts,
 } from "../data/pricing";
 
-const PRODUCTS = Object.keys(PRODUCTS_PRICING);
+// Load bucket products for the product selector
+function loadBucketProducts() {
+  try {
+    const s = localStorage.getItem("product_buckets");
+    const buckets = s ? JSON.parse(s) : [];
+    const products = [];
+    for (const b of buckets) {
+      for (const p of (b.products || [])) {
+        products.push({ name: `${p.type} (${b.name})`, type: p.type, bucket: b.name, bucketColor: b.color, baseRate: p.rates?.["≤60%"] || 0 });
+      }
+    }
+    return products.length > 0 ? products : [{ name: "2-Year Fixed (Prime)", type: "2-Year Fixed", bucket: "Prime", baseRate: 4.19 }];
+  } catch { return [{ name: "2-Year Fixed (Prime)", type: "2-Year Fixed", bucket: "Prime", baseRate: 4.19 }]; }
+}
+
+const BUCKET_PRODUCTS = loadBucketProducts();
+const PRODUCTS = BUCKET_PRODUCTS.map(p => p.name);
 const PURPOSES = Object.keys(PURPOSE_ADJUSTMENTS);
 const EMPLOYMENTS = ["All", ...Object.keys(EMPLOYMENT_ADJUSTMENTS)];
 
 const LTV_BANDS = LTV_ADJUSTMENTS.map(l => l.band);
-const LTV_MIDS = LTV_ADJUSTMENTS.map(l => Math.round((l.min + l.max) / 2) || 30); // midpoint for calculation
+const LTV_MIDS = LTV_ADJUSTMENTS.map(l => Math.round((l.min + l.max) / 2) || 30);
 
 const CREDIT_PROFILES = CREDIT_PROFILES_DATA.map(c => `${c.label} (${c.desc})`);
 
-// Generate the base rate grid from the pricing engine (Afin Fix 2yr as reference)
+// Generate base rate grid using first bucket product as reference
+const REF_RATE = BUCKET_PRODUCTS[0]?.baseRate || 4.19;
 const BASE_RATES = CREDIT_PROFILES_DATA.map(credit =>
   LTV_ADJUSTMENTS.map(ltv => {
-    const r = getRate({ product: "Afin Fix 2yr 75%", ltv: LTV_MIDS[LTV_ADJUSTMENTS.indexOf(ltv)], credit: credit.id });
-    return r.available ? r.rate : null;
+    const results = getBucketEligibleProducts({ ltv: LTV_MIDS[LTV_ADJUSTMENTS.indexOf(ltv)], credit: credit.id });
+    const first = results.find(r => r.available);
+    return first ? first.rate : null;
   })
 );
 
-// Product modifiers derived from base rates vs Afin Fix 2yr
+// Product modifiers derived from base rates vs reference
 const PRODUCT_MODIFIERS = Object.fromEntries(
-  PRODUCTS.map(p => [p, Math.round((PRODUCTS_PRICING[p].baseRate - PRODUCTS_PRICING["Afin Fix 2yr 75%"].baseRate) * 100) / 100])
+  BUCKET_PRODUCTS.map(p => [p.name, Math.round((p.baseRate - REF_RATE) * 100) / 100])
 );
 
 const PURPOSE_MODIFIERS = PURPOSE_ADJUSTMENTS;
