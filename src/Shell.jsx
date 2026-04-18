@@ -121,6 +121,11 @@ import ComplianceEngine from "./shared/ComplianceEngine";
 import ThemeEditor from "./admin/ThemeEditor";
 import ApiObservatory from "./admin/ApiObservatory";
 import MyInbox from "./shared/MyInbox";
+// Agentic AI features (v2.19)
+import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
+import RetentionAgent from "./shared/RetentionAgent";
+import CollectionsAgent from "./shared/CollectionsAgent";
+import SmartDocumentExtraction from "./shared/SmartDocumentExtraction";
 // Re-exports from extracted screens (for copilot panel)
 import { getNeedsAttention, PRIORITY_COLORS } from "./customers/NeedsAttentionScreen";
 
@@ -399,6 +404,14 @@ export default function Shell({ userType }) {
           { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
           { id:"myinbox",         label:"My Inbox",             icon:"bell", badge:8 },
         ]},
+        ...((persona === "Ops" || persona === "Admin" || persona === "Underwriter") ? [{
+          group:"AI AGENTS", items:[
+            { id:"orchestrationagent", label:"Case Orchestration",   icon:"sparkle" },
+            { id:"retentionagent",     label:"Retention Agent",      icon:"chart" },
+            { id:"collectionsagent",   label:"Collections Agent",    icon:"alert" },
+            { id:"smartdocs",          label:"Smart Doc Extraction", icon:"file" },
+          ],
+        }] : []),
         ...((persona === "Ops" || persona === "Admin") ? [{
           group:"OPS TOOLKIT", items:[
             { id:"commandcentre",  label:"Command Centre",      icon:"dashboard" },
@@ -757,6 +770,11 @@ export default function Shell({ userType }) {
       case "apihealth":       return <APIHealthDashboard />;
       case "reportbuilder":   return <ReportBuilder />;
       case "casejourney":     return <CaseJourney />;
+      // AI Agents
+      case "orchestrationagent": return <CaseOrchestrationAgent />;
+      case "retentionagent":     return <RetentionAgent />;
+      case "collectionsagent":   return <CollectionsAgent />;
+      case "smartdocs":          return <SmartDocumentExtraction />;
       case "commission":      return <CommissionTracker />;
       // BDM
       case "bdmdashboard":   return <BDMDashboard onNewEnquiry={() => setShowEnquiryModal(true)} onOpenEnquiry={(enq) => { setScreen("enquirydetail"); }} />;

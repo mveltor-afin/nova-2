@@ -12,6 +12,7 @@ import ComparisonEngine from "./ComparisonEngine";
 import RecommendationTab from "./RecommendationTab";
 import ConsumerDutyTab from "./ConsumerDutyTab";
 // LifecyclePredictor removed — only relevant post-completion when applicant becomes a customer
+import AICopilot from "../shared/AICopilot";
 
 /* ─── Seed system events for the case conversation ─── */
 const SEED_THREAD = (caseId) => [
@@ -205,6 +206,7 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
 
   const [caseTab, setCaseTab] = useState("overview");
   const [activeScoreDim, setActiveScoreDim] = useState(null);
+  const [showCopilot, setShowCopilot] = useState(false);
   const [decision, setDecision] = useState(null);
   const [reasonCode, setReasonCode] = useState("");
   const [conditions, setConditions] = useState(DEFAULT_CONDITIONS);
@@ -235,10 +237,13 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
 
       {/* ══════ HEADER ══════ */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: T.primary, cursor: "pointer", fontWeight: 600 }}>
             {Ico.arrowLeft(16)} Back to Queue
           </span>
+          <Btn onClick={() => setShowCopilot(true)} style={{ background: `linear-gradient(135deg, ${T.primary}, ${T.accent})`, color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 6 }}>
+            {Ico.sparkle(14)} AI Copilot
+          </Btn>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{activeLoan.id}</h1>
@@ -682,6 +687,9 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
           </Card>
         </div>
       )}
+
+      {/* AI Copilot */}
+      <AICopilot loan={activeLoan} open={showCopilot} onClose={() => setShowCopilot(false)} />
     </div>
   );
 }
