@@ -274,6 +274,19 @@ const FALLBACK_LENDING_BUCKETS = [
       { type:"Tracker", code:"BTR", erc:"No ERCs", rates:{"≤60%":5.49,"60-75%":5.79} },
     ],
   },
+  { name:"Residential Bridging", color:"#DC2626", maxLTV:75,
+    acceptedCreditProfiles:["clean","near_prime","light_adverse"],
+    acceptedEmployments:["Employed","Self-Employed","Contractor"],
+    acceptedProperties:["Standard","Non-Standard","New Build","Ex-Local Authority"],
+    acceptedEpc:["A","B","C","D","E","F","G"],
+    tiers:[{ name:"Standard", conditions:{}, adjustmentType:"flat", flatAdj:0 }],
+    criteria:{ loanSize:{min:"£25,000",max:"£2,000,000"}, age:{min:21,maxAtEnd:85}, incomeMultiple:"N/A — exit strategy" },
+    fees:{ productFee:"1.5% arrangement fee", reversion:"N/A", termRange:"3-18 months" },
+    products:[
+      { type:"Regulated Bridge", code:"RBG-R", erc:"1 month interest", rates:{"≤60%":0.65,"60-75%":0.75} },
+      { type:"Unregulated Bridge", code:"RBG-U", erc:"1 month interest", rates:{"≤60%":0.75,"60-75%":0.85} },
+    ],
+  },
   { name:"Commercial Mortgage", color:"#6366F1", maxLTV:75,
     acceptedCreditProfiles:["clean","near_prime"],
     acceptedEmployments:["Employed","Self-Employed","Contractor"],
@@ -291,22 +304,7 @@ const FALLBACK_LENDING_BUCKETS = [
       { type:"Tracker", code:"CMTR", erc:"No ERCs", rates:{"≤60%":5.99,"60-75%":6.49} },
     ],
   },
-  { name:"Bridging Finance", color:"#DC2626", maxLTV:75,
-    acceptedCreditProfiles:["clean","near_prime","light_adverse","adverse"],
-    acceptedEmployments:["Employed","Self-Employed","Contractor"],
-    acceptedProperties:["Standard","Non-Standard","New Build","Ex-Local Authority"],
-    acceptedEpc:["A","B","C","D","E","F","G"],
-    tiers:[
-      { name:"Standard", conditions:{}, adjustmentType:"flat", flatAdj:0 },
-      { name:"Adverse", conditions:{credit:["adverse"]}, adjustmentType:"flat", flatAdj:0.25 },
-    ],
-    criteria:{ loanSize:{min:"£50,000",max:"£5,000,000"}, age:{min:21,maxAtEnd:85}, incomeMultiple:"Exit strategy assessed" },
-    fees:{ productFee:"1.5% arrangement fee", reversion:"N/A — short term", termRange:"3-18 months" },
-    products:[
-      { type:"Regulated Bridge", code:"BRG-R", erc:"1 month interest", rates:{"≤60%":7.50,"60-75%":8.40} },
-      { type:"Unregulated Bridge", code:"BRG-U", erc:"1 month interest", rates:{"≤60%":8.40,"60-75%":9.60} },
-    ],
-  },
+  // "Bridging Finance" removed — replaced by "Residential Bridging" above
   { name:"Development Finance", color:"#0EA5E9", maxLTV:70,
     acceptedCreditProfiles:["clean","near_prime"],
     acceptedEmployments:["Employed","Self-Employed","Contractor"],
@@ -327,8 +325,18 @@ const FALLBACK_LENDING_BUCKETS = [
 function loadBuckets() {
   try {
     const s = localStorage.getItem("product_buckets");
-    if (s) return JSON.parse(s);
-    // Seed localStorage with defaults so all screens can read them
+    if (s) {
+      const stored = JSON.parse(s);
+      // Merge any new fallback buckets missing from stored data
+      const storedNames = new Set(stored.map(b => b.name));
+      const missing = FALLBACK_LENDING_BUCKETS.filter(b => !storedNames.has(b.name));
+      if (missing.length > 0) {
+        const merged = [...stored, ...missing];
+        try { localStorage.setItem("product_buckets", JSON.stringify(merged)); } catch {}
+        return merged;
+      }
+      return stored;
+    }
     try { localStorage.setItem("product_buckets", JSON.stringify(FALLBACK_LENDING_BUCKETS)); } catch {}
     return FALLBACK_LENDING_BUCKETS;
   } catch { return FALLBACK_LENDING_BUCKETS; }

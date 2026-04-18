@@ -9,8 +9,18 @@ import { CREDIT_PROFILES, PROPERTY_ADJUSTMENTS } from "../data/pricing";
 function loadBuckets() {
   try {
     const s = localStorage.getItem("product_buckets");
-    if (s) return JSON.parse(s);
-    // Seed localStorage with defaults so pricing engine and other screens can read them
+    if (s) {
+      const stored = JSON.parse(s);
+      // Merge any new default buckets that don't exist in stored data
+      const storedNames = new Set(stored.map(b => b.name));
+      const missing = DEFAULT_BUCKETS.filter(b => !storedNames.has(b.name));
+      if (missing.length > 0) {
+        const merged = [...stored, ...missing];
+        try { localStorage.setItem("product_buckets", JSON.stringify(merged)); } catch {}
+        return merged;
+      }
+      return stored;
+    }
     try { localStorage.setItem("product_buckets", JSON.stringify(DEFAULT_BUCKETS)); } catch {}
     return DEFAULT_BUCKETS;
   } catch {

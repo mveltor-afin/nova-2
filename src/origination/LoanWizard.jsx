@@ -36,7 +36,7 @@ function LoanWizard({ onCancel, onComplete }) {
     residential: ["Prime", "Prime High LTV", "Professional", "High-Net-Worth"],
     btl: ["Buy-to-Let"],
     commercial: ["Commercial Mortgage"],
-    bridging: ["Residential Bridging", "Bridging Finance"],
+    bridging: ["Residential Bridging"],
     development: ["Development Finance"],
   };
 
