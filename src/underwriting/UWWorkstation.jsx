@@ -11,7 +11,7 @@ import PolicyChecker from "./PolicyChecker";
 import ComparisonEngine from "./ComparisonEngine";
 import RecommendationTab from "./RecommendationTab";
 import ConsumerDutyTab from "./ConsumerDutyTab";
-import LifecyclePredictor from "../customers/LifecyclePredictor";
+// LifecyclePredictor removed — only relevant post-completion when applicant becomes a customer
 
 /* ─── Seed system events for the case conversation ─── */
 const SEED_THREAD = (caseId) => [
@@ -436,11 +436,6 @@ function UWWorkstation({ loan, onBack, onDecisionMade, onViewCustomer }) {
             </Card>
           </div>
 
-          {/* Row 4: Lifecycle Predictor */}
-          <Card>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.navy, marginBottom: 6 }}>Lifecycle Prediction</div>
-            <LifecyclePredictor customerId={activeLoan.customerId || "CUS-001"} />
-          </Card>
         </div>
         )}
 
