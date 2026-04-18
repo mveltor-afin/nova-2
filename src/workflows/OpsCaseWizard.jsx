@@ -674,7 +674,32 @@ export default function OpsCaseWizard({ loan, onClose }) {
   };
 
   function StepUWReview({ loan }) {
+    const [showDetail, setShowDetail] = useState(false);
     const uw = UW_DECISIONS[loan.id] || { decision: "Approved", uwName: "Unknown", uwDate: "—", mandate: "L1", conditions: [], riskScore: loan.riskScore || 0, riskNote: "No UW notes available.", dimensions: [] };
+
+    const UW_DETAIL_SECTIONS = [
+      { title: "Borrower Assessment", items: [
+        { label: "Employment Stability", value: "High", detail: "Employed 7+ years at TechCorp Ltd. Permanent, full-time. Technology sector — low redundancy risk." },
+        { label: "Income Trajectory", value: "Positive", detail: `Basic salary declared. Year-on-year growth ~4.5%. Bonus consistent over 3 years.` },
+        { label: "Credit Behaviour", value: "Good", detail: `Credit score strong. No missed payments. All accounts in good standing. No CCJs or IVAs.` },
+      ]},
+      { title: "Affordability & Stress Test", items: [
+        { label: "Affordability — Current", value: "Pass", detail: `Monthly payment ${loan.rate} on ${loan.amount}. Surplus positive after all commitments.` },
+        { label: "Stress Test", value: "Pass", detail: "At stress rate +3%, payment increases but surplus remains positive. Passes PRA stress test." },
+        { label: "DTI Ratio", value: "Within limits", detail: "Debt-to-income ratio within 40% threshold." },
+      ]},
+      { title: "Collateral & Valuation", items: [
+        { label: "Property Type", value: loan.propertyType || "Standard", detail: "Property acceptable under lending policy." },
+        { label: "LTV", value: `${loan.ltv || "—"}%`, detail: `Within ${loan.bucket || "bucket"} maximum LTV.` },
+        { label: "Valuation", value: "Pending", detail: "Full valuation to be ordered by Ops." },
+      ]},
+      { title: "Policy Compliance", items: [
+        { label: "Lending Policy", value: "All rules satisfied", detail: "Loan amount, LTV, age, income multiple, employment — all within policy." },
+        { label: "Consumer Duty", value: "Assessed", detail: "Fair value assessment completed. Product suitable for applicant profile." },
+        { label: "Fraud Checks", value: "Clear", detail: "No fraud indicators detected. Identity verified. Address confirmed." },
+      ]},
+    ];
+
     return (
       <div>
         {/* UW Decision card */}
@@ -687,18 +712,23 @@ export default function OpsCaseWizard({ loan, onClose }) {
                 <div style={{ fontSize: 12, color: T.textMuted }}>by {uw.uwName} · {uw.uwDate} · Mandate {uw.mandate}</div>
               </div>
             </div>
-            <div style={{ padding: "8px 16px", borderRadius: 10, background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff", textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>{uw.riskScore}/100</div>
-              <div style={{ fontSize: 10, opacity: 0.8 }}>Risk Score</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ padding: "8px 16px", borderRadius: 10, background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff", textAlign: "center" }}>
+                <div style={{ fontSize: 22, fontWeight: 800 }}>{uw.riskScore}/100</div>
+                <div style={{ fontSize: 10, opacity: 0.8 }}>Risk Score</div>
+              </div>
             </div>
           </div>
-          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6 }}>{uw.riskNote}</div>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, marginBottom: 12 }}>{uw.riskNote}</div>
+          <Btn onClick={() => setShowDetail(true)} style={{ background: `linear-gradient(135deg, ${T.primary}, ${T.accent})`, color: "#fff", border: "none" }}>
+            {Ico.eye(14)} View Full UW Assessment
+          </Btn>
         </div>
 
         {/* Risk dimensions */}
         {uw.dimensions.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 10 }}>Risk Assessment Dimensions</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 10 }}>Risk Dimensions</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
               {uw.dimensions.map(d => (
                 <div key={d.label} style={{ padding: "12px 14px", borderRadius: 10, background: T.card, border: `1px solid ${T.borderLight}`, textAlign: "center" }}>
@@ -710,43 +740,115 @@ export default function OpsCaseWizard({ loan, onClose }) {
           </div>
         )}
 
-        {/* Conditions */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 8 }}>UW Conditions</div>
-          {(uw.conditions || []).map((c, i) => (
-            <div key={i} style={{
-              padding: "10px 14px", borderRadius: 8, marginBottom: 4,
-              background: c === "None" || c.includes("None") ? "#F0FDF4" : "#FEF3C7",
-              border: `1px solid ${c === "None" || c.includes("None") ? "#A7F3D0" : "#FDE68A"}`,
-              fontSize: 12, fontWeight: 600,
-              color: c === "None" || c.includes("None") ? "#065F46" : "#92400E",
-              display: "flex", alignItems: "center", gap: 8,
-            }}>
-              <span>{c === "None" || c.includes("None") ? "✓" : "!"}</span> {c}
+        {/* Conditions + Case summary */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 8 }}>Conditions</div>
+            {(uw.conditions || []).map((c, i) => (
+              <div key={i} style={{
+                padding: "8px 12px", borderRadius: 8, marginBottom: 4,
+                background: c === "None" || c.includes("None") ? "#F0FDF4" : "#FEF3C7",
+                border: `1px solid ${c === "None" || c.includes("None") ? "#A7F3D0" : "#FDE68A"}`,
+                fontSize: 11, fontWeight: 600,
+                color: c === "None" || c.includes("None") ? "#065F46" : "#92400E",
+              }}>
+                {c === "None" || c.includes("None") ? "✓ " : "! "}{c}
+              </div>
+            ))}
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 8 }}>Case Summary</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+              {[
+                { label: "Product", value: loan.product },
+                { label: "Bucket", value: loan.bucket || "—" },
+                { label: "Tier", value: loan.tier || "Standard" },
+                { label: "Amount", value: loan.amount },
+                { label: "Rate", value: loan.rate },
+                { label: "LTV", value: loan.ltv ? `${loan.ltv}%` : "—" },
+              ].map(f => (
+                <div key={f.label} style={{ padding: "6px 8px", borderRadius: 6, background: T.bg, border: `1px solid ${T.borderLight}` }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>{f.label}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T.navy }}>{f.value}</div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Case summary */}
-        <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, marginBottom: 8 }}>Case Summary</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          {[
-            { label: "Product", value: loan.product },
-            { label: "Bucket", value: loan.bucket || "—" },
-            { label: "Tier", value: loan.tier || "Standard" },
-            { label: "Amount", value: loan.amount },
-            { label: "Rate", value: loan.rate },
-            { label: "LTV", value: loan.ltv ? `${loan.ltv}%` : "—" },
-            { label: "Term", value: loan.term },
-            { label: "Credit", value: loan.creditProfile || "—" },
-            { label: "EPC", value: loan.epcRating || "—" },
-          ].map(f => (
-            <div key={f.label} style={{ padding: "8px 10px", borderRadius: 8, background: T.bg, border: `1px solid ${T.borderLight}` }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: "uppercase" }}>{f.label}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: T.navy }}>{f.value}</div>
+        {/* Full UW Assessment Modal */}
+        {showDetail && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 10001, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div onClick={() => setShowDetail(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} />
+            <div style={{ position: "relative", width: 750, maxHeight: "85vh", overflow: "auto", background: T.card, borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", fontFamily: T.font }} onClick={e => e.stopPropagation()}>
+              {/* Modal header */}
+              <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: T.card, zIndex: 1 }}>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: T.navy }}>Full UW Assessment — {loan.id}</div>
+                  <div style={{ fontSize: 12, color: T.textMuted }}>{loan.names} · {uw.decision} by {uw.uwName} · {uw.uwDate}</div>
+                </div>
+                <button onClick={() => setShowDetail(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 4 }}>{Ico.x(20)}</button>
+              </div>
+
+              {/* Risk score hero */}
+              <div style={{ padding: "20px 24px", background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontSize: 11, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>Overall Risk Score</div>
+                    <div style={{ fontSize: 36, fontWeight: 800 }}>{uw.riskScore}/100</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    {uw.dimensions.map(d => (
+                      <div key={d.label} style={{ textAlign: "center" }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 24, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800 }}>{d.score}</div>
+                        <div style={{ fontSize: 9, marginTop: 4, opacity: 0.8 }}>{d.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Assessment sections */}
+              <div style={{ padding: "20px 24px" }}>
+                {UW_DETAIL_SECTIONS.map((section, sIdx) => (
+                  <div key={sIdx} style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.navy, marginBottom: 10, paddingBottom: 6, borderBottom: `2px solid ${T.borderLight}` }}>{section.title}</div>
+                    {section.items.map((item, iIdx) => (
+                      <div key={iIdx} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: `1px solid ${T.borderLight}` }}>
+                        <div style={{ width: "30%", fontSize: 12, fontWeight: 600, color: T.navy }}>{item.label}</div>
+                        <div style={{ width: "15%", fontSize: 12, fontWeight: 700, color: item.value === "Pass" || item.value === "High" || item.value === "Good" || item.value === "Positive" || item.value === "Clear" ? "#059669" : item.value === "Pending" ? T.warning : T.text }}>{item.value}</div>
+                        <div style={{ flex: 1, fontSize: 12, color: T.textSecondary, lineHeight: 1.5 }}>{item.detail}</div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                {/* Conditions */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.navy, marginBottom: 10, paddingBottom: 6, borderBottom: `2px solid ${T.borderLight}` }}>UW Conditions</div>
+                  {(uw.conditions || []).map((c, i) => (
+                    <div key={i} style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 4, background: c === "None" || c.includes("None") ? "#F0FDF4" : "#FEF3C7", border: `1px solid ${c === "None" || c.includes("None") ? "#A7F3D0" : "#FDE68A"}`, fontSize: 12, fontWeight: 600, color: c === "None" || c.includes("None") ? "#065F46" : "#92400E" }}>
+                      {c === "None" || c.includes("None") ? "✓ " : "⚠ "}{c}
+                    </div>
+                  ))}
+                </div>
+
+                {/* UW recommendation */}
+                <div style={{ padding: "16px 18px", borderRadius: 10, background: `linear-gradient(135deg, ${T.primary}06, ${T.accent}08)`, border: `1px solid ${T.primary}15` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    {Ico.sparkle(16)}
+                    <span style={{ fontSize: 13, fontWeight: 700, color: T.primary }}>AI Recommendation</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.6 }}>
+                    {uw.riskScore <= 30 ? "This case was fast-track eligible. All checks passed with no flags raised. Strong borrower profile with comfortable affordability headroom."
+                      : uw.riskScore <= 60 ? "This case required manual review. Some areas needed underwriter attention but all were resolved satisfactorily."
+                      : "This case was escalated due to multiple risk factors. Senior underwriter review was completed with conditions noted above."}
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
