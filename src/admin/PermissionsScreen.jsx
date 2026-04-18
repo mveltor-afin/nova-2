@@ -5,7 +5,7 @@ import { Btn, Card } from "../shared/primitives";
 // ─────────────────────────────────────────────
 // PERMISSION DATA
 // ─────────────────────────────────────────────
-const ROLES = ["Broker", "Underwriter", "Operations", "Administration", "Finance"];
+const ROLES = ["Broker", "Underwriter", "Operations", "Administration", "Finance", "Product Manager", "Risk Analyst", "BDM"];
 const CRUD = ["c", "r", "u", "d"];
 const CRUD_LABELS = { c: "C", r: "R", u: "U", d: "D" };
 
@@ -214,6 +214,56 @@ const PERMISSION_CATEGORIES = [
     { id:"P163", name:"Create platform users", desc:"Add new users to the system" },
     { id:"P164", name:"Edit platform users", desc:"Modify existing user accounts" },
     { id:"P165", name:"View user details", desc:"Access user profiles in the organisation menu" },
+  ]},
+  { category: "Product Catalogue — Lending", permissions: [
+    { id:"P166", name:"View lending product buckets", desc:"View mortgage product buckets, rates, tiers, and criteria" },
+    { id:"P167", name:"Create / edit lending buckets", desc:"Create, modify and delete lending product buckets and products" },
+    { id:"P168", name:"Manage lending pricing tiers", desc:"Create, modify and delete tier rules and adjustments per bucket" },
+    { id:"P169", name:"Edit lending rates per LTV band", desc:"Edit base rates per product and LTV band within buckets" },
+    { id:"P170", name:"Configure lending criteria", desc:"Edit eligibility criteria: loan size, age, credit profiles, employment, property, EPC" },
+    { id:"P171", name:"Configure lending fees & terms", desc:"Edit product fees, reversion rates, valuation fee scales" },
+  ]},
+  { category: "Product Catalogue — Savings", permissions: [
+    { id:"P172", name:"View savings product buckets", desc:"View savings products: Fixed Term, Notice, Easy Access, ISA, Business" },
+    { id:"P173", name:"Create / edit savings buckets", desc:"Create, modify and delete savings product buckets and terms" },
+    { id:"P174", name:"Manage savings pricing tiers", desc:"Create and edit loyalty, ISA, Premier and Corporate tiers" },
+    { id:"P175", name:"Edit savings rates per deposit band", desc:"Edit AER rates per deposit band within savings buckets" },
+    { id:"P176", name:"Configure savings criteria", desc:"Edit min deposit, max balance, FSCS, withdrawal rules" },
+  ]},
+  { category: "Product Catalogue — Shared Ownership", permissions: [
+    { id:"P177", name:"View shared ownership products", desc:"View SO product rates, share bands, criteria, and HA partners" },
+    { id:"P178", name:"Edit shared ownership rates", desc:"Edit rates per share band and LTV for SO products" },
+    { id:"P179", name:"Configure SO criteria & partners", desc:"Edit staircasing rules, rent caps, and housing association list" },
+  ]},
+  { category: "Product Catalogue — Insurance", permissions: [
+    { id:"P180", name:"View insurance products", desc:"View Life, CI, IP, and GI product details and premium tables" },
+    { id:"P181", name:"Edit insurance premium tables", desc:"Edit indicative premiums by age band, cover amount, and smoker status" },
+    { id:"P182", name:"Configure insurance product features", desc:"Edit cover ranges, terms, underwriting rules, and key features" },
+  ]},
+  { category: "Broker Help Centre", permissions: [
+    { id:"P183", name:"Access Broker Help Centre", desc:"Open the Help Centre modal with Product Guide and AI assistant" },
+    { id:"P184", name:"Use AI product assistant", desc:"Ask Nova AI questions about products, rates, eligibility, and fees" },
+  ]},
+  { category: "Pricing Engine", permissions: [
+    { id:"P185", name:"View pricing configuration", desc:"View pricing dimensions: LTV, Credit, Employment, Property, EPC, Loyalty" },
+    { id:"P186", name:"Edit pricing dimensions", desc:"Modify dimension adjustments and create new dimension values" },
+    { id:"P187", name:"Reset pricing to defaults", desc:"Reset all pricing dimensions to factory defaults" },
+  ]},
+  { category: "Eligibility & Bucket Matching", permissions: [
+    { id:"P188", name:"Run eligibility check (bucket-aware)", desc:"Execute eligibility check against all product buckets with criteria enforcement" },
+    { id:"P189", name:"View bucket / tier on cases", desc:"View assigned bucket, pricing tier, product code, and fee on case records" },
+    { id:"P190", name:"View case journey timeline", desc:"View the full case lifecycle journey from creation to completion" },
+  ]},
+  { category: "UW Workstation", permissions: [
+    { id:"P191", name:"View UW Overview tab", desc:"Access the Overview entry point with product, AI assessment, and lifecycle" },
+    { id:"P192", name:"View applicant & property details", desc:"Access applicant summary, property valuation, income verification" },
+    { id:"P193", name:"Run AI risk assessment", desc:"Trigger and view AI risk scorecard with per-dimension scoring" },
+    { id:"P194", name:"Access decision engine", desc:"Use interactive decision engine with parameter sliders" },
+    { id:"P195", name:"Record underwriting recommendation", desc:"Submit approve, approve with conditions, refer, or decline decision" },
+  ]},
+  { category: "Rate Matrix & Performance", permissions: [
+    { id:"P196", name:"View rate matrix", desc:"View live rate comparison grid across all products" },
+    { id:"P197", name:"View product performance", desc:"View leaderboard, conversion rates, book value, and margin analytics" },
   ]},
 ];
 
