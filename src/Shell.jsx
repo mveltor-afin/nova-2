@@ -130,6 +130,8 @@ import ConveyancingTracker from "./shared/ConveyancingTracker";
 import OffersScreen from "./workflows/OffersScreen";
 import PipelineView from "./workflows/PipelineView";
 import OpsCaseWizard from "./workflows/OpsCaseWizard";
+import MyCases from "./workflows/MyCases";
+import TeamView from "./workflows/TeamView";
 // Agentic AI features (v2.19)
 import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
 import RetentionAgent from "./shared/RetentionAgent";
@@ -264,9 +266,12 @@ export default function Shell({ userType }) {
     : persona === "Underwriter"
     ? [
         // Underwriter: AI-powered credit decision engine
+        { group:"MY WORK", items:[
+          { id:"mycases",           label:"My Cases",              icon:"user", badge:4 },
+          { id:"teamview",          label:"Team",                  icon:"users" },
+        ]},
         { group:"UNDERWRITING", items:[
           { id:"uwqueue",           label:"Smart Queue",           icon:"shield", badge:5 },
-          { id:"approvals",         label:"Approvals",             icon:"check" },
           { id:"pipeline",          label:"Pipeline",              icon:"chart" },
           { id:"offers",            label:"Offers",                icon:"file" },
         ]},
@@ -379,6 +384,10 @@ export default function Shell({ userType }) {
       ]
     : [
         // Ops & Admin — follows the case lifecycle
+        { group:"MY WORK", items:[
+          { id:"mycases",         label:"My Cases",             icon:"user", badge:4 },
+          { id:"teamview",        label:"Team",                 icon:"users" },
+        ]},
         { group:"PIPELINE", items:[
           { id:"pipeline",        label:"Pipeline",             icon:"chart" },
           { id:"intake",          label:"Incoming",             icon:"zap", badge:3 },
@@ -732,6 +741,8 @@ export default function Shell({ userType }) {
       case "approvals":       return <ApprovalsScreen />;
       case "pipeline":        return <PipelineView />;
       case "offers":          return <OffersScreen />;
+      case "mycases":         return <MyCases persona={persona} onOpenWizard={(loan, startStep) => { setOpsWizardLoan(loan); }} />;
+      case "teamview":        return <TeamView role={persona === "Underwriter" ? "underwriter" : "ops"} />;
       case "caseworkbench":   return <CaseWorkbench />;
       case "valuations":      return <ValuationScreen />;
       case "property":        return <PropertyScreen />;
