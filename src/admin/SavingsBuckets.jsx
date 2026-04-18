@@ -545,7 +545,9 @@ export default function SavingsBuckets() {
                                     </div>
                                   )}
                                 </td>
-                                <td style={{ padding: "6px 6px", fontSize: 10, color: T.textMuted, fontFamily: "monospace" }}>{isBase ? prod.code : ""}</td>
+                                <td style={{ padding: "6px 6px", fontSize: 10, fontFamily: "monospace", color: isBase ? T.navy : T.textMuted, fontWeight: isBase ? 700 : 500 }}>
+                                  {isBase ? prod.code : `${prod.code}-T${tIdx}`}
+                                </td>
                                 {showBalanceCols ? (
                                   balanceTiers.map(bt => {
                                     const baseRate = parseFloat(prod.baseRate) || 0;

@@ -1513,6 +1513,7 @@ function RatesTab({ bucket }) {
           <thead>
             <tr style={{ borderBottom: `2px solid ${T.border}` }}>
               <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", minWidth: 200 }}>Product / Tier</th>
+              <th style={{ textAlign: "left", padding: "8px 6px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", width: 90 }}>Code</th>
               <th style={{ textAlign: "left", padding: "8px 8px", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", width: 80 }}>ERC</th>
               {visibleBands.map((b) => (
                 <th key={b} style={{ textAlign: "center", padding: "8px 6px", fontSize: 10, fontWeight: 700, color: T.navy, minWidth: 80 }}>{b}</th>
@@ -1554,6 +1555,13 @@ function RatesTab({ bucket }) {
                           ))}
                         </div>
                       )}
+                    </td>
+                    {/* Code */}
+                    <td style={{ padding: "6px 6px", fontSize: 10, fontFamily: "monospace", color: isBase ? T.navy : T.textMuted, fontWeight: isBase ? 700 : 500 }}>
+                      {isBase
+                        ? (prod.code || autoLendingCode(bucket.name, prod.type))
+                        : `${prod.code || autoLendingCode(bucket.name, prod.type)}-T${tIdx}`
+                      }
                     </td>
                     {/* ERC */}
                     <td style={{ padding: "8px 8px", fontSize: 10, color: T.textMuted }}>{isBase ? prod.erc : ""}</td>
