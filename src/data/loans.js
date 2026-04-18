@@ -51,7 +51,7 @@ export const MOCK_DOCS = [
 ];
 
 export const MOCK_TIMELINE = [
-  { time: "20 Feb, 14:32", type: "dip", text: "DIP executed: Afin Fix 2yr 75% — Approved", actor: "Broker", color: "#0EA5E9" },
+  { time: "20 Feb, 14:32", type: "dip", text: "DIP executed: 2-Year Fixed (Prime) — Approved", actor: "Broker", color: "#0EA5E9" },
   { time: "20 Feb, 14:00", type: "doc", text: "3 documents uploaded: Payslip, Bank Statement, P60", actor: "Broker", color: "#8B5CF6" },
   { time: "20 Feb, 10:15", type: "ai", text: "AI parsed fact-find: 42 fields populated (confidence: 94%)", actor: "System", color: "#F59E0B" },
   { time: "19 Feb, 16:45", type: "msg", text: "Broker: Could you confirm the ERC on the 5yr fixed?", actor: "Broker", color: "#10B981" },

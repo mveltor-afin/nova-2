@@ -113,7 +113,7 @@ import StressTestDashboard from "./intelligence/StressTestDashboard";
 import BoardPackGenerator from "./intelligence/BoardPackGenerator";
 // Game-changer enhancements (v2.14)
 // DecisionEngine + DocumentIntelligence are now embedded inside UWWorkstation as tabs
-// LifecyclePredictor now embedded as a tab inside UWWorkstation
+// LifecyclePredictor used in CustomerHub only — removed from UW Workstation (not relevant pre-completion)
 import CommandCentre from "./operations/CommandCentre";
 
 import ScenarioModeller from "./intelligence/ScenarioModeller";

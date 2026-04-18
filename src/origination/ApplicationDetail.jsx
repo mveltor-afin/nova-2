@@ -209,9 +209,9 @@ function ApplicationDetail({ loan, persona, onBack, onCreateLoan, onViewServicin
           </tr></thead>
           <tbody>
             {[
-              { date:"20 Feb 2026, 14:32", product:"Afin Fix 2yr 75%", amount:"£350,000", ltv:"72%", rate:"4.49%", term:"25 yrs", result:"Approved" },
-              { date:"20 Feb 2026, 14:28", product:"Afin Fix 5yr 75%", amount:"£350,000", ltv:"72%", rate:"4.89%", term:"25 yrs", result:"Approved" },
-              { date:"20 Feb 2026, 14:25", product:"Afin Track SVR 75%",amount:"£350,000", ltv:"72%", rate:"5.14%", term:"25 yrs", result:"Declined" },
+              { date:"20 Feb 2026, 14:32", product:"2-Year Fixed", amount:"£350,000", ltv:"72%", rate:"4.49%", term:"25 yrs", result:"Approved" },
+              { date:"20 Feb 2026, 14:28", product:"5-Year Fixed", amount:"£350,000", ltv:"72%", rate:"4.89%", term:"25 yrs", result:"Approved" },
+              { date:"20 Feb 2026, 14:25", product:"2-Year Tracker",amount:"£350,000", ltv:"72%", rate:"5.14%", term:"25 yrs", result:"Declined" },
             ].map((d,i) => (
               <tr key={i} style={{ borderTop: `1px solid ${T.borderLight}` }}>
                 <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted }}>{d.date}</td>

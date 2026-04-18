@@ -438,7 +438,7 @@ function SmartApply({ onStartApplication }) {
                       <div style={{ fontSize: 13, color: T.text, lineHeight: 1.6 }}>
                         Based on {fmt(income)} income, max borrowing is ~£540,000 at 4.5x multiple.
                         At {ltv.toFixed(0)}% LTV, 4 standard products available.{" "}
-                        <span style={{ fontWeight: 700 }}>Recommended: Afin Fix 2yr 75%</span> — best rate for this profile.
+                        <span style={{ fontWeight: 700 }}>Recommended: {PRODUCTS.filter(p => p.status === "eligible").sort((a, b) => (a.rate || 99) - (b.rate || 99))[0]?.name || "2-Year Fixed"}</span> — best rate for this profile.
                       </div>
                     </div>
                   </div>

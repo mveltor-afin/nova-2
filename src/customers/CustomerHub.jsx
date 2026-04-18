@@ -485,7 +485,11 @@ export default function CustomerHub({ customerId, onBack, onOpenCase, onOpenServ
                   <div key={p.id} style={{ minWidth: 180, padding: "12px 16px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}`, borderLeft: `4px solid ${pt.color || T.primary}`, flexShrink: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: pt.color, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>{pt.label}</div>
                     <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>{p.balance || p.premium || p.share || "—"}</div>
-                    <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>{p.product}</div>
+                    <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                      {p.product}
+                      {p.bucket && <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: (p.bucketColor || T.primary) + "14", color: p.bucketColor || T.primary }}>{p.bucket}</span>}
+                      {p.tier && p.tier !== "Standard" && p.tier !== "Base" && <span style={{ fontSize: 8, fontWeight: 600, padding: "1px 5px", borderRadius: 4, background: "#EDE9FE", color: "#6D28D9" }}>{p.tier}</span>}
+                    </div>
                     <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                       <span onClick={() => { setSelectedProduct(p.id); setActiveTab("Products"); }}
                         style={{ fontSize: 10, fontWeight: 700, color: T.primary, cursor: "pointer" }}>View details →</span>

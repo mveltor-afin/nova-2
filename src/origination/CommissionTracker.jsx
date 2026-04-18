@@ -4,13 +4,13 @@ import { Btn, Card, KPICard } from "../shared/primitives";
 
 // ── Mock loan data (mirroring MOCK_LOANS) ──
 const CASES = [
-  { id: "AFN-2026-00142", customer: "James & Sarah Mitchell", amount: 350000, product: "Afin Fix 2yr 75%", status: "Underwriting", productType: "standard" },
-  { id: "AFN-2026-00139", customer: "Priya Sharma", amount: 275000, product: "Afin Track SVR", status: "Offer_Issued", productType: "tracker" },
-  { id: "AFN-2026-00135", customer: "David Chen", amount: 425000, product: "Afin Fix 5yr 90%", status: "KYC_In_Progress", productType: "fix5" },
-  { id: "AFN-2026-00128", customer: "Emma & Tom Wilson", amount: 290000, product: "Afin Fix 2yr 75%", status: "Disbursed", productType: "standard" },
-  { id: "AFN-2026-00125", customer: "Aisha Patel", amount: 510000, product: "Afin Fix 5yr 75%", status: "Approved", productType: "fix5" },
+  { id: "AFN-2026-00142", customer: "James & Sarah Mitchell", amount: 350000, product: "2-Year Fixed", status: "Underwriting", productType: "standard" },
+  { id: "AFN-2026-00139", customer: "Priya Sharma", amount: 275000, product: "2-Year Tracker", status: "Offer_Issued", productType: "tracker" },
+  { id: "AFN-2026-00135", customer: "David Chen", amount: 425000, product: "5-Year Fixed", status: "KYC_In_Progress", productType: "fix5" },
+  { id: "AFN-2026-00128", customer: "Emma & Tom Wilson", amount: 290000, product: "2-Year Fixed", status: "Disbursed", productType: "standard" },
+  { id: "AFN-2026-00125", customer: "Aisha Patel", amount: 510000, product: "5-Year Fixed", status: "Approved", productType: "fix5" },
   { id: "AFN-2026-00119", customer: "Robert Hughes", amount: 180000, product: "—", status: "Referred", productType: "standard" },
-  { id: "AFN-2026-00115", customer: "Sophie & Jack Brown", amount: 320000, product: "Afin Fix 2yr 90%", status: "DIP_Approved", productType: "standard" },
+  { id: "AFN-2026-00115", customer: "Sophie & Jack Brown", amount: 320000, product: "2-Year Fixed", status: "DIP_Approved", productType: "standard" },
 ];
 
 const COMMISSION_RATES = { standard: 0.0035, fix5: 0.004, tracker: 0.003 };

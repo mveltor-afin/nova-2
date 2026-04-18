@@ -3,14 +3,14 @@ import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
 
 const PRODUCTS = [
-  { name: "Afin Fix 2yr 60%", rate: 4.19, margin: 0.94, competitor: 4.15, position: "At market" },
-  { name: "Afin Fix 2yr 75%", rate: 4.49, margin: 1.24, competitor: 4.45, position: "At market" },
-  { name: "Afin Fix 2yr 90%", rate: 5.29, margin: 2.04, competitor: 5.35, position: "Below market" },
-  { name: "Afin Fix 5yr 60%", rate: 4.39, margin: 1.14, competitor: 4.29, position: "Above market" },
-  { name: "Afin Fix 5yr 75%", rate: 4.89, margin: 1.64, competitor: 4.85, position: "At market" },
-  { name: "Afin Fix 5yr 90%", rate: 5.59, margin: 2.34, competitor: 5.65, position: "Below market" },
-  { name: "Afin Track SVR", rate: 7.99, margin: 4.74, competitor: 7.49, position: "Above market" },
-  { name: "Afin Track Base+", rate: 4.74, margin: 1.49, competitor: 4.69, position: "At market" },
+  { name: "2-Year Fixed (Prime)", bucket: "Prime", rate: 4.19, margin: 0.94, competitor: 4.15, position: "At market" },
+  { name: "2-Year Fixed (Prime 75%)", bucket: "Prime", rate: 4.49, margin: 1.24, competitor: 4.45, position: "At market" },
+  { name: "2-Year Fixed (Prime High LTV)", bucket: "Prime High LTV", rate: 5.29, margin: 2.04, competitor: 5.35, position: "Below market" },
+  { name: "5-Year Fixed (Prime)", bucket: "Prime", rate: 4.39, margin: 1.14, competitor: 4.29, position: "Above market" },
+  { name: "5-Year Fixed (Prime 75%)", bucket: "Prime", rate: 4.89, margin: 1.64, competitor: 4.85, position: "At market" },
+  { name: "5-Year Fixed (Prime High LTV)", bucket: "Prime High LTV", rate: 5.59, margin: 2.34, competitor: 5.65, position: "Below market" },
+  { name: "2-Year Tracker (Prime)", bucket: "Prime", rate: 7.99, margin: 4.74, competitor: 7.49, position: "Above market" },
+  { name: "Tracker (Base+)", bucket: "Prime", rate: 4.74, margin: 1.49, competitor: 4.69, position: "At market" },
 ];
 
 const COMPETITORS = [
@@ -36,7 +36,7 @@ function getPositionColor(pos) {
 }
 
 export default function PricingEngine() {
-  const [selectedProduct, setSelectedProduct] = useState("Afin Fix 2yr 75%");
+  const [selectedProduct, setSelectedProduct] = useState("2-Year Fixed (Prime 75%)");
   const [proposedRate, setProposedRate] = useState(4.29);
 
   const product = PRODUCTS.find(p => p.name === selectedProduct);

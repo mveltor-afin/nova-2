@@ -10,7 +10,7 @@ import { CUSTOMERS, PRODUCTS, PRODUCT_TYPES } from "../data/customers";
 const INCOMING_CASES = [
   {
     id: "INQ-001", customerId: "CUS-007", customerName: "Tom & Lucy Brennan",
-    productType: "Mortgage", productName: "Afin Fix 2yr 90%", submitted: "09:12 today",
+    productType: "Mortgage", productName: "2-Year Fixed", bucket: "Prime High LTV", submitted: "09:12 today",
     checks: { kyc: "pending", credit: "pass", avm: "pass", sanctions: "pass", docs: { parsed: 4, total: 6 } },
     aiAssessment: "First-time buyers, dual income, fast-track eligible based on LTI ratio 3.2x.",
   },
@@ -28,7 +28,7 @@ const INCOMING_CASES = [
   },
   {
     id: "INQ-004", customerId: null, customerName: "Olga Federova",
-    productType: "Mortgage", productName: "Afin Fix 5yr 75%", submitted: "07:55 today",
+    productType: "Mortgage", productName: "5-Year Fixed", bucket: "Prime", submitted: "07:55 today",
     checks: { kyc: "warn", credit: "warn", avm: "pass", sanctions: "pass", docs: { parsed: 3, total: 5 } },
     aiAssessment: "New-to-bank applicant. Credit file thin -- may need manual review. AVM supports valuation.",
   },

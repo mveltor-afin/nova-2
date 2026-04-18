@@ -14,14 +14,14 @@ const KPIS = [
 ];
 
 const LEADERBOARD = [
-  { product: "Afin Fix 2yr 75%", apps: 14, completions: 9, conversion: 64.3, avgDeal: "£287k", margin: "1.42%", revenue: "£36.7k" },
-  { product: "Afin Fix 2yr 90%", apps: 8, completions: 5, conversion: 62.5, avgDeal: "£198k", margin: "1.58%", revenue: "£15.6k" },
+  { product: "2-Year Fixed (Prime)", bucket: "Prime", apps: 14, completions: 9, conversion: 64.3, avgDeal: "£287k", margin: "1.42%", revenue: "£36.7k" },
+  { product: "2-Year Fixed (Prime High LTV)", bucket: "Prime High LTV", apps: 8, completions: 5, conversion: 62.5, avgDeal: "£198k", margin: "1.58%", revenue: "£15.6k" },
   { product: "2yr Fixed Savings", apps: 6, completions: 4, conversion: 66.7, avgDeal: "£45k", margin: "0.85%", revenue: "£1.5k" },
-  { product: "Afin Pro Fix 2yr", apps: 5, completions: 3, conversion: 60.0, avgDeal: "£512k", margin: "1.24%", revenue: "£19.0k" },
-  { product: "Afin HNW Fix 5yr", apps: 4, completions: 2, conversion: 50.0, avgDeal: "£745k", margin: "1.68%", revenue: "£25.0k" },
-  { product: "Afin BTL Tracker", apps: 4, completions: 2, conversion: 50.0, avgDeal: "£320k", margin: "2.04%", revenue: "£13.1k" },
+  { product: "2-Year Fixed (Professional)", bucket: "Professional", apps: 5, completions: 3, conversion: 60.0, avgDeal: "£512k", margin: "1.24%", revenue: "£19.0k" },
+  { product: "5-Year Fixed (HNW)", bucket: "HNW", apps: 4, completions: 2, conversion: 50.0, avgDeal: "£745k", margin: "1.68%", revenue: "£25.0k" },
+  { product: "Tracker (BTL)", bucket: "BTL", apps: 4, completions: 2, conversion: 50.0, avgDeal: "£320k", margin: "2.04%", revenue: "£13.1k" },
   { product: "1yr Fixed Savings", apps: 3, completions: 1, conversion: 33.3, avgDeal: "£28k", margin: "0.78%", revenue: "£218" },
-  { product: "Afin Shared Ownership", apps: 3, completions: 1, conversion: 33.3, avgDeal: "£165k", margin: "1.35%", revenue: "£2.2k" },
+  { product: "2-Year Fixed (Shared Ownership)", bucket: "Shared Ownership", apps: 3, completions: 1, conversion: 33.3, avgDeal: "£165k", margin: "1.35%", revenue: "£2.2k" },
 ];
 
 const MEDAL_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];
