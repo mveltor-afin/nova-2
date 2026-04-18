@@ -70,7 +70,7 @@ function LoanWizard({ onCancel, onComplete }) {
   // ── STEP RENDERERS ──
   const LENDING_TYPES = [
     { id: "residential", label: "Residential", desc: "Owner-occupied home purchase or remortgage", icon: Ico.shield(28), color: "#059669" },
-    { id: "btl", label: "Buy-to-Let", desc: "Single investment property or portfolio", icon: Ico.products(28), color: "#F59E0B" },
+    { id: "btl", label: "Buy-to-Let", desc: "Single investment property or portfolio", icon: Ico.dollar(28), color: "#F59E0B" },
     { id: "commercial", label: "Commercial", desc: "Business premises — office, retail, industrial", icon: Ico.dashboard(28), color: "#3B82F6" },
     { id: "bridging", label: "Bridging", desc: "Short-term finance — auction, refurb, chain-break", icon: Ico.zap(28), color: "#8B5CF6" },
     { id: "development", label: "Development", desc: "New build or conversion — staged drawdown", icon: Ico.chart(28), color: "#0EA5E9" },
