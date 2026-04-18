@@ -412,7 +412,46 @@ const DEFAULT_BUCKETS = [
     },
     products: [
       { type: "Regulated Bridge", code: "RBG-R", erc: "1 month interest", rates: { "≤60%": 0.65, "60-75%": 0.75 } },
-      { type: "Unregulated Bridge", code: "RBG-U", erc: "1 month interest", rates: { "≤60%": 0.75, "60-75%": 0.85 } },
+    ],
+  },
+  {
+    name: "Unregulated Bridging",
+    color: "#991B1B",
+    desc: "Unregulated short-term finance · Investment property, land, auction · Not for main residence",
+    maxLTV: 75,
+    acceptedCreditProfiles: ["clean", "near_prime", "light_adverse", "adverse"],
+    acceptedEmployments: ["Employed", "Self-Employed", "Contractor"],
+    acceptedProperties: ["Standard", "Non-Standard", "New Build", "Ex-Local Authority", "High-Rise (>6 floors)"],
+    acceptedEpc: ["A", "B", "C", "D", "E", "F", "G"],
+    tierOverrides: {},
+    tiers: [
+      { name: "Standard", conditions: { credit: ["clean", "near_prime"] }, adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} },
+      { name: "Adverse", conditions: { credit: ["adverse"] }, adjustmentType: "flat", flatAdj: 0.25, gridAdj: {} },
+    ],
+    criteria: {
+      loanSize: { min: "£50,000", max: "£5,000,000" },
+      maxApplicants: 4,
+      age: { min: 21, maxAtEnd: 85 },
+      residency: "UK citizen / Settled / Ltd companies / SPVs",
+      minUKResidency: "3 years",
+      incomeMultiple: "N/A — exit strategy assessed",
+      stressRate: "N/A — short-term facility",
+      credit: { maxCCJs: "2 (satisfied)", maxDefaults: "1 (satisfied)", missedPayments: "Max 2 in last 12 months", iva: "Discharged >3 years", bankruptcy: "Discharged >6 years", dmp: "Not accepted" },
+      employment: ["Any — exit strategy is primary assessment", "Ltd companies / SPVs accepted"],
+      property: { minValue: "£100,000", acceptable: ["Investment property", "Land with planning", "Auction purchase", "Refurbishment", "Commercial"], unacceptable: ["Main residence (use Regulated Bridge)"], valuation: "Full valuation required." },
+    },
+    fees: {
+      productFee: "2% arrangement fee (min £2,000)",
+      reversion: "N/A — short-term facility",
+      termRange: "3-18 months",
+      valuationFees: [
+        { upTo: "£500,000", fee: "£595" }, { upTo: "£1,000,000", fee: "£995" },
+        { upTo: "£5,000,000", fee: "£1,995" },
+      ],
+    },
+    products: [
+      { type: "Unregulated Bridge", code: "UBG-S", erc: "1 month interest", rates: { "≤60%": 0.75, "60-75%": 0.85 } },
+      { type: "Heavy Refurb Bridge", code: "UBG-R", erc: "1 month interest", rates: { "≤60%": 0.85, "60-75%": 0.95 } },
     ],
   },
   {
@@ -565,7 +604,19 @@ const autoLendingCode = (bucketName, productType) => {
 function BucketFormModal({ bucket, onSave, onCancel }) {
   const [form, setForm] = useState(() => {
     if (!bucket) return emptyBucket();
-    return JSON.parse(JSON.stringify(bucket));
+    const clone = JSON.parse(JSON.stringify(bucket));
+    // Ensure fees object exists with all required fields
+    if (!clone.fees) clone.fees = { productFee: "", reversion: "", termRange: "", valuationFees: [] };
+    if (!clone.fees.productFee) clone.fees.productFee = "";
+    if (!clone.fees.reversion) clone.fees.reversion = "";
+    if (!clone.fees.termRange) clone.fees.termRange = "";
+    if (!clone.fees.valuationFees) clone.fees.valuationFees = [];
+    if (!clone.criteria) clone.criteria = emptyBucket().criteria;
+    if (!clone.criteria.loanSize) clone.criteria.loanSize = { min: "", max: "" };
+    if (!clone.criteria.age) clone.criteria.age = { min: 21, maxAtEnd: 75 };
+    if (!clone.criteria.property) clone.criteria.property = { minValue: "", acceptable: [], unacceptable: [], valuation: "" };
+    if (!clone.criteria.credit) clone.criteria.credit = { maxCCJs: "0", maxDefaults: "0", missedPayments: "", iva: "Not accepted", bankruptcy: "Not accepted", dmp: "Not accepted" };
+    return clone;
   });
 
   const set = (path, val) => {

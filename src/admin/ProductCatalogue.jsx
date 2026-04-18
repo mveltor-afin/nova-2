@@ -669,7 +669,7 @@ import SharedOwnershipCatalogue from "./SharedOwnershipCatalogue";
 import InsuranceCatalogue from "./InsuranceCatalogue";
 
 const RESIDENTIAL_BUCKETS = ["Prime", "Prime High LTV", "Professional", "High-Net-Worth", "Residential Bridging", "Buy-to-Let"];
-const COMMERCIAL_BUCKETS = ["Commercial Mortgage", "Development Finance"];
+const COMMERCIAL_BUCKETS = ["Unregulated Bridging", "Commercial Mortgage", "Development Finance"];
 
 const PRODUCT_TYPES = [
   { id: "residential", label: "Residential", icon: "shield", color: "#059669" },
