@@ -224,7 +224,6 @@ export default function Shell({ userType }) {
     ? [
         { group:"HOME", items:[
           { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
-          { id:"smartapply",      label:"Smart Apply",          icon:"sparkle" },
           { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
         { group:"CUSTOMERS", items:[
