@@ -239,6 +239,10 @@ export default function Shell({ userType }) {
           { id:"messages",        label:"Messages",     icon:"messages", badge:3 },
           { id:"myinbox",         label:"My Inbox",     icon:"bell", badge:8 },
         ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
+        ]},
         { group:null, items:[
           { id:"releases", label:"Releases", icon:"sparkle" },
           { id:"settings", label:"Settings", icon:"settings" },
@@ -260,6 +264,10 @@ export default function Shell({ userType }) {
           { id:"mymi",            label:"My MI",             icon:"chart" },
           { id:"myreports",      label:"My Reports",        icon:"file" },
           { id:"myinbox",         label:"My Inbox",          icon:"bell", badge:8 },
+        ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
         ]},
         { group:null, items:[
           { id:"releases",        label:"Releases",          icon:"sparkle" },
@@ -292,6 +300,10 @@ export default function Shell({ userType }) {
         ]},
         { group:"SERVICING", items:[
           { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
+        ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
         ]},
         { group:null, items:[
           { id:"releases",        label:"Releases",           icon:"sparkle" },
@@ -329,6 +341,10 @@ export default function Shell({ userType }) {
           { id:"messages",         label:"Messages",            icon:"messages", badge:5 },
           { id:"myinbox",          label:"My Inbox",            icon:"bell", badge:8 },
         ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
+        ]},
         { group:null, items:[
           { id:"releases",        label:"Releases",           icon:"sparkle" },
           { id:"settings",        label:"Settings",           icon:"settings" },
@@ -356,6 +372,10 @@ export default function Shell({ userType }) {
         { group:"SERVICING", items:[
           { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
         ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
+        ]},
         { group:null, items:[
           { id:"mymi",            label:"My MI",              icon:"chart" },
           { id:"myreports",      label:"My Reports",         icon:"file" },
@@ -377,6 +397,10 @@ export default function Shell({ userType }) {
           { id:"pricing",           label:"Market Comparison",   icon:"dollar" },
           { id:"mymi",              label:"MI & Analytics",      icon:"chart" },
           { id:"myreports",         label:"Reports",             icon:"file" },
+        ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
         ]},
         { group:null, items:[
           { id:"messages",          label:"Messages",            icon:"messages" },
