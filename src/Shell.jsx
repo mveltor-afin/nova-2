@@ -130,6 +130,8 @@ import ConveyancingTracker from "./shared/ConveyancingTracker";
 import OffersScreen from "./workflows/OffersScreen";
 import PipelineView from "./workflows/PipelineView";
 import OpsCaseWizard from "./workflows/OpsCaseWizard";
+import AgentBuilder from "./admin/AgentBuilder";
+import AgentMonitor from "./admin/AgentMonitor";
 import MyCases from "./workflows/MyCases";
 import TeamView from "./workflows/TeamView";
 // Agentic AI features (v2.19)
@@ -424,6 +426,12 @@ export default function Shell({ userType }) {
           { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
           { id:"myinbox",         label:"My Inbox",             icon:"bell", badge:8 },
         ]},
+        ...((persona === "Ops" || persona === "Admin") ? [{
+          group:"AI AGENTS", items:[
+            { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+            { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
+          ],
+        }] : []),
         ...((persona === "Ops" || persona === "Admin") ? [{
           group:"TOOLS", collapsed:true, items:[
             { id:"orchestrationagent", label:"AI Case Agent",   icon:"sparkle" },
@@ -822,6 +830,8 @@ export default function Shell({ userType }) {
       case "myreports":      return <MyReports persona={persona} />;
       case "newcustomer":     return <NewCustomerWizard onComplete={() => setScreen("allcustomers")} onCancel={() => setScreen("allcustomers")} />;
       case "solicitorpanel":  return <SolicitorPanel />;
+      case "agentbuilder":    return <AgentBuilder />;
+      case "agentmonitor":    return <AgentMonitor />;
       case "brokeronboard":   return <BrokerOnboarding />;
       case "segmentation":    return <SegmentationEngine />;
       case "dataexport":      return <DataExportCentre />;
