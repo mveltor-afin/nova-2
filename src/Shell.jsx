@@ -224,6 +224,7 @@ export default function Shell({ userType }) {
     ? [
         { group:"HOME", items:[
           { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
+          { id:"newloan",         label:"New Loan",             icon:"plus" },
           { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
         { group:"CUSTOMERS", items:[
@@ -689,6 +690,7 @@ export default function Shell({ userType }) {
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
+      case "newloan":         setMode("wizard"); return null;
       case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id}
             onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }}
             onOpenCase={(origRef) => {
