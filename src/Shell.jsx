@@ -174,6 +174,7 @@ export default function Shell({ userType }) {
   const [servicingAccountId, setServicingAccountId] = useState(null);
   const [showServicingModal, setShowServicingModal] = useState(false);
   const [opsWizardLoan, setOpsWizardLoan] = useState(null);
+  const [showUWModal, setShowUWModal] = useState(false);
   const [showCaseModal, setShowCaseModal] = useState(false);
   const [caseLoanForModal, setCaseLoanForModal] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -270,8 +271,7 @@ export default function Shell({ userType }) {
           { id:"mycases",           label:"My Cases",              icon:"user", badge:4 },
           { id:"teamview",          label:"Team",                  icon:"users" },
         ]},
-        { group:"UNDERWRITING", items:[
-          { id:"uwqueue",           label:"Smart Queue",           icon:"shield", badge:5 },
+        { group:"PIPELINE", items:[
           { id:"pipeline",          label:"Pipeline",              icon:"chart" },
           { id:"offers",            label:"Offers",                icon:"file" },
         ]},
@@ -743,7 +743,7 @@ export default function Shell({ userType }) {
       case "offers":          return <OffersScreen />;
       case "mycases":         return <MyCases persona={persona}
         onOpenWizard={(loan) => { setOpsWizardLoan(loan); }}
-        onOpenCase={(loan) => { setSelectedLoan(loan); setScreen("uwworkstation"); }}
+        onOpenCase={(loan) => { setSelectedLoan(loan); setShowUWModal(true); }}
       />;
       case "teamview":        return <TeamView role={persona === "Underwriter" ? "underwriter" : "ops"} />;
       case "caseworkbench":   return <CaseWorkbench />;
@@ -962,6 +962,30 @@ export default function Shell({ userType }) {
       <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.25.0"); }} />
       <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
       {opsWizardLoan && <OpsCaseWizard loan={opsWizardLoan} onClose={() => setOpsWizardLoan(null)} />}
+      {showUWModal && selectedLoan && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={() => { setShowUWModal(false); setSelectedLoan(null); }} style={{ position: "absolute", inset: 0, background: "rgba(12,45,59,0.55)", backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "relative", background: T.card, borderRadius: 18, width: "96vw", maxWidth: 1400, height: "94vh", boxShadow: "0 20px 80px rgba(0,0,0,0.3)", border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ padding: "12px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: `linear-gradient(135deg, ${T.primary}, ${T.primaryDark})`, color: "#fff", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Ico.shield(18)}</div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>UW Workstation — {selectedLoan.id}</div>
+                  <div style={{ fontSize: 11, opacity: 0.8 }}>{selectedLoan.names} · {selectedLoan.product} · {selectedLoan.amount}</div>
+                </div>
+              </div>
+              <div onClick={() => { setShowUWModal(false); setSelectedLoan(null); }} style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}>{Ico.x(18)}</div>
+            </div>
+            <div style={{ flex: 1, overflow: "auto", background: T.bg }}>
+              <UWWorkstation loan={selectedLoan} onBack={() => { setShowUWModal(false); setSelectedLoan(null); }} onDecisionMade={() => { setShowUWModal(false); setSelectedLoan(null); }}
+                onViewCustomer={(nameOrId) => {
+                  const cust = CUSTOMERS.find(c => c.id === nameOrId) || CUSTOMERS.find(c => c.name === nameOrId);
+                  if (cust) { setShowUWModal(false); setSelectedLoan(null); setContextCustomer(cust); setScreen("customerhub"); }
+                }} />
+            </div>
+          </div>
+        </div>
+      )}
       <StatusBar persona={persona} />
 
       {/* ─── Loan Wizard Modal ─── */}

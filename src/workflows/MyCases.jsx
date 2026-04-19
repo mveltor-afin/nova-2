@@ -87,6 +87,7 @@ const STAGE_ICONS = {
 
 export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
   const [filter, setFilter] = useState("all");
+  const [view, setView] = useState("cases"); // "cases" | "priority"
 
   const isUW = persona === "Underwriter";
   const stageMap = isUW ? UW_STAGE_MAP : OPS_STAGE_MAP;
@@ -146,8 +147,81 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
     ? stageOrder
     : stageOrder.filter(s => s === filter);
 
+  // AI Priority Queue — cases sorted by risk score (highest first)
+  const prioritySorted = [...relevantCases].sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0));
+
   return (
     <div style={{ fontFamily: T.font, color: T.text }}>
+      {/* View toggle — My Cases vs AI Priority Queue */}
+      {isUW && (
+        <div style={{ display: "flex", gap: 0, marginBottom: 20 }}>
+          {[
+            { id: "cases", label: "My Cases" },
+            { id: "priority", label: "AI Priority Queue" },
+          ].map((v, i) => (
+            <button key={v.id} onClick={() => setView(v.id)} style={{
+              padding: "10px 24px", fontSize: 14, fontWeight: view === v.id ? 700 : 500,
+              cursor: "pointer", fontFamily: T.font, border: `1px solid ${view === v.id ? T.primary : T.border}`,
+              background: view === v.id ? T.primary : T.card, color: view === v.id ? "#fff" : T.textMuted,
+              borderRadius: i === 0 ? "8px 0 0 8px" : "0 8px 8px 0", transition: "all 0.15s",
+            }}>{v.label}</button>
+          ))}
+        </div>
+      )}
+
+      {/* AI Priority Queue view */}
+      {isUW && view === "priority" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            {Ico.sparkle(22)}
+            <div>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>AI Priority Queue</h2>
+              <div style={{ fontSize: 12, color: T.textMuted }}>Cases ranked by AI risk score — highest risk first. {prioritySorted.length} cases.</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {prioritySorted.map((c, idx) => {
+              const riskColor = c.riskScore > 60 ? T.danger : c.riskScore > 30 ? T.warning : T.success;
+              const stageInfo = getStageInfoLocal(c.status);
+              return (
+                <Card key={c.id} style={{ padding: 16, borderLeft: `4px solid ${riskColor}` }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 18, background: riskColor + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: riskColor }}>
+                        {c.riskScore}
+                      </div>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: T.navy, fontFamily: "monospace" }}>{c.id}</span>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{c.names}</span>
+                          <StatusBadge status={c.status} />
+                        </div>
+                        <div style={{ display: "flex", gap: 8, fontSize: 12, color: T.textMuted }}>
+                          <span>{c.product}</span>
+                          {c.bucket && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: (c.bucketColor || T.primary) + "14", color: c.bucketColor || T.primary }}>{c.bucket}</span>}
+                          <span>{c.amount}</span>
+                          <span>LTV: {c.ltv}%</span>
+                          <span style={{ fontWeight: 600, color: riskColor }}>{c.riskLevel} Risk</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>Stage: {stageInfo.stage}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {c.riskScore <= 30 && <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 6, background: T.successBg, color: T.success }}>Fast-Track Eligible</span>}
+                      {c.riskScore > 60 && <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 6, background: T.dangerBg, color: T.danger }}>Manual Review</span>}
+                      <Btn primary small onClick={() => onOpenCase?.(c)}>Open Workstation</Btn>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* My Cases view (existing) */}
+      {(view === "cases" || !isUW) && (
+      <div>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
         {Ico.loans(22)}
@@ -277,6 +351,8 @@ export default function MyCases({ persona, onOpenWizard, onOpenCase }) {
           <div style={{ fontSize: 14, fontWeight: 600 }}>Queue clear</div>
           <div style={{ fontSize: 12 }}>No cases currently assigned to you.</div>
         </Card>
+      )}
+      </div>
       )}
     </div>
   );
