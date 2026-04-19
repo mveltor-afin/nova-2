@@ -991,7 +991,7 @@ export default function Shell({ userType }) {
           </div>
         </div>
       )}
-      <StatusBar persona={persona} />
+      {/* StatusBar removed — was overlapping content at bottom of screen */}
 
       {/* ─── Loan Wizard Modal ─── */}
       {mode === "wizard" && (
