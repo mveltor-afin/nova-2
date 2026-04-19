@@ -549,7 +549,7 @@ export default function Shell({ userType }) {
       </div>
 
       {/* Nav groups */}
-      <nav style={{ flex:1, padding:"6px 8px", display:"flex", flexDirection:"column", gap:0, overflowY:"auto" }}>
+      <nav style={{ flex:1, padding:"6px 8px", display:"flex", flexDirection:"column", gap:0, overflowY:"auto", scrollbarWidth:"none", msOverflowStyle:"none" }} className="hide-scrollbar">
         {navGroups.filter(g => g.visible !== false).map((group, gi) => (
           <div key={gi}>
             {group.group && (
@@ -880,6 +880,7 @@ export default function Shell({ userType }) {
   return (
     <div style={{ display:"flex", height:"100vh", width:"100vw", fontFamily:T.font, background:T.bg, color:T.text, overflow:"hidden" }}>
       <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
         @keyframes celebrate { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
