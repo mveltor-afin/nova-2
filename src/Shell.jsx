@@ -693,7 +693,8 @@ export default function Shell({ userType }) {
       case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id}
             onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }}
             onOpenCase={(origRef) => {
-              const loan = MOCK_LOANS.find(l => l.id === origRef || l.origRef === origRef);
+              const loan = MOCK_LOANS.find(l => l.id === origRef || l.origRef === origRef)
+                || MOCK_LOANS.find(l => l.customerId === contextCustomer?.id);
               if (loan) { setCaseLoanForModal(loan); setShowCaseModal(true); }
             }}
             onOpenServicing={(productId) => {
