@@ -224,7 +224,7 @@ export default function Shell({ userType }) {
     ? [
         { group:"HOME", items:[
           { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
-          { id:"newloan",         label:"New Loan",             icon:"plus" },
+          { id:"newloan",         label:"New Loan",             icon:"plus", action: () => setMode("wizard") },
           { id:"eligibility",     label:"Eligibility Check",    icon:"zap" },
         ]},
         { group:"CUSTOMERS", items:[
@@ -562,7 +562,7 @@ export default function Shell({ userType }) {
               </div>
             )}
             {!(collapsedGroups[group.group] ?? group.collapsed) && group.items.map(item => (
-              <div key={item.id} onClick={() => { setMode("shell"); setSelectedLoan(null); setScreen(item.id); setScreenHistory(h => [{ id:item.id, label:item.label, time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) }, ...h.filter(x=>x.id!==item.id)].slice(0,5)); if (isMobile) setSidebarOpen(false); }}
+              <div key={item.id} onClick={() => { if (item.action) { item.action(); if (isMobile) setSidebarOpen(false); return; } setMode("shell"); setSelectedLoan(null); setScreen(item.id); setScreenHistory(h => [{ id:item.id, label:item.label, time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) }, ...h.filter(x=>x.id!==item.id)].slice(0,5)); if (isMobile) setSidebarOpen(false); }}
                 style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 12px", borderRadius:8,
                   cursor:"pointer", fontSize:13, fontWeight:500, transition:"all 0.12s",
                   color: screen===item.id ? "#fff" : "#7B8BA3",
@@ -690,7 +690,10 @@ export default function Shell({ userType }) {
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
-      case "newloan":         setMode("wizard"); return null;
+      case "newloan":         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", flexDirection: "column", gap: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.navy }}>Create New Loan Application</div>
+            <Btn primary onClick={() => setMode("wizard")} style={{ padding: "14px 32px", fontSize: 15 }}>{Ico.plus(18)} Open Loan Wizard</Btn>
+          </div>;
       case "customerhub":     return contextCustomer ? <CustomerHub customerId={contextCustomer.id}
             onBack={() => { setContextCustomer(null); setScreen("allcustomers"); }}
             onOpenCase={(origRef) => {
