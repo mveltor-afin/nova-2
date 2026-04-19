@@ -1521,12 +1521,18 @@ function RatesTab({ bucket }) {
             </tr>
           </thead>
           <tbody>
-            {products.map((prod, pIdx) => (
-              allTiers.map((tier, tIdx) => {
+            {products.map((prod, pIdx) => {
+              // Filter tiers to only those that apply to this product
+              const productTiers = allTiers.filter(tier => {
+                if (tier._isBase) return true;
+                if (!tier.appliesTo || tier.appliesTo.length === 0) return true;
+                return tier.appliesTo.includes(prod.type);
+              });
+              return productTiers.map((tier, tIdx) => {
                 const isBase = tier._isBase;
-                const tierColor = isBase ? T.navy : TIER_COLORS[(tIdx - 1) % 5];
-                const isFirstTierOfProduct = tIdx === 0;
-                const isLastTierOfProduct = tIdx === allTiers.length - 1;
+                const origTierIdx = allTiers.indexOf(tier);
+                const tierColor = isBase ? T.navy : TIER_COLORS[(origTierIdx - 1) % 5];
+                const isLastTierOfProduct = tIdx === productTiers.length - 1;
                 const condEntries = !isBase ? Object.entries(tier.conditions || {}).filter(([,v]) => v?.length) : [];
 
                 return (
@@ -1592,8 +1598,8 @@ function RatesTab({ bucket }) {
                     })}
                   </tr>
                 );
-              })
-            ))}
+              });
+            })}
           </tbody>
         </table>
       </div>
@@ -1635,7 +1641,15 @@ function TiersTab({ bucket, onUpdateTiers }) {
 
   const addTier = () => {
     if (tiers.length >= 5) return;
-    commit([...tiers, { name: "New Tier", conditions: {}, adjustmentType: "flat", flatAdj: 0.00, gridAdj: {} }]);
+    commit([...tiers, { name: "New Tier", conditions: {}, adjustmentType: "flat", flatAdj: 0.00, gridAdj: {}, appliesTo: [] }]);
+  };
+
+  const toggleAppliesToProduct = (tierIdx, productType) => {
+    const tier = tiers[tierIdx];
+    const arr = [...(tier.appliesTo || [])];
+    const idx = arr.indexOf(productType);
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(productType);
+    updateTier(tierIdx, "appliesTo", arr);
   };
 
   const removeTier = (idx) => commit(tiers.filter((_, i) => i !== idx));
@@ -1798,6 +1812,36 @@ function TiersTab({ bucket, onUpdateTiers }) {
                   );
                 })}
               </div>
+
+              {/* Product applicability */}
+              {productTypes.length > 0 && (
+                <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.borderLight}` }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                    Applies to products: <span style={{ fontWeight: 400, textTransform: "none" }}>{(!tier.appliesTo || tier.appliesTo.length === 0) ? "(all)" : `(${tier.appliesTo.length} selected)`}</span>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {productTypes.map(pt => {
+                      const active = !tier.appliesTo || tier.appliesTo.length === 0 || (tier.appliesTo || []).includes(pt);
+                      return (
+                        <span
+                          key={pt}
+                          style={{
+                            display: "inline-block", padding: "4px 10px", borderRadius: 8,
+                            fontSize: 11, fontWeight: 600, cursor: "pointer", transition: "all 0.12s", userSelect: "none",
+                            border: active ? `2px solid ${tierColor}` : `1px solid ${T.border}`,
+                            background: active ? tierColor + "14" : T.card,
+                            color: active ? tierColor : T.textMuted,
+                          }}
+                          onClick={() => toggleAppliesToProduct(tIdx, pt)}
+                        >
+                          {pt}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div style={{ fontSize: 9, color: T.textMuted, marginTop: 4 }}>Click to toggle. If none selected, tier applies to all products.</div>
+                </div>
+              )}
 
               {/* Adjustment section */}
               <div style={{ padding: "10px 14px" }}>
