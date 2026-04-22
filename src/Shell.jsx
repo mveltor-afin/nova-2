@@ -103,6 +103,7 @@ import UWPerformance from "./underwriting/UWPerformance";
 import CommissionTracker from "./origination/CommissionTracker";
 import MyReports from "./intelligence/MyReports";
 import BrokerDashboardV2 from "./origination/BrokerDashboardV2";
+import BrokerAdminDashboard from "./origination/BrokerAdminDashboard";
 import NewCustomerWizard from "./customers/NewCustomerWizard";
 import ComplianceCalendar from "./admin/ComplianceCalendar";
 import SegmentationEngine from "./admin/SegmentationEngine";
@@ -182,7 +183,7 @@ export default function Shell({ userType }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
     const seen = localStorage.getItem("nova_whats_new_seen");
-    return seen !== "2.25.0";
+    return seen !== "2.27.0";
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -215,14 +216,42 @@ export default function Shell({ userType }) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const isBroker = persona === "Broker";
+  const isBroker      = persona === "Broker";
+  const isBrokerAdmin = persona === "Broker Admin";
   const needsAttentionCount = getNeedsAttention().length;
 
   // Shared handler for selecting a customer
   const handleSelectCustomer = (c) => { setContextCustomer(c); setScreen("customerhub"); };
 
   // ── Nav groups — simplified per-persona ──
-  const navGroups = isBroker
+  const navGroups = isBrokerAdmin
+    ? [
+        { group:"MY FIRM", items:[
+          { id:"brokeradmin",    label:"Firm Dashboard",    icon:"dashboard" },
+          { id:"brokerdashboard",label:"My Applications",   icon:"loans" },
+          { id:"newloan",        label:"New Loan",          icon:"plus", action: () => setMode("wizard") },
+          { id:"eligibility",    label:"Eligibility Check", icon:"zap" },
+        ]},
+        { group:"MY CUSTOMERS", items:[
+          { id:"brokerprospects", label:"My Customers", icon:"customers" },
+        ]},
+        { group:"INSIGHTS", items:[
+          { id:"mymi",       label:"My MI",       icon:"chart" },
+          { id:"myreports",  label:"My Reports",  icon:"file" },
+          { id:"commission", label:"Commission",  icon:"dollar" },
+          { id:"messages",   label:"Messages",    icon:"messages", badge:3 },
+          { id:"myinbox",    label:"My Inbox",    icon:"bell",     badge:8 },
+        ]},
+        { group:"AI AGENTS", collapsed:true, items:[
+          { id:"agentbuilder", label:"Agent Orchestrator", icon:"sparkle" },
+          { id:"agentmonitor", label:"Agent Monitor",      icon:"eye" },
+        ]},
+        { group:null, items:[
+          { id:"releases", label:"Releases", icon:"sparkle" },
+          { id:"settings", label:"Settings", icon:"settings" },
+        ]},
+      ]
+    : isBroker
     ? [
         { group:"HOME", items:[
           { id:"brokerdashboard", label:"Dashboard & Pipeline", icon:"dashboard" },
@@ -563,7 +592,7 @@ export default function Shell({ userType }) {
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
                 const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
-                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : "needsattention"));
+                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "Broker Admin" ? "brokeradmin" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -719,6 +748,7 @@ export default function Shell({ userType }) {
       case "allcustomers":    return <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "brokerprospects": return <BrokerProspects onSelectProspect={(p) => { setSelectedProspect(p); setScreen("brokerhub"); }} />;
       case "brokerhub":       return <BrokerCustomerHub prospect={selectedProspect} onBack={() => setScreen("brokerprospects")} />;
+      case "brokeradmin":     return <BrokerAdminDashboard />;
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
@@ -999,7 +1029,7 @@ export default function Shell({ userType }) {
       <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} persona={persona} />
       <UniversalSearch open={showCommandPalette} onClose={() => setShowCommandPalette(false)}
         onAction={(a) => { setShowCommandPalette(false); if (a.type==="screen") setScreen(a.id); if (a.type==="customer") { setContextCustomer(a.data); setScreen("customerhub"); } }} />
-      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.25.0"); }} />
+      <WhatsNew open={showWhatsNew} onClose={() => { setShowWhatsNew(false); localStorage.setItem("nova_whats_new_seen", "2.27.0"); }} />
       <HelpCentre open={showHelp} onClose={() => setShowHelp(false)} screenId={screen} persona={persona} />
       {opsWizardLoan && <OpsCaseWizard loan={opsWizardLoan} onClose={() => setOpsWizardLoan(null)} />}
       {showUWModal && selectedLoan && (

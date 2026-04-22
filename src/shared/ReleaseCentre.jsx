@@ -7,6 +7,21 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.27.0",
+    date: "22 Apr 2026",
+    title: "Broker Admin — Firm Management & Team Controls",
+    items: [
+      { type: "New", text: "Broker Admin persona — new dedicated view for a broker who manages a firm with a relationship to a Packager, Network, or Club organisation." },
+      { type: "New", text: "Firm Dashboard — overview with KPI cards (active advisers, cases MTD, volume MTD, organisation tier), recent activity feed, live alerts, and org/FCA status sidebar." },
+      { type: "New", text: "My Team — full adviser table with per-individual monthly case and volume limit progress bars (green/amber/red at 70%/90% thresholds). Roles: Principal, Adviser, Para Planner, Admin, Trainee." },
+      { type: "New", text: "Add / Edit team member modal — invite by email with role, FCA qualification, FCA register number, monthly case limit, monthly volume limit, and MFA toggle." },
+      { type: "New", text: "Suspend / Reinstate — one-click suspend with confirm dialog. Suspended advisers are immediately blocked from new submissions; existing cases unaffected." },
+      { type: "New", text: "Organisation tab — Packager / Network / Club relationship card showing tier, proc fee, tier bonus, agreement reference, renewal date, and full lender panel. Key contact card with message/support actions." },
+      { type: "New", text: "Settings tab — configure default limits for new team members, enforce MFA, require principal sign-off on submissions, enable 70% limit threshold alerts, and restrict permitted product types per firm." },
+      { type: "Improved", text: "Broker Admin appears as a distinct persona in the switcher, landing on the Firm Dashboard by default. Shares broker-facing screens (My Applications, Eligibility Check, My Customers, MI, Commission)." },
+    ]
+  },
+  {
     version: "2.26.0",
     date: "22 Apr 2026",
     title: "Broker Individual Drill-Down in My Brokers",
