@@ -188,33 +188,32 @@ function Toggle({ on, onToggle }) {
 // Clubs (n): blue  — volume aggregators, multiple allowed
 // Packagers (n): amber, dashed — specialist case routing, multiple allowed
 function OrgGraph({ relationships, selectedId, onSelect }) {
-  const firmCx = 88;
-  const firmCy = 245;
-  const firmR  = 46;
+  const firmCx = 62;
+  const firmCy = 140;
+  const firmR  = 34;
 
-  const nodeX   = 246;
-  const nodeW   = 185;
-  const nodeH   = 58;
-  const nodeRx  = 10;
+  const nodeX   = 155;
+  const nodeW   = 158;
+  const nodeH   = 40;
+  const nodeRx  = 8;
   const n       = relationships.length;
-  const spacing = Math.min(84, (440 / Math.max(n - 1, 1)));
+  const spacing = 46;
   const startY  = firmCy - ((n - 1) / 2) * spacing - nodeH / 2;
-  const svgH    = Math.max(startY + n * spacing + nodeH + 40, firmCy * 2 + 40);
+  const svgH    = startY + n * spacing + nodeH + 56;
 
   const nodeTop = (i) => startY + i * spacing;
   const nodeMid = (i) => nodeTop(i) + nodeH / 2;
 
-  // Bezier from firm right-edge to org left-edge (mid height)
   const edgePath = (i) => {
     const cy = nodeMid(i);
-    return `M${firmCx + firmR},${firmCy} C${firmCx + firmR + 55},${firmCy} ${nodeX - 45},${cy} ${nodeX},${cy}`;
+    return `M${firmCx + firmR},${firmCy} C${firmCx + firmR + 38},${firmCy} ${nodeX - 30},${cy} ${nodeX},${cy}`;
   };
 
-  // Midpoint of cubic bezier at t=0.5: x≈230, y≈(firmCy+cy)/2
-  const edgeMid = (i) => ({ x: 188, y: (firmCy + nodeMid(i)) / 2 });
+  // Bezier midpoint at t=0.5 with these control points
+  const edgeMid = (i) => ({ x: 127, y: (firmCy + nodeMid(i)) / 2 });
 
   return (
-    <svg viewBox={`0 0 620 ${svgH}`} style={{ width:"100%", height:"auto", display:"block" }}>
+    <svg viewBox={`0 0 340 ${svgH}`} style={{ width:"100%", height:"auto", display:"block" }}>
       <defs>
         <linearGradient id="firmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#225F6E" />
@@ -287,26 +286,20 @@ function OrgGraph({ relationships, selectedId, onSelect }) {
             <text x={nodeX+10+pillW+8} y={y+22} fill={rel.text} fontSize={12} fontWeight="700" fontFamily={T.font}>
               {rel.shortName}
             </text>
-            {/* Stats row */}
-            <text x={nodeX+10} y={y+43} fill={rel.color} fontSize={9} fontFamily={T.font} opacity={0.8}>
-              {rel.casesRouted} cases · {fmtVol(rel.volRouted)} · {rel.panel.length} lenders
-            </text>
-            {/* Caret */}
-            <text x={nodeX+nodeW-14} y={mid+5} textAnchor="middle" fill={rel.color} fontSize={16} fontFamily={T.font} opacity={sel ? 1 : 0.4}>
-              {sel ? "›" : "›"}
-            </text>
+            {/* Selection indicator */}
+            {sel && <text x={nodeX+nodeW-10} y={mid+5} textAnchor="middle" fill={rel.color} fontSize={14} fontFamily={T.font}>›</text>}
           </g>
         );
       })}
 
-      {/* ── Legend ── */}
-      <g transform={`translate(14,${svgH - 20})`}>
+      {/* ── Legend (stacked rows) ── */}
+      <g transform={`translate(14,${svgH - 42})`}>
         {[
           { label:"Network — FCA umbrella (1 max)", color:"#6D28D9", dash:"" },
-          { label:"Club — proc fee aggregator",     color:"#1D4ED8", dash:"",   x:205 },
-          { label:"Packager — specialist routing",  color:"#D97706", dash:"6 3",x:375 },
-        ].map(({ label, color, dash, x = 0 }) => (
-          <g key={label} transform={`translate(${x},0)`}>
+          { label:"Club — proc fee aggregator",     color:"#1D4ED8", dash:"" },
+          { label:"Packager — specialist routing",  color:"#D97706", dash:"6 3" },
+        ].map(({ label, color, dash }, idx) => (
+          <g key={label} transform={`translate(0,${idx * 14})`}>
             <line x1={0} y1={7} x2={20} y2={7} stroke={color} strokeWidth={1.8} strokeDasharray={dash || "none"} />
             <text x={25} y={11} fill={T.textMuted} fontSize={9} fontFamily={T.font}>{label}</text>
           </g>
@@ -620,45 +613,39 @@ export default function BrokerAdminDashboard() {
 
         {/* ══════════ ORGANISATION ══════════ */}
         {tab === "Organisation" && (
-          <div>
-            {/* Graph header */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
-              <div>
-                <div style={{ fontSize:14, fontWeight:700, color:T.navy, marginBottom:4 }}>Relationship Graph</div>
-                <div style={{ fontSize:12, color:T.textMuted }}>
-                  {FIRM.trading} holds <strong>{RELATIONSHIPS.filter(r=>r.type==="Network").length} Network</strong>, <strong>{RELATIONSHIPS.filter(r=>r.type==="Club").length} Club</strong>, and <strong>{RELATIONSHIPS.filter(r=>r.type==="Packager").length} Packager</strong> relationships.
-                  Click a node to view details.
+          <div style={{ display:"grid", gridTemplateColumns:"320px 1fr", gap:20, alignItems:"start" }}>
+
+            {/* ── Left: graph panel ── */}
+            <div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:T.navy }}>Relationship Graph</div>
+                  <div style={{ fontSize:11, color:T.textMuted, marginTop:2 }}>Click a node to view details</div>
                 </div>
+                <Btn ghost small icon="plus">Add</Btn>
               </div>
-              <div style={{ display:"flex", gap:8 }}>
-                <Btn ghost small icon="plus">Add Relationship</Btn>
+              <div style={{ border:`1px solid ${T.border}`, borderRadius:12, background:T.bg, padding:"6px 0 2px" }}>
+                <OrgGraph relationships={RELATIONSHIPS} selectedId={selectedOrg} onSelect={setSelectedOrg} />
+              </div>
+              <div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:5 }}>
+                {[
+                  { type:"Network", color:"#6D28D9", bg:"#F5F3FF", desc:"FCA AR umbrella — 1 max per firm" },
+                  { type:"Club",    color:"#1D4ED8", bg:"#DBEAFE", desc:"Proc fee aggregator — multiple OK" },
+                  { type:"Packager",color:"#D97706", bg:"#FEF3C7", desc:"Specialist routing — packaging fee applies" },
+                ].map(({ type, color, bg, desc }) => (
+                  <div key={type} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", background:bg, borderRadius:6 }}>
+                    <span style={{ fontSize:10, fontWeight:800, color, textTransform:"uppercase", letterSpacing:0.5, minWidth:54 }}>{type}</span>
+                    <span style={{ fontSize:11, color, opacity:0.8 }}>{desc}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* SVG graph */}
-            <div style={{ border:`1px solid ${T.border}`, borderRadius:12, background:T.bg, padding:"8px 0 4px", marginBottom:20 }}>
-              <OrgGraph
-                relationships={RELATIONSHIPS}
-                selectedId={selectedOrg}
-                onSelect={setSelectedOrg}
-              />
-            </div>
-
-            {/* Org type explainer bar */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:20 }}>
-              {[
-                { type:"Network", color:"#6D28D9", bg:"#F5F3FF", border:"#DDD6FE", desc:"Provides FCA AR permissions. One per firm (FCA rule). Sets compliance standards, PI requirements, and CPD obligations." },
-                { type:"Club",    color:"#1D4ED8", bg:"#DBEAFE", border:"#BFDBFE", desc:"Volume aggregator for better proc fees. No FCA oversight role. Multiple memberships allowed simultaneously." },
-                { type:"Packager",color:"#D97706", bg:"#FEF3C7", border:"#FCD34D", desc:"Specialist case routing for complex borrowers. Accesses niche lenders. Charges a packaging fee on top of proc." },
-              ].map(({ type, color, bg, border, desc }) => (
-                <div key={type} style={{ padding:14, background:bg, border:`1px solid ${border}`, borderRadius:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color, textTransform:"uppercase", letterSpacing:0.8, marginBottom:6 }}>{type}</div>
-                  <div style={{ fontSize:12, color, lineHeight:1.6 }}>{desc}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Selected org detail */}
+            {/* ── Right: detail panel ── */}
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:T.navy, marginBottom:10 }}>
+                {activeOrg ? activeOrg.name : "Organisation Detail"}
+              </div>
             {activeOrg ? (
               <div style={{ border:`2px solid ${activeOrg.border}`, borderRadius:14, background:activeOrg.bg, overflow:"hidden" }}>
                 <div style={{ padding:"18px 22px", borderBottom:`1px solid ${activeOrg.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -752,10 +739,11 @@ export default function BrokerAdminDashboard() {
                 </div>
               </div>
             ) : (
-              <div style={{ textAlign:"center", padding:"28px 20px", background:T.bg, borderRadius:12, border:`1px dashed ${T.border}` }}>
-                <div style={{ fontSize:13, color:T.textMuted }}>Click any node in the graph above to view relationship details.</div>
+              <div style={{ textAlign:"center", padding:"40px 20px", background:T.bg, borderRadius:12, border:`1px dashed ${T.border}`, marginTop:34 }}>
+                <div style={{ fontSize:13, color:T.textMuted }}>Select a node in the graph to view relationship details.</div>
               </div>
             )}
+            </div>
           </div>
         )}
 
