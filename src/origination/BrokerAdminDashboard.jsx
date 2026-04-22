@@ -309,6 +309,171 @@ function OrgGraph({ relationships, selectedId, onSelect }) {
   );
 }
 
+// ─── Org Config Modal ─────────────────────────────────────────────────────────
+const ORG_TIERS    = ["Standard", "Gold", "Platinum", "Preferred", "Associate"];
+const BLANK_RF     = { name:"", fca:"", tier:"Standard", agreementRef:"", joined:"", renewalDate:"", procFeeBase:"", procFeeBonus:"—", panel:[], specialisms:"", contact:{ name:"", role:"", email:"", phone:"" }, note:"" };
+const TYPE_PROPS   = {
+  Network:  { color:"#6D28D9", bg:"#F5F3FF", border:"#DDD6FE", text:"#4C1D95", dash:""    },
+  Club:     { color:"#1D4ED8", bg:"#DBEAFE", border:"#BFDBFE", text:"#1E3A8A", dash:""    },
+  Packager: { color:"#D97706", bg:"#FEF3C7", border:"#FCD34D", text:"#92400E", dash:"6 3" },
+};
+
+function OrgConfigModal({ relationships, onSave, onClose }) {
+  const [tab, setTab]               = useState("Network");
+  const [rels, setRels]             = useState(relationships);
+  const [editingId, setEditingId]   = useState(null);
+  const [form, setForm]             = useState(null);
+
+  const set  = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const setC = (k, v) => setForm(f => ({ ...f, contact: { ...(f.contact || {}), [k]: v } }));
+
+  const filtered = rels.filter(r => r.type === tab);
+
+  const startEdit = (rel) => {
+    setEditingId(rel.id);
+    setForm({ ...BLANK_RF, ...rel, contact: { ...BLANK_RF.contact, ...(rel.contact || {}) }, specialisms: (rel.specialisms || []).join(", ") });
+  };
+  const startAdd = () => {
+    setEditingId("new");
+    setForm({ ...BLANK_RF, type: tab, ...TYPE_PROPS[tab] });
+  };
+  const cancel = () => { setEditingId(null); setForm(null); };
+
+  const saveForm = () => {
+    const sp = form.specialisms ? form.specialisms.split(",").map(s => s.trim()).filter(Boolean) : undefined;
+    const built = { ...form, specialisms: sp, panel: form.panel || [], procFeeSummary: `${form.procFeeBase}${form.procFeeBonus && form.procFeeBonus !== "—" ? " + bonus" : ""}` };
+    if (!sp?.length) delete built.specialisms;
+    if (editingId === "new") {
+      const id = `R${Date.now()}`;
+      setRels(r => [...r, { ...built, id, shortName: form.name.split(" ")[0], casesRouted: 0, volRouted: 0, status: "Active" }]);
+    } else {
+      setRels(r => r.map(x => x.id === editingId ? { ...x, ...built } : x));
+    }
+    cancel();
+  };
+
+  const tabBt = (t) => ({
+    padding: "8px 20px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+    borderRadius: "8px 8px 0 0", fontFamily: T.font,
+    background: tab === t ? T.card : "transparent",
+    color: tab === t ? T.primary : T.textMuted,
+    border: tab === t ? `1px solid ${T.border}` : "1px solid transparent",
+    borderBottom: tab === t ? `1px solid ${T.card}` : "none", marginBottom: -1,
+  });
+
+  const relForm = form && (
+    <div style={{ background: T.bg, borderRadius: 12, border: `1px solid ${T.border}`, padding: 20, marginTop: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 14 }}>{editingId === "new" ? `Add ${tab}` : "Edit Relationship"}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <Input label="Organisation name" value={form.name}         onChange={v => set("name", v)}         placeholder="e.g. Primis Mortgage Network" required />
+        <Input label="FCA number"        value={form.fca}          onChange={v => set("fca", v)}          placeholder="e.g. 823651" />
+        <Select label="Tier"             value={form.tier}         onChange={v => set("tier", v)}         options={ORG_TIERS} />
+        <Input label="Agreement ref"     value={form.agreementRef} onChange={v => set("agreementRef", v)} placeholder="e.g. PMN-2020-0142" />
+        <Input label="Member since"      value={form.joined}       onChange={v => set("joined", v)}       placeholder="e.g. 01 Jan 2020" />
+        <Input label="Renewal date"      value={form.renewalDate}  onChange={v => set("renewalDate", v)}  placeholder="e.g. 31 Dec 2026 or Rolling" />
+        <Input label="Base proc fee"     value={form.procFeeBase}  onChange={v => set("procFeeBase", v)}  placeholder="e.g. 0.35%" />
+        <Input label={tab === "Packager" ? "Packaging fee" : "Bonus fee"} value={form.procFeeBonus} onChange={v => set("procFeeBonus", v)} placeholder={tab === "Packager" ? "+ 0.50% packaging fee" : "+0.05% (Gold tier)"} />
+      </div>
+      {tab === "Packager" && (
+        <Input label="Specialisms (comma-separated)" value={form.specialisms} onChange={v => set("specialisms", v)} placeholder="e.g. Adverse credit, Complex income, HMO" hint="Specialist case types this packager handles" />
+      )}
+      <div style={{ marginTop: 4, marginBottom: 4, fontSize: 12, fontWeight: 700, color: T.textSecondary }}>Key Contact</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <Input label="Contact name" value={form.contact.name}  onChange={v => setC("name", v)}  placeholder="e.g. Claire Henderson" />
+        <Input label="Role"         value={form.contact.role}  onChange={v => setC("role", v)}  placeholder="e.g. Network Development Manager" />
+        <Input label="Email"        value={form.contact.email} onChange={v => setC("email", v)} placeholder="e.g. c.henderson@primis.co.uk" />
+        <Input label="Phone"        value={form.contact.phone} onChange={v => setC("phone", v)} placeholder="e.g. 0800 321 0987" />
+      </div>
+      <Input label="Routing notes" value={form.note} onChange={v => set("note", v)} placeholder="How cases are routed through this organisation..." />
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <Btn ghost small onClick={cancel}>Cancel</Btn>
+        <Btn primary small onClick={saveForm} disabled={!form.name}>Save</Btn>
+      </div>
+    </div>
+  );
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: T.card, borderRadius: 16, width: "100%", maxWidth: 780, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.24)" }}>
+
+        {/* Header */}
+        <div style={{ padding: "20px 28px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: T.navy }}>Configure Organisation Relationships</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginTop: 3 }}>Set up and manage your network, club, and packager connections.</div>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <Btn primary small onClick={() => { onSave(rels); onClose(); }}>Save &amp; Close</Btn>
+            <span onClick={onClose} style={{ cursor: "pointer", color: T.textMuted, display: "flex" }}>{Ico.x(20)}</span>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ padding: "0 28px", display: "flex", gap: 4, borderBottom: `1px solid ${T.border}` }}>
+          {["Network", "Club", "Packager"].map(t => (
+            <button key={t} onClick={() => { setTab(t); cancel(); }} style={tabBt(t)}>
+              {t}{t === "Network" ? " (1 max)" : ""}
+              <span style={{ marginLeft: 6, background: tab === t ? T.primaryLight : T.bg, color: tab === t ? T.primary : T.textMuted, fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 8 }}>
+                {rels.filter(r => r.type === t).length}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "20px 28px 28px" }}>
+          {tab === "Network" && (
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "10px 14px", background: T.warningBg, border: `1px solid ${T.warningBorder}`, borderRadius: 8, marginBottom: 16 }}>
+              {Ico.alert(14)}
+              <span style={{ fontSize: 12, color: "#92400E" }}>A DA firm may only hold <strong>one</strong> Network relationship. Changing your network is a significant FCA compliance event — contact your compliance officer before proceeding.</span>
+            </div>
+          )}
+
+          {filtered.length === 0 && editingId !== "new" && (
+            <div style={{ textAlign: "center", padding: "24px 0", color: T.textMuted, fontSize: 13 }}>
+              No {tab.toLowerCase()} relationships configured.{tab !== "Network" ? ` Multiple ${tab.toLowerCase()}s are allowed.` : ""}
+            </div>
+          )}
+
+          {filtered.map(rel => (
+            <div key={rel.id} style={{ marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 10, border: `1px solid ${editingId === rel.id ? rel.color : T.border}`, background: editingId === rel.id ? rel.bg : T.card }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: rel.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                  {rel.shortName?.[0] ?? rel.type[0]}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: T.text }}>{rel.name}</div>
+                  <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>FCA {rel.fca} · {rel.tier} · {rel.procFeeSummary} · Joined {rel.joined || "—"}</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <Btn ghost small onClick={() => editingId === rel.id ? cancel() : startEdit(rel)}>
+                    {editingId === rel.id ? "Cancel" : "Edit"}
+                  </Btn>
+                  {tab !== "Network" && (
+                    <button onClick={() => { if (editingId === rel.id) cancel(); setRels(r => r.filter(x => x.id !== rel.id)); }}
+                      style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font, background: T.dangerBg, color: T.danger, border: `1px solid ${T.dangerBorder}` }}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+              {editingId === rel.id && relForm}
+            </div>
+          ))}
+
+          {(tab !== "Network" || filtered.length === 0) && editingId !== "new" && (
+            <div style={{ marginTop: filtered.length ? 8 : 0 }}>
+              <Btn ghost icon="plus" onClick={startAdd}>Add {tab}</Btn>
+            </div>
+          )}
+
+          {editingId === "new" && relForm}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
@@ -324,12 +489,14 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
   const [selectedOrg, setSelectedOrg]       = useState(null);
   const [settings, setSettings] = useState({ mfaRequired:true, principalSignoff:false, limitAlerts:true });
   const [enabledProducts, setEnabledProducts] = useState(["Residential","BTL"]);
+  const [rels, setRels]           = useState(RELATIONSHIPS);
+  const [showOrgConfig, setShowOrgConfig] = useState(false);
 
   const tabs = ["Overview","My Team","Organisation","Settings"];
   const activeTeam  = team.filter(m => m.status === "Active");
   const totalCases  = activeTeam.reduce((s, m) => s + m.casesMTD, 0);
   const totalVolume = activeTeam.reduce((s, m) => s + m.volumeMTD, 0);
-  const totalRelVol = RELATIONSHIPS.reduce((s, r) => s + r.volRouted, 0);
+  const totalRelVol = rels.reduce((s, r) => s + r.volRouted, 0);
 
   // Modal helpers
   const openAdd  = () => { setEditing(null); setForm(BLANK_FORM); setShowModal(true); };
@@ -369,7 +536,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
   const memberById = (id) => team.find(m => m.id === id);
 
   // Selected org detail
-  const activeOrg = selectedOrg ? RELATIONSHIPS.find(r => r.id === selectedOrg) : null;
+  const activeOrg = selectedOrg ? rels.find(r => r.id === selectedOrg) : null;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -382,7 +549,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
               <h1 style={{ fontSize:22, fontWeight:800, color:T.navy, margin:0 }}>{FIRM.trading}</h1>
               <span style={{ background:"#EDE9FE", color:"#6D28D9", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, letterSpacing:0.4 }}>
-                {RELATIONSHIPS.filter(r=>r.type==="Network").length} Network · {RELATIONSHIPS.filter(r=>r.type==="Club").length} Clubs · {RELATIONSHIPS.filter(r=>r.type==="Packager").length} Packagers
+                {rels.filter(r=>r.type==="Network").length} Network · {rels.filter(r=>r.type==="Club").length} Clubs · {rels.filter(r=>r.type==="Packager").length} Packagers
               </span>
               <span style={{ background:T.successBg, color:T.success, fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20 }}>Active</span>
             </div>
@@ -405,7 +572,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
         <KPICard label="Active Advisers"     value={activeTeam.length}       sub={`${team.filter(m=>m.status==="Suspended").length} suspended · ${team.filter(m=>m.status==="Invited").length} invited`} color={T.primary} />
         <KPICard label="Cases MTD"           value={totalCases}              sub="Across all active advisers"       color={T.accent}  />
         <KPICard label="Volume MTD"          value={fmtVol(totalVolume)}     sub="All active advisers"              color={T.success} />
-        <KPICard label="Routed via Orgs"     value={fmtVol(totalRelVol)}     sub={`${RELATIONSHIPS.length} active relationships`} color="#6D28D9" />
+        <KPICard label="Routed via Orgs"     value={fmtVol(totalRelVol)}     sub={`${rels.length} active relationships`} color="#6D28D9" />
       </div>
 
       {/* ── Tabs ── */}
@@ -445,7 +612,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
               </div>
               <div style={{ background:"#F5F3FF", border:"1px solid #DDD6FE", borderRadius:10, padding:16 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:"#6D28D9", marginBottom:10 }}>Org Relationships</div>
-                {RELATIONSHIPS.map(r => (
+                {rels.map(r => (
                   <div key={r.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                     <div>
                       <span style={{ fontSize:10, fontWeight:800, color:r.color, textTransform:"uppercase", letterSpacing:0.5, marginRight:6 }}>{r.type}</span>
@@ -625,10 +792,10 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
                   <div style={{ fontSize:13, fontWeight:700, color:T.navy }}>Relationship Graph</div>
                   <div style={{ fontSize:11, color:T.textMuted, marginTop:2 }}>Click a node to view details</div>
                 </div>
-                <Btn ghost small icon="plus">Add</Btn>
+                <Btn ghost small iconNode={Ico.settings(14)} onClick={() => setShowOrgConfig(true)}>Configure</Btn>
               </div>
               <div style={{ border:`1px solid ${T.border}`, borderRadius:12, background:T.bg, padding:"6px 0 2px" }}>
-                <OrgGraph relationships={RELATIONSHIPS} selectedId={selectedOrg} onSelect={setSelectedOrg} />
+                <OrgGraph relationships={rels} selectedId={selectedOrg} onSelect={setSelectedOrg} />
               </div>
               <div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:5 }}>
                 {[
@@ -854,6 +1021,14 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
       {/* ══════════════════════════════════════
           CONFIRM SUSPEND / REINSTATE
       ══════════════════════════════════════ */}
+      {showOrgConfig && (
+        <OrgConfigModal
+          relationships={rels}
+          onSave={setRels}
+          onClose={() => setShowOrgConfig(false)}
+        />
+      )}
+
       {confirmSuspend && (
         <div onClick={()=>setConfirmSuspend(null)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", backdropFilter:"blur(4px)" }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:T.card, borderRadius:16, padding:32, maxWidth:420, width:"100%", boxShadow:"0 24px 64px rgba(0,0,0,0.24)" }}>
