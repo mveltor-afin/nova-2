@@ -105,12 +105,12 @@ const RELATIONSHIPS = [
 
 // ─── Team ────────────────────────────────────────────────────────────────────
 const INITIAL_TEAM = [
-  { id:"ADV-001", name:"John Watson",    email:"j.watson@watsonpartners.co.uk",    fca:"123456", fcaAuth:"CeMAP + DA",    role:"Principal",      status:"Active",    casesMTD:8,  caseLimit:null, volumeMTD:2800000, volumeLimit:null,    joined:"14 Mar 2019", mfa:true,  lastActive:"Today, 10:32" },
-  { id:"ADV-002", name:"Sarah Mitchell", email:"s.mitchell@watsonpartners.co.uk",  fca:"234567", fcaAuth:"CeMAP Level 3", role:"Adviser",        status:"Active",    casesMTD:6,  caseLimit:10,   volumeMTD:2100000, volumeLimit:3000000, joined:"12 Jan 2021", mfa:true,  lastActive:"Today, 09:15" },
-  { id:"ADV-003", name:"Mark Davies",    email:"m.davies@watsonpartners.co.uk",    fca:"345678", fcaAuth:"CeMAP Level 3", role:"Adviser",        status:"Active",    casesMTD:4,  caseLimit:8,    volumeMTD:1400000, volumeLimit:2500000, joined:"03 Jun 2022", mfa:false, lastActive:"Yesterday" },
-  { id:"ADV-004", name:"Emma Clarke",    email:"e.clarke@watsonpartners.co.uk",    fca:null,     fcaAuth:"CeMAP Pending", role:"Para Planner",   status:"Active",    casesMTD:2,  caseLimit:5,    volumeMTD:600000,  volumeLimit:1500000, joined:"15 Sep 2023", mfa:true,  lastActive:"Today, 08:44" },
-  { id:"ADV-005", name:"Tom O'Brien",    email:"t.obrien@watsonpartners.co.uk",    fca:"456789", fcaAuth:"CeMAP Level 3", role:"Adviser",        status:"Suspended", casesMTD:0,  caseLimit:6,    volumeMTD:0,       volumeLimit:2000000, joined:"20 Feb 2023", mfa:false, lastActive:"3 days ago", suspendReason:"Pending CPD completion — overdue 14 days" },
-  { id:"ADV-006", name:"Rachel Patel",   email:"r.patel@watsonpartners.co.uk",     fca:null,     fcaAuth:"—",             role:"Admin",          status:"Invited",   casesMTD:0,  caseLimit:0,    volumeMTD:0,       volumeLimit:null,    joined:null,          mfa:false, lastActive:"—", invitedDate:"19 Apr 2026" },
+  { id:"ADV-001", name:"John Watson",    email:"j.watson@watsonpartners.co.uk",    fca:"123456", fcaAuth:"CeMAP + DA",    role:"Principal",      status:"Active",    casesMTD:8,  caseLimit:null, volumeMTD:2800000, volumeLimit:null,    joined:"14 Mar 2019", mfa:true,  lastActive:"Today, 10:32", canViewAllCases:true  },
+  { id:"ADV-002", name:"Sarah Mitchell", email:"s.mitchell@watsonpartners.co.uk",  fca:"234567", fcaAuth:"CeMAP Level 3", role:"Adviser",        status:"Active",    casesMTD:6,  caseLimit:10,   volumeMTD:2100000, volumeLimit:3000000, joined:"12 Jan 2021", mfa:true,  lastActive:"Today, 09:15", canViewAllCases:false },
+  { id:"ADV-003", name:"Mark Davies",    email:"m.davies@watsonpartners.co.uk",    fca:"345678", fcaAuth:"CeMAP Level 3", role:"Adviser",        status:"Active",    casesMTD:4,  caseLimit:8,    volumeMTD:1400000, volumeLimit:2500000, joined:"03 Jun 2022", mfa:false, lastActive:"Yesterday",    canViewAllCases:false },
+  { id:"ADV-004", name:"Emma Clarke",    email:"e.clarke@watsonpartners.co.uk",    fca:null,     fcaAuth:"CeMAP Pending", role:"Para Planner",   status:"Active",    casesMTD:2,  caseLimit:5,    volumeMTD:600000,  volumeLimit:1500000, joined:"15 Sep 2023", mfa:true,  lastActive:"Today, 08:44", canViewAllCases:false },
+  { id:"ADV-005", name:"Tom O'Brien",    email:"t.obrien@watsonpartners.co.uk",    fca:"456789", fcaAuth:"CeMAP Level 3", role:"Adviser",        status:"Suspended", casesMTD:0,  caseLimit:6,    volumeMTD:0,       volumeLimit:2000000, joined:"20 Feb 2023", mfa:false, lastActive:"3 days ago",   canViewAllCases:false, suspendReason:"Pending CPD completion — overdue 14 days" },
+  { id:"ADV-006", name:"Rachel Patel",   email:"r.patel@watsonpartners.co.uk",     fca:null,     fcaAuth:"—",             role:"Admin",          status:"Invited",   casesMTD:0,  caseLimit:0,    volumeMTD:0,       volumeLimit:null,    joined:null,          mfa:false, lastActive:"—",            canViewAllCases:false, invitedDate:"19 Apr 2026" },
 ];
 
 // ─── Team cases ───────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ const pctUsed     = (val, lim) => lim ? Math.min(Math.round((val/lim)*100), 100)
 const barColor    = (p) => p >= 90 ? T.danger : p >= 70 ? T.warning : T.success;
 const statusChip  = (s) => ({ Active:{bg:T.successBg,text:T.success}, Suspended:{bg:T.dangerBg,text:T.danger}, Invited:{bg:T.warningBg,text:"#B45309"} }[s] || {bg:T.bg,text:T.textMuted});
 const MEMBER_ROLES = ["Principal","Adviser","Para Planner","Admin","Trainee Adviser"];
-const BLANK_FORM   = { name:"", email:"", role:"Adviser", fcaAuth:"", fca:"", caseLimit:"", volumeLimit:"", mfa:true };
+const BLANK_FORM   = { name:"", email:"", role:"Adviser", fcaAuth:"", fca:"", caseLimit:"", volumeLimit:"", mfa:true, canViewAllCases:false };
 const PRODUCT_TYPES = ["Residential","BTL","Commercial","Bridging","Development","Shared Ownership"];
 
 // ─── LimitBar ─────────────────────────────────────────────────────────────────
@@ -344,7 +344,7 @@ export default function BrokerAdminDashboard() {
     setEditing(m);
     setForm({ name:m.name, email:m.email||"", role:m.role, fcaAuth:m.fcaAuth==="—"?"":m.fcaAuth, fca:m.fca||"",
       caseLimit:m.caseLimit!=null?String(m.caseLimit):"",
-      volumeLimit:m.volumeLimit!=null?String(m.volumeLimit/1000):"", mfa:m.mfa });
+      volumeLimit:m.volumeLimit!=null?String(m.volumeLimit/1000):"", mfa:m.mfa, canViewAllCases:m.canViewAllCases||false });
     setShowModal(true);
   };
   const closeModal = () => { setShowModal(false); setEditing(null); setForm(BLANK_FORM); };
@@ -352,7 +352,7 @@ export default function BrokerAdminDashboard() {
   const handleSave = () => {
     const patch = {
       name:m=>m, email:m=>m, role:m=>m, fcaAuth:m=>m||"—", fca:m=>m||null,
-      caseLimit:m=>m?parseInt(m,10):null, volumeLimit:m=>m?parseInt(m,10)*1000:null, mfa:m=>m,
+      caseLimit:m=>m?parseInt(m,10):null, volumeLimit:m=>m?parseInt(m,10)*1000:null, mfa:m=>m, canViewAllCases:m=>m,
     };
     const p = Object.fromEntries(Object.entries(patch).map(([k,fn]) => [k, fn(form[k])]));
     if (editing) {
@@ -525,6 +525,7 @@ export default function BrokerAdminDashboard() {
                         <td style={tdSt}>
                           <span style={{ background:chip.bg, color:chip.text, fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, whiteSpace:"nowrap" }}>{m.status}</span>
                           {m.mfa&&<div style={{ fontSize:10, color:T.success, marginTop:3 }}>MFA ✓</div>}
+                          {m.canViewAllCases&&<div style={{ fontSize:10, color:T.primary, marginTop:2 }}>Team cases ✓</div>}
                         </td>
                         <td style={{...tdSt,fontSize:12,color:T.textMuted}}>{m.lastActive}</td>
                         <td style={{...tdSt,textAlign:"right"}}>
@@ -838,9 +839,18 @@ export default function BrokerAdminDashboard() {
                 <Input label="Monthly volume (£000s)"    value={form.volumeLimit} onChange={v=>setForm(f=>({...f,volumeLimit:v}))} placeholder="e.g. 3000" hint="Enter thousands — 3000 = £3M" type="number" />
               </div>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
-              <Toggle on={form.mfa} onToggle={()=>setForm(f=>({...f,mfa:!f.mfa}))} />
-              <span style={{ fontSize:13, color:T.text }}>Require MFA for this member</span>
+            <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:28 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <Toggle on={form.mfa} onToggle={()=>setForm(f=>({...f,mfa:!f.mfa}))} />
+                <span style={{ fontSize:13, color:T.text }}>Require MFA for this member</span>
+              </div>
+              <div style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"12px 14px", borderRadius:9, border:`1px solid ${form.canViewAllCases?T.primary:T.border}`, background:form.canViewAllCases?T.primaryLight:T.bg }}>
+                <Toggle on={form.canViewAllCases} onToggle={()=>setForm(f=>({...f,canViewAllCases:!f.canViewAllCases}))} />
+                <div>
+                  <div style={{ fontSize:13, fontWeight:600, color:form.canViewAllCases?T.primary:T.text }}>Can view all team cases</div>
+                  <div style={{ fontSize:12, color:T.textMuted, marginTop:2 }}>When enabled, this member can see every case submitted by the whole team, not just their own.</div>
+                </div>
+              </div>
             </div>
             <div style={{ display:"flex", gap:12, justifyContent:"flex-end" }}>
               <Btn ghost onClick={closeModal}>Cancel</Btn>
