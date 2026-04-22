@@ -748,7 +748,7 @@ export default function Shell({ userType }) {
       case "allcustomers":    return <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "brokerprospects": return <BrokerProspects onSelectProspect={(p) => { setSelectedProspect(p); setScreen("brokerhub"); }} />;
       case "brokerhub":       return <BrokerCustomerHub prospect={selectedProspect} onBack={() => setScreen("brokerprospects")} />;
-      case "brokeradmin":     return <BrokerAdminDashboard />;
+      case "brokeradmin":     return <BrokerAdminDashboard onViewBroker={() => setScreen("brokerdashboard")} />;
       case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;

@@ -312,7 +312,7 @@ function OrgGraph({ relationships, selectedId, onSelect }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function BrokerAdminDashboard() {
+export default function BrokerAdminDashboard({ onViewBroker }) {
   const [tab, setTab]         = useState("Overview");
   const [team, setTeam]       = useState(INITIAL_TEAM);
   const [showModal, setShowModal]           = useState(false);
@@ -523,6 +523,9 @@ export default function BrokerAdminDashboard() {
                         <td style={{...tdSt,fontSize:12,color:T.textMuted}}>{m.lastActive}</td>
                         <td style={{...tdSt,textAlign:"right"}}>
                           <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
+                            {m.status==="Active"&&m.role!=="Admin"&&onViewBroker&&(
+                              <Btn ghost small onClick={onViewBroker} iconNode={Ico.eye(14)}>View</Btn>
+                            )}
                             <Btn ghost small onClick={()=>openEdit(m)}>Edit</Btn>
                             {m.role!=="Principal"&&m.status!=="Invited"&&(
                               <button onClick={()=>setConfirmSuspend(m)} style={{ padding:"7px 14px", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:T.font, background:m.status==="Suspended"?T.successBg:T.dangerBg, color:m.status==="Suspended"?T.success:T.danger, border:`1px solid ${m.status==="Suspended"?T.successBorder:T.dangerBorder}` }}>
