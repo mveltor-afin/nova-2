@@ -7,6 +7,16 @@ import { Btn, Card } from "./primitives";
 // ─────────────────────────────────────────────
 const RELEASES = [
   {
+    version: "2.26.0",
+    date: "22 Apr 2026",
+    title: "Broker Individual Drill-Down in My Brokers",
+    items: [
+      { type: "New", text: "BDM — My Brokers: click any broker firm to reveal individual advisers within that firm. Each adviser row shows their firm affiliation, cases, conversion rate, volume, doc quality, and trend." },
+      { type: "New", text: "BDM — Individual adviser detail panel with KPIs (cases vs firm total, conversion vs firm avg, volume, doc quality), monthly submissions chart, and recent case outcomes table." },
+      { type: "Improved", text: "BDM — Broker Scorecard firm row selection now resets individual selection when switching firms, keeping the view focused." },
+    ]
+  },
+  {
     version: "2.25.0",
     date: "18 Apr 2026",
     title: "Ops Case Wizard, Team Routing & Pipeline Restructure",
