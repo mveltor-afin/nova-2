@@ -150,6 +150,23 @@ import { getNeedsAttention, PRIORITY_COLORS } from "./customers/NeedsAttentionSc
 
 const getCustomerProducts = (cust) => PRODUCTS.filter(p => cust.products.includes(p.id));
 
+// ─── Demo users ───────────────────────────────────────────────────────────────
+export const DEMO_USERS = [
+  // Broker Admin (firm principal)
+  { id:"u-001", name:"John Watson",    initials:"JW", persona:"Broker Admin",    role:"Principal / Firm Admin",  firm:"Watson & Partners", fca:"123456", adminId:null,   adminName:null,          screen:"brokeradmin"    },
+  // Broker team members — belong to Watson & Partners
+  { id:"u-002", name:"Sarah Mitchell", initials:"SM", persona:"Broker",          role:"Adviser",                 firm:"Watson & Partners", fca:"234567", adminId:"u-001", adminName:"John Watson", screen:"brokerdashboard" },
+  { id:"u-003", name:"Mark Davies",    initials:"MD", persona:"Broker",          role:"Adviser",                 firm:"Watson & Partners", fca:"345678", adminId:"u-001", adminName:"John Watson", screen:"brokerdashboard" },
+  // Bank staff
+  { id:"u-004", name:"Alex Turner",    initials:"AT", persona:"Underwriter",     role:"Senior Underwriter",      firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"uwqueue"        },
+  { id:"u-005", name:"Lisa Chen",      initials:"LC", persona:"Ops",             role:"Operations Manager",      firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"needsattention" },
+  { id:"u-006", name:"James Okafor",   initials:"JO", persona:"Finance",         role:"Finance Manager",         firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"disbursements"  },
+  { id:"u-007", name:"Priya Nair",     initials:"PN", persona:"Risk Analyst",    role:"Risk Analyst",            firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"consumerduty"   },
+  { id:"u-008", name:"Tom Bradley",    initials:"TB", persona:"BDM",             role:"Business Dev Manager",    firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"bdmdashboard"   },
+  { id:"u-009", name:"Rachel Stone",   initials:"RS", persona:"Admin",           role:"Platform Administrator",  firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"needsattention" },
+  { id:"u-010", name:"Chris Webb",     initials:"CW", persona:"Product Manager", role:"Product Manager",         firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"products"       },
+];
+
 // Inline "Live" indicator for KPI labels and similar
 export const LiveBadge = ({ updated }) => (
   <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:T.textMuted, marginLeft:6 }}>
@@ -167,6 +184,11 @@ export default function Shell({ userType }) {
     return userType === "external" ? "brokerdashboard" : "needsattention";
   });
   const [personaOpen, setPersonaOpen] = useState(false);
+  const [userPickerOpen, setUserPickerOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    const initialPersona = userType === "external" ? "Broker Admin" : "Ops";
+    return DEMO_USERS.find(u => u.persona === initialPersona) || DEMO_USERS[0];
+  });
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [contextCustomer, setContextCustomer] = useState(null);
   const [showCopilot, setShowCopilot] = useState(false);
@@ -591,8 +613,10 @@ export default function Shell({ userType }) {
             {PERSONAS.map(p => (
               <div key={p} onClick={() => {
                 setPersona(p); setPersonaOpen(false);
+                const matched = DEMO_USERS.find(u => u.persona === p);
+                if (matched) setCurrentUser(matched);
                 const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
-                setScreen(lastScreen || (p === "Broker" ? "brokerdashboard" : p === "Broker Admin" ? "brokeradmin" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : "needsattention"));
+                setScreen(lastScreen || (matched?.screen) || (p === "Broker" ? "brokerdashboard" : p === "Broker Admin" ? "brokeradmin" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -641,15 +665,76 @@ export default function Shell({ userType }) {
       </nav>
 
       {/* User footer */}
-      <div style={{ padding:"12px 16px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:8 }}>
-        <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#6366F1,#8B5CF6)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff" }}>
-          {isBroker ? "JW" : persona[0]}
+      <div onClick={() => setUserPickerOpen(true)} style={{ padding:"12px 16px", borderTop:"1px solid rgba(255,255,255,0.06)", cursor:"pointer", transition:"background 0.15s" }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#6366F1,#8B5CF6)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#fff" }}>
+            {currentUser.initials}
+          </div>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:12, fontWeight:500, color:"#E2E8F0", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{currentUser.name}</div>
+            <div style={{ fontSize:10, color:"#64748B" }}>{currentUser.fca ? `FCA: ${currentUser.fca}` : currentUser.firm}</div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A5568" strokeWidth="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
         </div>
-        <div>
-          <div style={{ fontSize:12, fontWeight:500, color:"#E2E8F0" }}>{isBroker ? "John Watson" : `${persona} User`}</div>
-          <div style={{ fontSize:10, color:"#64748B" }}>{isBroker ? "FCA: 123456" : "Afin Bank"}</div>
-        </div>
+        {currentUser.adminName && (
+          <div style={{ marginTop:5, marginLeft:38, fontSize:10, color:"#4A90A4" }}>
+            {currentUser.firm} · Admin: {currentUser.adminName}
+          </div>
+        )}
       </div>
+
+      {/* User picker modal */}
+      {userPickerOpen && (
+        <div onClick={() => setUserPickerOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:500, display:"flex", alignItems:"flex-end", justifyContent:"flex-start" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:"#1E293B", borderRadius:"0 16px 0 0", width:260, maxHeight:"80vh", overflowY:"auto", boxShadow:"4px -4px 32px rgba(0,0,0,0.4)", border:"1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ padding:"16px 16px 10px", borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:"#64748B", textTransform:"uppercase", letterSpacing:0.8 }}>Switch Demo User</div>
+            </div>
+            {/* Broker firm group */}
+            <div style={{ padding:"10px 16px 4px" }}>
+              <div style={{ fontSize:10, color:"#4A5568", fontWeight:700, textTransform:"uppercase", letterSpacing:0.6, marginBottom:6 }}>Watson &amp; Partners</div>
+              {DEMO_USERS.filter(u => u.firm === "Watson & Partners").map(u => (
+                <div key={u.id} onClick={() => { setCurrentUser(u); setPersona(u.persona); setScreen(u.screen); setUserPickerOpen(false); setCollapsedGroups({}); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:8, cursor:"pointer",
+                    background: currentUser.id === u.id ? "rgba(49,184,151,0.12)" : "transparent",
+                    border: currentUser.id === u.id ? "1px solid rgba(49,184,151,0.3)" : "1px solid transparent",
+                    marginBottom:4, transition:"all 0.12s" }}
+                  onMouseEnter={e => { if (currentUser.id !== u.id) e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                  onMouseLeave={e => { if (currentUser.id !== u.id) e.currentTarget.style.background = "transparent"; }}>
+                  <div style={{ width:28, height:28, borderRadius:7, background:"linear-gradient(135deg,#6366F1,#8B5CF6)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#fff" }}>{u.initials}</div>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color: currentUser.id === u.id ? "#31B897" : "#CBD5E1", whiteSpace:"nowrap" }}>{u.name}</div>
+                    <div style={{ fontSize:10, color:"#4A5568" }}>{u.role}</div>
+                  </div>
+                  {currentUser.id === u.id && <div style={{ marginLeft:"auto", fontSize:10, color:"#31B897" }}>●</div>}
+                </div>
+              ))}
+            </div>
+            {/* Bank staff group */}
+            <div style={{ padding:"6px 16px 12px", borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontSize:10, color:"#4A5568", fontWeight:700, textTransform:"uppercase", letterSpacing:0.6, marginBottom:6, marginTop:6 }}>Afin Bank</div>
+              {DEMO_USERS.filter(u => u.firm === "Afin Bank").map(u => (
+                <div key={u.id} onClick={() => { setCurrentUser(u); setPersona(u.persona); setScreen(u.screen); setUserPickerOpen(false); setCollapsedGroups({}); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:8, cursor:"pointer",
+                    background: currentUser.id === u.id ? "rgba(49,184,151,0.12)" : "transparent",
+                    border: currentUser.id === u.id ? "1px solid rgba(49,184,151,0.3)" : "1px solid transparent",
+                    marginBottom:4, transition:"all 0.12s" }}
+                  onMouseEnter={e => { if (currentUser.id !== u.id) e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                  onMouseLeave={e => { if (currentUser.id !== u.id) e.currentTarget.style.background = "transparent"; }}>
+                  <div style={{ width:28, height:28, borderRadius:7, background:"linear-gradient(135deg,#0EA5E9,#0369A1)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#fff" }}>{u.initials}</div>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color: currentUser.id === u.id ? "#31B897" : "#CBD5E1", whiteSpace:"nowrap" }}>{u.name}</div>
+                    <div style={{ fontSize:10, color:"#4A5568" }}>{u.role}</div>
+                  </div>
+                  {currentUser.id === u.id && <div style={{ marginLeft:"auto", fontSize:10, color:"#31B897" }}>●</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
@@ -748,8 +833,8 @@ export default function Shell({ userType }) {
       case "allcustomers":    return <AllCustomersScreen onSelectCustomer={handleSelectCustomer} />;
       case "brokerprospects": return <BrokerProspects onSelectProspect={(p) => { setSelectedProspect(p); setScreen("brokerhub"); }} />;
       case "brokerhub":       return <BrokerCustomerHub prospect={selectedProspect} onBack={() => setScreen("brokerprospects")} />;
-      case "brokeradmin":     return <BrokerAdminDashboard onViewBroker={() => setScreen("brokerdashboard")} />;
-      case "brokerdashboard": return <BrokerDashboardV2 onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
+      case "brokeradmin":     return <BrokerAdminDashboard onViewBroker={(name) => { const u = DEMO_USERS.find(x => x.name === name && x.persona === "Broker"); if (u) { setCurrentUser(u); setPersona("Broker"); } setScreen("brokerdashboard"); }} />;
+      case "brokerdashboard": return <BrokerDashboardV2 currentUser={currentUser} onNewLoan={() => setMode("wizard")} onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} />;
       case "myapplications":  return <BrokerLoansScreen onOpenCase={(loan) => { setSelectedLoan(loan); setMode("casedetail"); }} onNewLoan={() => setMode("wizard")} />;
       case "smartapply":      return <SmartPrefill />;
       case "newloan":         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", flexDirection: "column", gap: 16 }}>

@@ -524,7 +524,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
                         <td style={{...tdSt,textAlign:"right"}}>
                           <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
                             {m.status==="Active"&&m.role!=="Admin"&&onViewBroker&&(
-                              <Btn ghost small onClick={onViewBroker} iconNode={Ico.eye(14)}>View</Btn>
+                              <Btn ghost small onClick={() => onViewBroker(m.name)} iconNode={Ico.eye(14)}>View</Btn>
                             )}
                             <Btn ghost small onClick={()=>openEdit(m)}>Edit</Btn>
                             {m.role!=="Principal"&&m.status!=="Invited"&&(

@@ -104,7 +104,7 @@ const ProgressStepper = ({ currentStep }) => (
 );
 
 /* ── main component ── */
-function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
+function BrokerDashboardV2({ onNewLoan, onOpenCase, currentUser }) {
   const [showHelpCentre, setShowHelpCentre] = useState(false);
   const sorted = [...MOCK_LOANS].sort((a, b) => (SLA_URGENCY[a.status] || 99) - (SLA_URGENCY[b.status] || 99));
 
@@ -121,8 +121,15 @@ function BrokerDashboardV2({ onNewLoan, onOpenCase }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>{getGreeting()}, John.</div>
-          <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>{getGreeting()}, {currentUser?.name?.split(" ")[0] ?? "John"}.</div>
+            {currentUser?.adminName && (
+              <span style={{ fontSize:11, fontWeight:600, padding:"3px 10px", borderRadius:20, background:"#EDE9FE", color:"#6D28D9" }}>
+                {currentUser.firm} · {currentUser.adminName} (Admin)
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 13, color: T.textMuted }}>
             You have <b style={{ color: T.text }}>4 cases</b> needing attention this week — 1 fewer than last week. Nice work.
           </div>
         </div>
