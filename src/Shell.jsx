@@ -135,6 +135,7 @@ import AgentBuilder from "./admin/AgentBuilder";
 import AgentMonitor from "./admin/AgentMonitor";
 import MyCases from "./workflows/MyCases";
 import TeamView from "./workflows/TeamView";
+import OpsTeamLead from "./workflows/OpsTeamLead";
 // Agentic AI features (v2.19)
 import CaseOrchestrationAgent from "./shared/CaseOrchestrationAgent";
 import RetentionAgent from "./shared/RetentionAgent";
@@ -159,7 +160,7 @@ export const DEMO_USERS = [
   { id:"u-003", name:"Mark Davies",    initials:"MD", persona:"Broker",          role:"Adviser",                 firm:"Watson & Partners", fca:"345678", adminId:"u-001", adminName:"John Watson", screen:"brokerdashboard" },
   // Bank staff
   { id:"u-004", name:"Alex Turner",    initials:"AT", persona:"Underwriter",     role:"Senior Underwriter",      firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"uwqueue"        },
-  { id:"u-005", name:"Lisa Chen",      initials:"LC", persona:"Ops",             role:"Operations Manager",      firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"needsattention" },
+  { id:"u-005", name:"Lisa Chen",      initials:"LC", persona:"Ops",             role:"Operations Manager",      firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"slat"           },
   { id:"u-006", name:"James Okafor",   initials:"JO", persona:"Finance",         role:"Finance Manager",         firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"disbursements"  },
   { id:"u-007", name:"Priya Nair",     initials:"PN", persona:"Risk Analyst",    role:"Risk Analyst",            firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"consumerduty"   },
   { id:"u-008", name:"Tom Bradley",    initials:"TB", persona:"BDM",             role:"Business Dev Manager",    firm:"Afin Bank",         fca:null,    adminId:null,   adminName:null,          screen:"bdmdashboard"   },
@@ -327,39 +328,28 @@ export default function Shell({ userType }) {
       ]
     : persona === "Underwriter"
     ? [
-        // Underwriter: AI-powered credit decision engine
-        { group:"MY WORK", items:[
-          { id:"mycases",           label:"My Cases",              icon:"user", badge:4 },
-          { id:"teamview",          label:"Team",                  icon:"users" },
+        { group:"MY QUEUE", items:[
+          { id:"uwqueue",         label:"Smart Queue",          icon:"zap", badge:3 },
+          { id:"mycases",         label:"My Cases",             icon:"user", badge:4 },
         ]},
-        { group:"PIPELINE", items:[
-          { id:"pipeline",          label:"Pipeline",              icon:"chart" },
-          { id:"caseworkbench",     label:"Case Workbench",        icon:"loans" },
-          { id:"offers",            label:"Offers",                icon:"file" },
+        { group:"OVERSIGHT", items:[
+          { id:"slat",            label:"SLA Tracker",          icon:"clock" },
+          { id:"pipeline",        label:"All Cases",            icon:"chart" },
         ]},
         { group:"CUSTOMERS", items:[
-          { id:"needsattention",  label:"Needs Attention",    icon:"alert", badge:needsAttentionCount },
-          { id:"allcustomers",    label:"All Customers",      icon:"customers" },
-        ]},
-        { group:"INTELLIGENCE", items:[
-          { id:"uwperformance",   label:"My Performance",     icon:"chart" },
-          { id:"smartdocs",       label:"Smart Doc Extraction",icon:"sparkle" },
-          { id:"mymi",            label:"My MI",              icon:"chart" },
-          { id:"myreports",       label:"My Reports",         icon:"file" },
-          { id:"aidashboard",     label:"AI Dashboard",       icon:"sparkle" },
-          { id:"messages",        label:"Messages",           icon:"messages", badge:5 },
-          { id:"myinbox",         label:"My Inbox",           icon:"bell", badge:8 },
+          { id:"needsattention",  label:"Needs Attention",      icon:"alert", badge:needsAttentionCount },
+          { id:"allcustomers",    label:"All Customers",        icon:"customers" },
         ]},
         { group:"SERVICING", items:[
-          { id:"servicing",       label:"Mortgage Servicing",  icon:"wallet" },
+          { id:"servicing",       label:"Mortgage Servicing",   icon:"wallet" },
         ]},
-        { group:"AI AGENTS", collapsed:true, items:[
-          { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
-          { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
+        { group:"INSIGHTS", collapsed:true, items:[
+          { id:"uwperformance",   label:"My Performance",       icon:"chart" },
+          { id:"mymi",            label:"My MI",                icon:"chart" },
+          { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
         ]},
         { group:null, items:[
-          { id:"releases",        label:"Releases",           icon:"sparkle" },
-          { id:"settings",        label:"Settings",           icon:"settings" },
+          { id:"settings",        label:"Settings",             icon:"settings" },
         ]},
       ]
     : persona === "Finance"
@@ -461,15 +451,14 @@ export default function Shell({ userType }) {
         ]},
       ]
     : [
-        // Ops & Admin — follows the case lifecycle
-        { group:"MY WORK", items:[
-          { id:"mycases",         label:"My Cases",             icon:"user", badge:4 },
-          { id:"teamview",        label:"Team",                 icon:"users" },
+        // Ops & Admin — case lifecycle oversight
+        { group:"OVERSIGHT", items:[
+          { id:"slat",            label:"SLA Tracker",          icon:"clock" },
+          { id:"commandcentre",   label:"Command Centre",       icon:"dashboard" },
         ]},
         { group:"PIPELINE", items:[
-          { id:"pipeline",        label:"Pipeline",             icon:"chart" },
           { id:"intake",          label:"Incoming",             icon:"zap", badge:3 },
-          { id:"caseworkbench",   label:"Case Workbench",       icon:"loans" },
+          { id:"mycases",         label:"My Cases",             icon:"user", badge:4 },
           { id:"offers",          label:"Offers & ESIS",        icon:"file" },
         ]},
         { group:"CUSTOMERS", items:[
@@ -484,76 +473,45 @@ export default function Shell({ userType }) {
             { id:"complaints",    label:"Complaints",           icon:"alert" },
           ] : []),
         ]},
-        { group:"PRODUCTS", items:[
-          { id:"mortgages",       label:"Mortgages",            icon:"loans" },
-          { id:"savings",         label:"Savings",              icon:"dollar" },
-          { id:"currentaccounts", label:"Current Accounts",     icon:"wallet" },
-          { id:"insurance",       label:"Insurance",            icon:"shield" },
-          { id:"sharedownership", label:"Shared Ownership",     icon:"assign" },
-        ]},
-        { group:"INTELLIGENCE", items:[
-          { id:"commandcentre",   label:"Command Centre",       icon:"dashboard" },
-          { id:"aidashboard",     label:"AI Dashboard",         icon:"sparkle" },
-          { id:"mymi",            label:"My MI",                icon:"chart" },
-          { id:"myreports",       label:"My Reports",           icon:"file" },
-          ...(persona === "Admin" ? [
-            { id:"journeyanalytics",label:"Journey Analytics",  icon:"eye" },
-            { id:"forecaster",    label:"Pipeline Forecaster",  icon:"chart" },
-          ] : []),
+        { group:"INSIGHTS", collapsed:true, items:[
+          { id:"mymi",            label:"MI & Analytics",       icon:"chart" },
           { id:"messages",        label:"Messages",             icon:"messages", badge:5 },
           { id:"myinbox",         label:"My Inbox",             icon:"bell", badge:8 },
         ]},
-        ...((persona === "Ops" || persona === "Admin") ? [{
-          group:"AI AGENTS", items:[
-            { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
-            { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
-          ],
-        }] : []),
-        ...((persona === "Ops" || persona === "Admin") ? [{
-          group:"TOOLS", collapsed:true, items:[
-            { id:"orchestrationagent", label:"AI Case Agent",   icon:"sparkle" },
-            { id:"retentionagent", label:"Retention Agent",      icon:"chart" },
-            { id:"collectionsagent", label:"Collections Agent",  icon:"alert" },
-            { id:"solicitorpanel", label:"Solicitor Panel",      icon:"users" },
-            { id:"commscentre",    label:"Comms Centre",         icon:"send" },
-            { id:"casejourney",    label:"Case Journey",         icon:"clock" },
-            { id:"complianceengine",label:"Compliance Engine",   icon:"shield" },
-            { id:"doctemplates",   label:"Doc Templates",        icon:"file" },
-            { id:"brokeronboard",  label:"Broker Onboarding",   icon:"assign" },
-            { id:"segmentation",   label:"Segmentation",         icon:"customers" },
-          ],
-        }] : []),
         ...(persona === "Admin" ? [{
           group:"PEOPLE", collapsed:true, items:[
             { id:"usersroles",    label:"Users & Roles",        icon:"users" },
-            { id:"permissions",   label:"Permissions",           icon:"shield" },
-            { id:"team",          label:"Team Hierarchy",        icon:"assign" },
+            { id:"permissions",   label:"Permissions",          icon:"shield" },
+            { id:"team",          label:"Team Hierarchy",       icon:"assign" },
           ],
         },
         {
           group:"PLATFORM", collapsed:true, items:[
-            { id:"customerportal", label:"Customer App Preview",  icon:"customers" },
-            { id:"workflows",      label:"Workflow Builder",      icon:"zap" },
-            { id:"products",       label:"Product Catalogue",     icon:"products" },
-            { id:"themeeditor",    label:"Theme Editor",          icon:"settings" },
-            { id:"flags",          label:"Feature Flags",         icon:"zap" },
-            { id:"mandates",       label:"Mandates",              icon:"shield" },
-            { id:"reportbuilder",  label:"Report Builder",        icon:"chart" },
-            { id:"apihealth",      label:"API Health",            icon:"zap" },
-            { id:"apiobservatory", label:"API Observatory",       icon:"eye" },
-            { id:"dataexport",     label:"Data Export",            icon:"download" },
-            { id:"audit",          label:"Audit & Sessions",      icon:"clock" },
-            { id:"anomalies",      label:"AI Anomalies",          icon:"alert" },
+            { id:"customerportal", label:"Customer App Preview", icon:"customers" },
+            { id:"workflows",      label:"Workflow Builder",     icon:"zap" },
+            { id:"products",       label:"Product Catalogue",    icon:"products" },
+            { id:"themeeditor",    label:"Theme Editor",         icon:"settings" },
+            { id:"flags",          label:"Feature Flags",        icon:"zap" },
+            { id:"mandates",       label:"Mandates",             icon:"shield" },
+            { id:"reportbuilder",  label:"Report Builder",       icon:"chart" },
+            { id:"apihealth",      label:"API Health",           icon:"zap" },
+            { id:"apiobservatory", label:"API Observatory",      icon:"eye" },
+            { id:"dataexport",     label:"Data Export",          icon:"download" },
+            { id:"audit",          label:"Audit & Sessions",     icon:"clock" },
+            { id:"agentbuilder",   label:"Agent Orchestrator",   icon:"sparkle" },
+            { id:"agentmonitor",   label:"Agent Monitor",        icon:"eye" },
           ],
         },
         {
           group:"FINANCE & RISK", collapsed:true, items:[
-            { id:"portfoliorisk",    label:"Portfolio Risk",        icon:"shield" },
-            { id:"stresstest",       label:"Stress Testing",        icon:"alert" },
-            { id:"scenariomodeller", label:"Scenario Modeller",     icon:"chart" },
-            { id:"pricing",          label:"Pricing Engine",        icon:"dollar" },
-            { id:"boardpack",        label:"Board Pack",            icon:"file" },
-            { id:"compliance_cal",   label:"Compliance Calendar",   icon:"clock" },
+            { id:"portfoliorisk",    label:"Portfolio Risk",       icon:"shield" },
+            { id:"stresstest",       label:"Stress Testing",       icon:"alert" },
+            { id:"scenariomodeller", label:"Scenario Modeller",    icon:"chart" },
+            { id:"pricing",          label:"Pricing Engine",       icon:"dollar" },
+            { id:"boardpack",        label:"Board Pack",           icon:"file" },
+            { id:"compliance_cal",   label:"Compliance Calendar",  icon:"clock" },
+            { id:"journeyanalytics", label:"Journey Analytics",    icon:"eye" },
+            { id:"forecaster",       label:"Pipeline Forecaster",  icon:"chart" },
           ],
         }] : []),
         { group:null, items:[
@@ -618,7 +576,7 @@ export default function Shell({ userType }) {
                 const matched = DEMO_USERS.find(u => u.persona === p);
                 if (matched) setCurrentUser(matched);
                 const lastScreen = localStorage.getItem(`nova_last_screen_${p}`);
-                setScreen(lastScreen || (matched?.screen) || (p === "Broker" ? "brokerdashboard" : p === "Broker Admin" ? "brokeradmin" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : "needsattention"));
+                setScreen(lastScreen || (matched?.screen) || (p === "Broker" ? "brokerdashboard" : p === "Broker Admin" ? "brokeradmin" : p === "BDM" ? "bdmdashboard" : p === "Underwriter" ? "uwqueue" : p === "Finance" ? "disbursements" : p === "Risk Analyst" ? "consumerduty" : p === "Product Manager" ? "products" : p === "Ops" ? "slat" : p === "Admin" ? "slat" : "needsattention"));
                 setCollapsedGroups({});
                 setContextCustomer(null);
               }}
@@ -901,6 +859,7 @@ export default function Shell({ userType }) {
       />;
       case "teamview":        return <TeamView role={persona === "Underwriter" ? "underwriter" : "ops"} />;
       case "caseworkbench":   return <CaseWorkbench />;
+      case "slat":            return <OpsTeamLead onOpenCase={(loan) => { setSelectedLoan(loan); setShowUWModal(true); }} />;
       case "valuations":      return <ValuationScreen />;
       case "property":        return <PropertyScreen />;
       case "eligibility":     return <EligibilityCalculator />;
@@ -988,7 +947,7 @@ export default function Shell({ userType }) {
       // Game-changer enhancements (v2.14)
       // DecisionEngine + DocumentIntelligence are now tabs inside UWWorkstation
       // lifecyclepredictor is now a tab inside UWWorkstation
-      case "commandcentre":     return <CommandCentre />;
+      case "commandcentre":     return <CommandCentre onOpenCase={(loan) => { setSelectedLoan(loan); setShowUWModal(true); }} />;
 
       case "scenariomodeller":  return <ScenarioModeller />;
       case "complianceengine":  return <ComplianceEngine />;

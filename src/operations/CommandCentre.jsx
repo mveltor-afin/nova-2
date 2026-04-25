@@ -1,6 +1,52 @@
 import { useState } from "react";
 import { T, Ico } from "../shared/tokens";
 import { Btn, Card, KPICard } from "../shared/primitives";
+import { MOCK_LOANS } from "../data/loans";
+
+/* ── SLA config (mirrors OpsTeamLead) ──────────────────── */
+const SLA_CONFIG = {
+  Submitted:       { days: 1 }, KYC_In_Progress: { days: 3 },
+  Underwriting:    { days: 5 }, Referred:        { days: 10 },
+  DIP_Approved:    { days: 7 }, Approved:        { days: 2 },
+  Offer_Issued:    { days: 21 }, Offer_Accepted:  { days: 45 },
+};
+
+const STAGE_LABEL = {
+  Submitted: "New Application", KYC_In_Progress: "KYC", Underwriting: "Underwriting",
+  Referred: "Referred — Senior Review", DIP_Approved: "DIP", Approved: "Awaiting Offer",
+  Offer_Issued: "Offer Issued", Offer_Accepted: "Pre-Completion",
+};
+
+function parseDays(updated = "") {
+  if (!updated) return 0;
+  if (updated.includes("h")) return 0.1;
+  const n = parseInt(updated) || 0;
+  if (updated.includes("w")) return n * 7;
+  return n;
+}
+
+// Build real escalation queue from MOCK_LOANS (cases at or near SLA breach)
+const buildEscalations = () => {
+  return MOCK_LOANS
+    .filter(l => l.status !== "Disbursed" && SLA_CONFIG[l.status])
+    .map(l => {
+      const slaDays = SLA_CONFIG[l.status].days;
+      const days = parseDays(l.updated);
+      const pct = days / slaDays;
+      return { ...l, days, slaDays, pct };
+    })
+    .filter(l => l.pct >= 0.75)
+    .sort((a, b) => b.pct - a.pct)
+    .map(l => ({
+      id: l.id,
+      customer: l.names,
+      stage: STAGE_LABEL[l.status] || l.status.replace(/_/g, " "),
+      timeInStage: l.days < 1 ? "<1 day" : `${l.days}d`,
+      risk: l.riskLevel || "Medium",
+      action: l.pct >= 1 ? "escalate" : "monitor",
+      loan: l,
+    }));
+};
 
 /* ── Mock Data ─────────────────────────────────────────── */
 
@@ -100,8 +146,9 @@ const capacityColor = (active, max) => {
 
 /* ── Component ──────────────────────────────────────────── */
 
-export default function CommandCentre() {
+export default function CommandCentre({ onOpenCase }) {
   const [selectedCell, setSelectedCell] = useState(null);
+  const escalations = buildEscalations();
 
   const maxFunnel = Math.max(...FUNNEL_DATA.map(d => d.cases));
 
@@ -118,15 +165,23 @@ export default function CommandCentre() {
         </div>
       </div>
 
-      {/* KPI Strip */}
-      <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
-        <KPICard label="Cases in Flight" value="47" color={T.primary} />
-        <KPICard label="Within SLA" value="39" color={T.success} sub="83% of active" />
-        <KPICard label="SLA Breaching" value="5" color={T.warning} sub="Action required" />
-        <KPICard label="SLA Breached" value="3" color={T.danger} sub="Escalated" />
-        <KPICard label="Avg Cycle Time" value="4.2 days" color={T.primary} sub="Target: 5 days" />
-        <KPICard label="Squad Utilisation" value="78%" color={T.accent} sub="6 active members" />
-      </div>
+      {/* KPI Strip — real MOCK_LOANS data */}
+      {(() => {
+        const active = MOCK_LOANS.filter(l => l.status !== "Disbursed" && SLA_CONFIG[l.status]);
+        const breached = active.filter(l => parseDays(l.updated) / (SLA_CONFIG[l.status]?.days || 99) >= 1).length;
+        const atRisk = active.filter(l => { const pct = parseDays(l.updated) / (SLA_CONFIG[l.status]?.days || 99); return pct >= 0.75 && pct < 1; }).length;
+        const onTrack = active.length - breached - atRisk;
+        return (
+          <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
+            <KPICard label="Cases in Flight"   value={active.length} color={T.primary} />
+            <KPICard label="Within SLA"        value={onTrack} sub={`${Math.round(onTrack/active.length*100)}% of active`} color={T.success} />
+            <KPICard label="At Risk"           value={atRisk}   sub="Action soon"     color={T.warning} />
+            <KPICard label="SLA Breached"      value={breached} sub="Escalate now"    color={T.danger} />
+            <KPICard label="Avg Cycle Time"    value="4.2 days" sub="Target: 5 days"  color={T.primary} />
+            <KPICard label="Squad Utilisation" value="78%"      sub="6 active members" color={T.accent} />
+          </div>
+        );
+      })()}
 
       {/* Row 1: SLA Heatmap + Bottleneck Funnel */}
       <div style={{ display: "flex", gap: 20, marginBottom: 24, flexWrap: "wrap" }}>
@@ -265,7 +320,9 @@ export default function CommandCentre() {
               </div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>Auto-Escalation Queue</div>
-                <div style={{ fontSize: 11, color: T.textMuted }}>AI has identified 5 cases requiring immediate attention</div>
+                <div style={{ fontSize: 11, color: T.textMuted }}>
+                  {escalations.length} case{escalations.length !== 1 ? "s" : ""} at or near SLA threshold — click to open
+                </div>
               </div>
             </div>
           </div>
@@ -282,23 +339,27 @@ export default function CommandCentre() {
                 </tr>
               </thead>
               <tbody>
-                {ESCALATION_QUEUE.map((row) => (
+                {escalations.length === 0 && (
+                  <tr><td colSpan={6} style={{ ...tdStyle, textAlign: "center", color: T.textMuted, padding: 24 }}>All cases within SLA — no escalations needed.</td></tr>
+                )}
+                {escalations.map((row) => (
                   <tr
                     key={row.id}
-                    style={{ transition: "background 0.15s" }}
+                    style={{ transition: "background 0.15s", cursor: "pointer" }}
+                    onClick={() => onOpenCase?.(row.loan)}
                     onMouseEnter={e => e.currentTarget.style.background = "#FAFAF7"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
-                    <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 12, fontWeight: 600 }}>{row.id}</td>
+                    <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: T.primary }}>{row.id}</td>
                     <td style={{ ...tdStyle, fontWeight: 600 }}>{row.customer}</td>
                     <td style={tdStyle}>{row.stage}</td>
                     <td style={{ ...tdStyle, fontWeight: 600, color: row.action === "escalate" ? T.danger : T.warning }}>{row.timeInStage}</td>
                     <td style={tdStyle}>{riskBadge(row.risk)}</td>
-                    <td style={tdStyle}>
+                    <td style={tdStyle} onClick={e => e.stopPropagation()}>
                       {row.action === "escalate" ? (
-                        <Btn small danger icon="zap">Escalate Now</Btn>
+                        <Btn small danger icon="zap" onClick={() => onOpenCase?.(row.loan)}>Escalate Now</Btn>
                       ) : (
-                        <Btn small style={{ background: T.warningBg, color: T.warning, border: `1px solid ${T.warningBorder}` }} icon="eye">Monitor</Btn>
+                        <Btn small style={{ background: T.warningBg, color: "#92400E", border: `1px solid ${T.warningBorder}` }} icon="eye" onClick={() => onOpenCase?.(row.loan)}>Monitor</Btn>
                       )}
                     </td>
                   </tr>
