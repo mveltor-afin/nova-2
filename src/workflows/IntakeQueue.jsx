@@ -102,6 +102,28 @@ export default function IntakeQueue({ onProcessCase }) {
                     <span>LTV: {loan.ltv}%</span>
                     {loan.code && <span style={{ fontFamily: "monospace" }}>{loan.code}</span>}
                   </div>
+                  {loan.brokerChannel && (() => {
+                    const ch = loan.brokerChannel;
+                    const isDA = ch.type === "DA";
+                    const isAR = ch.type === "AR";
+                    return (
+                      <div style={{ marginTop: 5, display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 5, letterSpacing: 0.3,
+                          background: isDA ? "#E6F7F3" : isAR ? "#F3E8FF" : "#FFF8E0",
+                          color: isDA ? "#059669" : isAR ? "#6D28D9" : "#92400E",
+                          border: `1px solid ${isDA ? "#A3DDD1" : isAR ? "#C4B5FD" : "#FFD966"}`,
+                        }}>
+                          {isDA ? `DA · ${ch.firm}` : isAR ? `AR · ${ch.network}` : `📦 Via ${ch.packager}`}
+                        </span>
+                        {!isDA && (
+                          <span style={{ fontSize: 10, color: isAR ? "#6D28D9" : "#92400E", fontWeight: 600 }}>
+                            Contact {isAR ? "network" : "packager"} only
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <Btn primary onClick={() => onProcessCase?.(loan)}>
                   Process Case →

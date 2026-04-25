@@ -7,6 +7,7 @@ const DEFAULT_LOAN = {
   id: "AFN-2026-00142",
   customer: "James & Sarah Mitchell",
   broker: "Oakbridge Financial",
+  brokerChannel: { type:"DA", firm:"Oakbridge Financial Services", fca:"FCA-487231", contact:"James Hartley", phone:"01179 560400", email:"j.hartley@oakbridgefs.co.uk" },
   amount: 425000,
   property: "14 Harbourside Walk, Bristol BS1 5AH",
   propertyType: "3-bed semi-detached",
@@ -16,6 +17,57 @@ const DEFAULT_LOAN = {
   avmValue: 495000,
   avmConfidence: 87,
   ltv: 78,
+};
+
+/* ── broker channel panel ───────────────────────────────── */
+const CHANNEL_STYLE = {
+  DA:       { label:"DA · Directly Authorised", bg:"#E6F7F3", border:"#A3DDD1", badgeBg:"#31B897", badgeText:"#fff" },
+  AR:       { label:"AR · Appointed Representative", bg:"#F3E8FF", border:"#C4B5FD", badgeBg:"#7C3AED", badgeText:"#fff" },
+  Packager: { label:"Via Packager", bg:"#FFF8E0", border:"#FFD966", badgeBg:"#FFBF00", badgeText:"#0C2D3B" },
+};
+
+const BrokerChannelPanel = ({ channel }) => {
+  if (!channel) return null;
+  const cs = CHANNEL_STYLE[channel.type] || CHANNEL_STYLE.DA;
+  const isIndirect = channel.type === "AR" || channel.type === "Packager";
+  return (
+    <div style={{ padding:"14px 16px", borderRadius:10, background:cs.bg, border:`1px solid ${cs.border}`, marginBottom:12 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+        <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:6, background:cs.badgeBg, color:cs.badgeText, letterSpacing:0.4 }}>{cs.label}</span>
+        {isIndirect && (
+          <span style={{ fontSize:11, fontWeight:600, color: channel.type === "AR" ? "#6D28D9" : "#92400E" }}>
+            {channel.type === "AR" ? `Network: ${channel.network}` : `Packager: ${channel.packager}`}
+          </span>
+        )}
+      </div>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:"10px 24px", fontSize:12, color:"#0C2D3B" }}>
+        <span><strong>Broker firm:</strong> {channel.firm}</span>
+        <span><strong>FCA ref:</strong> {channel.fca}</span>
+        {channel.type === "DA" && <>
+          <span><strong>Contact:</strong> {channel.contact}</span>
+          <span><strong>Phone:</strong> {channel.phone}</span>
+          <span><strong>Email:</strong> <a href={`mailto:${channel.email}`} style={{ color:"#1A4A54" }}>{channel.email}</a></span>
+        </>}
+        {channel.type === "AR" && <>
+          <span><strong>Network FCA:</strong> {channel.networkFca}</span>
+          <span><strong>Network contact:</strong> {channel.networkContact}</span>
+          <span><strong>Phone:</strong> {channel.networkPhone}</span>
+          <span><strong>Email:</strong> <a href={`mailto:${channel.networkEmail}`} style={{ color:"#6D28D9" }}>{channel.networkEmail}</a></span>
+        </>}
+        {channel.type === "Packager" && <>
+          <span><strong>Packager FCA:</strong> {channel.packagerFca}</span>
+          <span><strong>Contact:</strong> {channel.packagerContact}</span>
+          <span><strong>Phone:</strong> {channel.packagerPhone}</span>
+          <span><strong>Email:</strong> <a href={`mailto:${channel.packagerEmail}`} style={{ color:"#92400E" }}>{channel.packagerEmail}</a></span>
+        </>}
+      </div>
+      {isIndirect && (
+        <div style={{ marginTop:10, fontSize:11, fontWeight:600, padding:"6px 10px", borderRadius:6, background: channel.type === "AR" ? "#EDE9FE" : "#FEF3C7", color: channel.type === "AR" ? "#5B21B6" : "#92400E", display:"inline-flex", alignItems:"center", gap:6 }}>
+          ⚠ All queries must go via the {channel.type === "AR" ? "network" : "packager"} — do not contact the broker directly
+        </div>
+      )}
+    </div>
+  );
 };
 
 /* ── helper: progress ring ──────────────────────────────── */
@@ -105,8 +157,8 @@ function CaseWorkbench({ loan: loanProp }) {
           <span style={{ fontSize: 16, fontWeight: 600 }}>{loan.customer}</span>
           <StatusLabel text={loan.status} color="blue" />
         </div>
+        <BrokerChannelPanel channel={loan.brokerChannel ?? { type:"DA", firm:loan.broker, fca:"—" }} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 24, fontSize: 12, color: T.textMuted }}>
-          <span><strong>Broker:</strong> {loan.broker}</span>
           <span><strong>Amount:</strong> {"£"}{loan.amount.toLocaleString()}</span>
           <span><strong>LTV:</strong> {loan.ltv}%</span>
           <span><strong>Submitted:</strong> {loan.submitted}</span>
