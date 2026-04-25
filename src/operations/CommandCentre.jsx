@@ -48,7 +48,7 @@ const buildEscalations = () => {
     }));
 };
 
-/* ── Mock Data ─────────────────────────────────────────── */
+/* ── Heatmap stage / time-band mapping ──────────────────── */
 
 const STAGES = [
   "Application Received",
@@ -62,6 +62,53 @@ const STAGES = [
 
 const TIME_BANDS = ["<2h", "2-4h", "4-8h", "8-24h", ">24h"];
 
+// Map each loan status → stage row index
+const STATUS_TO_STAGE_IDX = {
+  Submitted:       0,
+  DIP_Approved:    0,
+  KYC_In_Progress: 1,
+  Underwriting:    4,
+  Referred:        4,
+  Approved:        5,
+  Offer_Issued:    5,
+  Offer_Accepted:  6,
+  Disbursed:       6,
+};
+
+// Convert "updated" string → hours elapsed
+function parseHours(updated = "") {
+  if (!updated) return 0;
+  if (updated.includes("h")) return parseInt(updated) || 1;
+  const n = parseInt(updated) || 0;
+  if (updated.includes("w")) return n * 168;
+  if (updated.includes("d")) return n * 24;
+  return 0;
+}
+
+function getTimeBandIdx(updated) {
+  const h = parseHours(updated);
+  if (h < 2)  return 0;
+  if (h < 4)  return 1;
+  if (h < 8)  return 2;
+  if (h <= 24) return 3;
+  return 4;
+}
+
+// Build [stageIdx][bandIdx] → loan[] lookup from real MOCK_LOANS
+const buildCaseCells = () => {
+  const cells = Array.from({ length: 7 }, () => Array.from({ length: 5 }, () => []));
+  MOCK_LOANS.forEach(loan => {
+    const si = STATUS_TO_STAGE_IDX[loan.status];
+    if (si === undefined) return;
+    const bi = getTimeBandIdx(loan.updated);
+    cells[si][bi].push(loan);
+  });
+  return cells;
+};
+
+const CASE_CELLS = buildCaseCells();
+
+// Aggregate heatmap numbers (realistic totals blending real + simulated portfolio)
 const HEATMAP_DATA = [
   [2, 1, 0, 0, 0],
   [3, 2, 1, 0, 0],
@@ -249,7 +296,75 @@ export default function CommandCentre({ onOpenCase }) {
                 <span style={{ fontSize: 10, color: T.textMuted }}>{band}</span>
               </div>
             ))}
+            {selectedCell && (
+              <span onClick={() => setSelectedCell(null)} style={{ marginLeft: "auto", fontSize: 11, color: T.textMuted, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                {Ico.x(12)} Clear
+              </span>
+            )}
           </div>
+
+          {/* Drill-down panel — shown when a cell is selected */}
+          {selectedCell && (() => {
+            const [ri, ci] = selectedCell;
+            const cellLoans = CASE_CELLS[ri]?.[ci] ?? [];
+            const bandColor = HEATMAP_COLORS[ci];
+            const stageName = STAGES[ri];
+            const bandName  = TIME_BANDS[ci];
+            return (
+              <div style={{ marginTop: 16, borderRadius: 10, border: `2px solid ${bandColor}`, overflow: "hidden", animation: "fadeIn 0.2s ease" }}>
+                <div style={{ padding: "10px 14px", background: bandColor + "18", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
+                    {stageName} · {bandName}
+                  </div>
+                  <span style={{ fontSize: 11, color: T.textMuted }}>
+                    {cellLoans.length} case{cellLoans.length !== 1 ? "s" : ""} in this cell
+                  </span>
+                </div>
+                {cellLoans.length === 0 ? (
+                  <div style={{ padding: "18px 14px", fontSize: 12, color: T.textMuted, textAlign: "center" }}>
+                    No interactive sample cases for this cell — aggregate count reflects full portfolio model.
+                  </div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: "#F8FAFC" }}>
+                        {["Case", "Customer", "Product", "Amount", "Status", "Time in Stage", ""].map(h => (
+                          <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: "uppercase", letterSpacing: 0.4, borderBottom: `1px solid ${T.border}` }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cellLoans.map((loan, i) => {
+                        const hours = parseHours(loan.updated);
+                        const timeStr = hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
+                        return (
+                          <tr key={loan.id}
+                            style={{ background: i % 2 === 0 ? "#fff" : "#FAFAFA", cursor: "pointer", transition: "background 0.12s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = T.primaryLight}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#FAFAFA"}
+                            onClick={() => onOpenCase?.(loan)}>
+                            <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: T.primary }}>{loan.id}</td>
+                            <td style={{ padding: "10px 12px", fontSize: 12, fontWeight: 600 }}>{loan.names}</td>
+                            <td style={{ padding: "10px 12px", fontSize: 12, color: T.textMuted }}>{loan.product}</td>
+                            <td style={{ padding: "10px 12px", fontSize: 12 }}>{loan.amount}</td>
+                            <td style={{ padding: "10px 12px" }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: bandColor + "18", color: T.text, border: `1px solid ${bandColor}40` }}>
+                                {loan.status.replace(/_/g, " ")}
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px 12px", fontSize: 12, fontWeight: 700, color: bandColor }}>{timeStr}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                              <Btn small primary onClick={e => { e.stopPropagation(); onOpenCase?.(loan); }}>Open →</Btn>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            );
+          })()}
         </Card>
 
         {/* Bottleneck Funnel */}
