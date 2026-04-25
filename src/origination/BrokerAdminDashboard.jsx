@@ -4,37 +4,27 @@ import { Btn, KPICard, Input, Select } from "../shared/primitives";
 
 // ─── Firm ────────────────────────────────────────────────────────────────────
 const FIRM = {
-  trading:  "Watson & Partners",
-  fullName: "Watson & Partners Mortgage Solutions Ltd",
-  fca:      "123456",
-  fcaType:  "Directly Authorised",
-  address:  "12 High Street, Bristol, BS1 4AA",
-  formed:   "14 Mar 2019",
-  initials: "W&P",
+  trading:    "Watson & Partners",
+  fullName:   "Watson & Partners Mortgage Solutions Ltd",
+  fca:        "123456",
+  fcaType:    "Directly Authorised",
+  brokerType: "DA",   // DA = Directly Authorised | AR = Appointed Representative
+  address:    "12 High Street, Bristol, BS1 4AA",
+  formed:     "14 Mar 2019",
+  initials:   "W&P",
 };
 
 // ─── Organisation relationships ───────────────────────────────────────────────
-// A DA firm can hold:
-//   1 Network  (FCA AR umbrella — only one allowed by FCA)
-//   N Clubs    (volume aggregators for better proc fees — multiple allowed)
-//   N Packagers (specialist intermediaries for complex cases — multiple allowed)
+// DA firm (Directly Authorised — holds its own FCA permissions):
+//   N Mortgage Clubs  (proc fee aggregators — groups volume for better lender rates, multiple OK)
+//   N Packagers       (specialist intermediaries for complex/non-standard cases, multiple OK)
+//   NOTE: DA firms do NOT have a Network. Networks are for AR brokers only.
+//
+// AR firm (Appointed Representative — operates under a network's FCA umbrella):
+//   1 Network   (FCA AR agreement — legally responsible for compliance, exactly one)
+//   0-1 Clubs   (some AR brokers dual-access a club for lenders outside their network panel)
+//   N Packagers (same as DA)
 const RELATIONSHIPS = [
-  {
-    id: "R1", type: "Network", shortName: "Primis",
-    name: "Primis Mortgage Network",
-    fca: "823651", tier: "Gold",
-    joined: "01 Jan 2020", renewalDate: "31 Dec 2026",
-    agreementRef: "PMN-2020-0142",
-    procFeeBase: "0.35%", procFeeBonus: "+0.05% (Gold tier)",
-    procFeeSummary: "0.35% + bonus",
-    status: "Active", casesRouted: 22, volRouted: 8200000,
-    panel: ["Barclays", "HSBC", "NatWest", "Santander", "Halifax", "Leeds BS", "Nationwide", "TSB", "Accord", "Virgin Money"],
-    contact: { name: "Claire Henderson", role: "Network Development Manager", email: "c.henderson@primis.co.uk", phone: "0800 321 0987" },
-    compliance: { status: "Compliant", lastReview: "15 Jan 2026", nextReview: "15 Jan 2027", notes: "Annual review complete. No outstanding actions." },
-    note: "FCA umbrella — firm operates as AR under Primis's permissions. Provides compliance oversight, PI insurance, and mandatory CPD framework.",
-    color: "#6D28D9", bg: "#F5F3FF", border: "#DDD6FE", text: "#4C1D95",
-    dash: "",
-  },
   {
     id: "R2", type: "Club", shortName: "L&G Club",
     name: "Legal & General Mortgage Club",
@@ -46,8 +36,8 @@ const RELATIONSHIPS = [
     status: "Active", casesRouted: 14, volRouted: 5100000,
     panel: ["Barclays", "Halifax", "HSBC", "Nationwide", "NatWest", "Coventry BS", "Metro Bank"],
     contact: { name: "David Park", role: "Club Relationship Manager", email: "d.park@lgmortgageclub.co.uk", phone: "0345 602 0677" },
-    compliance: { status: "Compliant", lastReview: "—", nextReview: "—", notes: "Clubs do not provide FCA oversight — compliance remains with Primis." },
-    note: "Volume aggregator for mainstream lenders. Platinum tier gives better proc fees than direct or via Primis for Barclays and Halifax. No membership fee — club earns a proc fee split.",
+    compliance: { status: "N/A", lastReview: "—", nextReview: "—", notes: "Clubs do not provide FCA permissions or compliance oversight. Watson & Partners holds its own DA authorisation." },
+    note: "Proc fee aggregator — groups volume from hundreds of firms to negotiate better proc fees with lenders. Platinum tier unlocks preferential rates at Barclays and Halifax. No membership fee; club earns a proc fee split.",
     color: "#1D4ED8", bg: "#DBEAFE", border: "#BFDBFE", text: "#1E3A8A",
     dash: "",
   },
@@ -63,7 +53,7 @@ const RELATIONSHIPS = [
     panel: ["Accord", "Precise Mortgages", "Kensington", "Aldermore", "Kent Reliance", "Together Money"],
     contact: { name: "Fiona Walsh", role: "Broker Services", email: "brokers@paradigm.co.uk", phone: "01268 290 690" },
     compliance: { status: "N/A", lastReview: "—", nextReview: "—", notes: "Club membership only — no FCA compliance scope." },
-    note: "Access to specialist BTL and near-prime lenders not on the Primis panel. Cases that don't fit mainstream criteria are routed here for Accord, Precise, or Kensington.",
+    note: "Access to specialist BTL and near-prime lenders. Cases that don't fit mainstream criteria are routed here for Accord, Precise, or Kensington. Proc fee paid through Paradigm for these lenders.",
     color: "#1D4ED8", bg: "#DBEAFE", border: "#BFDBFE", text: "#1E3A8A",
     dash: "",
   },
@@ -97,7 +87,7 @@ const RELATIONSHIPS = [
     specialisms: ["Bridging finance", "Development finance", "HNW", "Semi-commercial"],
     contact: { name: "Michelle Fox", role: "Senior BDM", email: "m.fox@crystalspecialist.co.uk", phone: "01827 66244" },
     compliance: { status: "N/A", lastReview: "—", nextReview: "—", notes: "Packager manages lender relationship. FCA regulated advice remains with Watson & Partners." },
-    note: "Bridging, development finance, and HNW cases. Exclusive access to short-term specialist lenders not accessible via clubs or the Primis panel.",
+    note: "Bridging, development finance, and HNW cases. Exclusive access to short-term specialist lenders not accessible via mortgage clubs or direct lender relationships.",
     color: "#D97706", bg: "#FEF3C7", border: "#FCD34D", text: "#92400E",
     dash: "6 3",
   },
@@ -118,11 +108,11 @@ const TEAM_CASES = [
   { ref:"AFN-2026-00188", advId:"ADV-002", borrower:"Mr & Mrs Brown",    product:"2-Year Fixed",     amount:"£385,000", status:"Submitted",      updated:"Today" },
   { ref:"AFN-2026-00185", advId:"ADV-001", borrower:"Ms Sarah Jenkins",  product:"5-Year Fixed",     amount:"£510,000", status:"Underwriting",   updated:"Yesterday" },
   { ref:"AFN-2026-00181", advId:"ADV-003", borrower:"Mr Singh",          product:"Tracker",          amount:"£210,000", status:"DIP_Approved",   updated:"Yesterday" },
-  { ref:"AFN-2026-00179", advId:"ADV-002", borrower:"Mr & Mrs Patel",    product:"2-Yr Fixed BTL",   amount:"£320,000", status:"KYC_In_Progress",updated:"18 Apr" },
+  { ref:"AFN-2026-00179", advId:"ADV-002", borrower:"Mr & Mrs Patel",    product:"2-Yr Fixed BTL",   amount:"£320,000", status:"KYC_In_Progress",updated:"18 Apr", via:{ type:"Packager", name:"Brightstar Financial",        contact:"Ryan Archer",  phone:"01277 500 900" } },
   { ref:"AFN-2026-00176", advId:"ADV-001", borrower:"Mr Taylor",         product:"5-Year Fixed",     amount:"£275,000", status:"Offer_Issued",   updated:"17 Apr" },
   { ref:"AFN-2026-00171", advId:"ADV-004", borrower:"Ms Rodriguez",      product:"2-Year Fixed",     amount:"£155,000", status:"Submitted",      updated:"15 Apr" },
   { ref:"AFN-2026-00168", advId:"ADV-003", borrower:"Mr & Mrs Wilson",   product:"10-Year Fixed",    amount:"£425,000", status:"Approved",       updated:"14 Apr" },
-  { ref:"AFN-2026-00162", advId:"ADV-002", borrower:"Dr Harrington",     product:"Tracker",          amount:"£895,000", status:"Offer_Accepted", updated:"10 Apr" },
+  { ref:"AFN-2026-00162", advId:"ADV-002", borrower:"Dr Harrington",     product:"Tracker",          amount:"£895,000", status:"Offer_Accepted", updated:"10 Apr", via:{ type:"Packager", name:"Crystal Specialist Finance", contact:"Michelle Fox",  phone:"01827 66244"  } },
   { ref:"AFN-2026-00158", advId:"ADV-001", borrower:"Mr & Mrs Clarke",   product:"5-Year Fixed",     amount:"£340,000", status:"Disbursed",      updated:"08 Apr" },
   { ref:"AFN-2026-00151", advId:"ADV-004", borrower:"Ms Thompson",       product:"2-Year Fixed",     amount:"£198,000", status:"Draft",          updated:"Today" },
 ];
@@ -256,7 +246,7 @@ function OrgGraph({ relationships, selectedId, onSelect }) {
       <circle cx={firmCx} cy={firmCy} r={firmR} fill="url(#firmGrad)" />
       <circle cx={firmCx} cy={firmCy} r={firmR} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={1.5} />
       <text x={firmCx} y={firmCy - 10} textAnchor="middle" fill="white" fontSize={14} fontWeight="800" fontFamily={T.font}>{FIRM.initials}</text>
-      <text x={firmCx} y={firmCy + 7}  textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={9}  fontFamily={T.font}>DA Firm</text>
+      <text x={firmCx} y={firmCy + 7}  textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={9}  fontFamily={T.font}>{FIRM.brokerType} Firm</text>
       <text x={firmCx} y={firmCy + 19} textAnchor="middle" fill="rgba(255,255,255,0.4)"  fontSize={8}  fontFamily={T.font}>FCA {FIRM.fca}</text>
 
       {/* ── Org nodes ── */}
@@ -318,8 +308,14 @@ const TYPE_PROPS   = {
   Packager: { color:"#D97706", bg:"#FEF3C7", border:"#FCD34D", text:"#92400E", dash:"6 3" },
 };
 
-function OrgConfigModal({ relationships, onSave, onClose }) {
-  const [tab, setTab]               = useState("Network");
+// Tab label display (internal type → display name)
+const TAB_LABEL = { Network: "Network", Club: "Mortgage Club", Packager: "Packager" };
+
+function OrgConfigModal({ relationships, onSave, onClose, brokerType = "DA" }) {
+  // DA firms: clubs + packagers only (no network — DA holds its own FCA auth)
+  // AR firms: network (1 max) + optionally club + packagers
+  const availableTabs = brokerType === "DA" ? ["Club", "Packager"] : ["Network", "Club", "Packager"];
+  const [tab, setTab]               = useState(availableTabs[0]);
   const [rels, setRels]             = useState(relationships);
   const [editingId, setEditingId]   = useState(null);
   const [form, setForm]             = useState(null);
@@ -363,7 +359,7 @@ function OrgConfigModal({ relationships, onSave, onClose }) {
 
   const relForm = form && (
     <div style={{ background: T.bg, borderRadius: 12, border: `1px solid ${T.border}`, padding: 20, marginTop: 12 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 14 }}>{editingId === "new" ? `Add ${tab}` : "Edit Relationship"}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, marginBottom: 14 }}>{editingId === "new" ? `Add ${TAB_LABEL[tab]}` : "Edit Relationship"}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Input label="Organisation name" value={form.name}         onChange={v => set("name", v)}         placeholder="e.g. Primis Mortgage Network" required />
         <Input label="FCA number"        value={form.fca}          onChange={v => set("fca", v)}          placeholder="e.g. 823651" />
@@ -400,7 +396,7 @@ function OrgConfigModal({ relationships, onSave, onClose }) {
         <div style={{ padding: "20px 28px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: T.navy }}>Configure Organisation Relationships</div>
-            <div style={{ fontSize: 12, color: T.textMuted, marginTop: 3 }}>Set up and manage your network, club, and packager connections.</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginTop: 3 }}>{brokerType === "DA" ? "DA firms hold mortgage club and packager relationships. Networks are for AR brokers only." : "AR firms hold a network (FCA umbrella), optionally a mortgage club, and packager relationships."}</div>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <Btn primary small onClick={() => { onSave(rels); onClose(); }}>Save &amp; Close</Btn>
@@ -410,9 +406,9 @@ function OrgConfigModal({ relationships, onSave, onClose }) {
 
         {/* Tabs */}
         <div style={{ padding: "0 28px", display: "flex", gap: 4, borderBottom: `1px solid ${T.border}` }}>
-          {["Network", "Club", "Packager"].map(t => (
+          {availableTabs.map(t => (
             <button key={t} onClick={() => { setTab(t); cancel(); }} style={tabBt(t)}>
-              {t}{t === "Network" ? " (1 max)" : ""}
+              {TAB_LABEL[t]}{t === "Network" ? " (1 max)" : ""}
               <span style={{ marginLeft: 6, background: tab === t ? T.primaryLight : T.bg, color: tab === t ? T.primary : T.textMuted, fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 8 }}>
                 {rels.filter(r => r.type === t).length}
               </span>
@@ -425,13 +421,13 @@ function OrgConfigModal({ relationships, onSave, onClose }) {
           {tab === "Network" && (
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "10px 14px", background: T.warningBg, border: `1px solid ${T.warningBorder}`, borderRadius: 8, marginBottom: 16 }}>
               {Ico.alert(14)}
-              <span style={{ fontSize: 12, color: "#92400E" }}>A DA firm may only hold <strong>one</strong> Network relationship. Changing your network is a significant FCA compliance event — contact your compliance officer before proceeding.</span>
+              <span style={{ fontSize: 12, color: "#92400E" }}>An AR broker may only be appointed representative of <strong>one</strong> network at a time (FCA rule). The network is legally responsible for your compliance. Changing your network is a significant compliance event — contact your compliance officer before proceeding.</span>
             </div>
           )}
 
           {filtered.length === 0 && editingId !== "new" && (
             <div style={{ textAlign: "center", padding: "24px 0", color: T.textMuted, fontSize: 13 }}>
-              No {tab.toLowerCase()} relationships configured.{tab !== "Network" ? ` Multiple ${tab.toLowerCase()}s are allowed.` : ""}
+              No {TAB_LABEL[tab].toLowerCase()} relationships configured.{tab !== "Network" ? ` Multiple ${TAB_LABEL[tab].toLowerCase()}s are allowed.` : ""}
             </div>
           )}
 
@@ -463,7 +459,7 @@ function OrgConfigModal({ relationships, onSave, onClose }) {
 
           {(tab !== "Network" || filtered.length === 0) && editingId !== "new" && (
             <div style={{ marginTop: filtered.length ? 8 : 0 }}>
-              <Btn ghost icon="plus" onClick={startAdd}>Add {tab}</Btn>
+              <Btn ghost icon="plus" onClick={startAdd}>Add {TAB_LABEL[tab]}</Btn>
             </div>
           )}
 
@@ -549,7 +545,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
               <h1 style={{ fontSize:22, fontWeight:800, color:T.navy, margin:0 }}>{FIRM.trading}</h1>
               <span style={{ background:"#EDE9FE", color:"#6D28D9", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, letterSpacing:0.4 }}>
-                {rels.filter(r=>r.type==="Network").length} Network · {rels.filter(r=>r.type==="Club").length} Clubs · {rels.filter(r=>r.type==="Packager").length} Packagers
+                {FIRM.brokerType}{rels.filter(r=>r.type==="Network").length > 0 ? ` · ${rels.filter(r=>r.type==="Network").length} Network` : ""} · {rels.filter(r=>r.type==="Club").length} Clubs · {rels.filter(r=>r.type==="Packager").length} Packagers
               </span>
               <span style={{ background:T.successBg, color:T.success, fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20 }}>Active</span>
             </div>
@@ -624,9 +620,9 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
               </div>
               <div style={{ background:T.successBg, border:`1px solid ${T.successBorder}`, borderRadius:10, padding:16 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:T.success, marginBottom:10, display:"flex", alignItems:"center", gap:8 }}>{Ico.shield(15)} FCA Status</div>
-                <div style={{ fontSize:12, color:"#065F46", marginBottom:3 }}><strong>Firm:</strong> Active · {FIRM.fca} ({FIRM.fcaType})</div>
-                <div style={{ fontSize:12, color:"#065F46", marginBottom:3 }}><strong>AR under:</strong> Primis Mortgage Network</div>
-                <div style={{ fontSize:12, color:"#065F46" }}><strong>Compliance review:</strong> 15 Jan 2027</div>
+                <div style={{ fontSize:12, color:"#065F46", marginBottom:3 }}><strong>Firm:</strong> Active · {FIRM.fca} · {FIRM.fcaType}</div>
+                <div style={{ fontSize:12, color:"#065F46", marginBottom:3 }}><strong>FCA type:</strong> {FIRM.brokerType === "DA" ? "Directly Authorised — holds own FCA permissions" : "Appointed Representative — operates under network umbrella"}</div>
+                <div style={{ fontSize:12, color:"#065F46" }}><strong>Compliance:</strong> {FIRM.brokerType === "DA" ? "Self-managed (DA)" : "Via network"}</div>
               </div>
             </div>
           </div>
@@ -757,7 +753,14 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
                         const adv = memberById(c.advId);
                         return (
                           <tr key={c.ref}>
-                            <td style={tdSt}><span style={{ fontFamily:"monospace", fontSize:12, color:T.primary, fontWeight:600 }}>{c.ref}</span></td>
+                            <td style={tdSt}>
+                              <span style={{ fontFamily:"monospace", fontSize:12, color:T.primary, fontWeight:600 }}>{c.ref}</span>
+                              {c.via && (
+                                <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginLeft:8, fontSize:10, fontWeight:700, color:"#D97706", background:"#FEF3C7", border:"1px solid #FCD34D", padding:"2px 7px", borderRadius:4 }}>
+                                  📦 Via {c.via.name}
+                                </div>
+                              )}
+                            </td>
                             <td style={tdSt}>
                               <div style={{ fontSize:13, fontWeight:600 }}>{adv?.name||"—"}</div>
                               <div style={{ fontSize:11, color:T.textMuted }}>{adv?.role}</div>
@@ -799,12 +802,12 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
               </div>
               <div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:5 }}>
                 {[
-                  { type:"Network", color:"#6D28D9", bg:"#F5F3FF", desc:"FCA AR umbrella — 1 max per firm" },
-                  { type:"Club",    color:"#1D4ED8", bg:"#DBEAFE", desc:"Proc fee aggregator — multiple OK" },
-                  { type:"Packager",color:"#D97706", bg:"#FEF3C7", desc:"Specialist routing — packaging fee applies" },
+                  ...(FIRM.brokerType === "AR" ? [{ type:"Network", color:"#6D28D9", bg:"#F5F3FF", desc:"FCA AR umbrella — 1 max (FCA rule)" }] : []),
+                  { type:"Mortgage Club", color:"#1D4ED8", bg:"#DBEAFE", desc:"Proc fee aggregator — multiple OK for DA" },
+                  { type:"Packager",      color:"#D97706", bg:"#FEF3C7", desc:"Specialist routing — packages complex cases" },
                 ].map(({ type, color, bg, desc }) => (
                   <div key={type} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", background:bg, borderRadius:6 }}>
-                    <span style={{ fontSize:10, fontWeight:800, color, textTransform:"uppercase", letterSpacing:0.5, minWidth:54 }}>{type}</span>
+                    <span style={{ fontSize:10, fontWeight:800, color, textTransform:"uppercase", letterSpacing:0.5, minWidth:64 }}>{type}</span>
                     <span style={{ fontSize:11, color, opacity:0.8 }}>{desc}</span>
                   </div>
                 ))}
@@ -1026,6 +1029,7 @@ export default function BrokerAdminDashboard({ onViewBroker }) {
           relationships={rels}
           onSave={setRels}
           onClose={() => setShowOrgConfig(false)}
+          brokerType={FIRM.brokerType}
         />
       )}
 
