@@ -334,6 +334,7 @@ export default function Shell({ userType }) {
         ]},
         { group:"PIPELINE", items:[
           { id:"pipeline",          label:"Pipeline",              icon:"chart" },
+          { id:"caseworkbench",     label:"Case Workbench",        icon:"loans" },
           { id:"offers",            label:"Offers",                icon:"file" },
         ]},
         { group:"CUSTOMERS", items:[
@@ -468,6 +469,7 @@ export default function Shell({ userType }) {
         { group:"PIPELINE", items:[
           { id:"pipeline",        label:"Pipeline",             icon:"chart" },
           { id:"intake",          label:"Incoming",             icon:"zap", badge:3 },
+          { id:"caseworkbench",   label:"Case Workbench",       icon:"loans" },
           { id:"offers",          label:"Offers & ESIS",        icon:"file" },
         ]},
         { group:"CUSTOMERS", items:[
