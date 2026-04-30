@@ -3,7 +3,7 @@ import AuthScreen from "./auth/AuthScreen";
 import Shell from "./Shell";
 import ToastProvider from "./shared/ToastProvider";
 
-const GATE_KEY = "cqy.GHJ!bge_bth7zwr";
+const GATE_KEY = "Nova#2026!Xk9$mPq";
 
 function GateScreen({ onUnlock }) {
   const [pw, setPw] = useState("");
