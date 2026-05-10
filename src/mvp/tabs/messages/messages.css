@@ -1,0 +1,564 @@
+/* Step 25 — Messages tab. All rules scoped under
+   `.nova-mvp-root .messages-scope` so per-message vars stay local. */
+
+.nova-mvp-root .messages-scope {
+  --msg-bubble-self-bg: var(--afin-stone-1);
+  --msg-bubble-self-fg: var(--afin-cream);
+  --msg-bubble-other-bg: white;
+  --msg-bubble-other-fg: var(--ink-1);
+  --msg-bubble-other-border: var(--line);
+  --msg-bubble-radius: 14px;
+  --msg-bubble-shadow: 0 1px 2px rgba(12, 45, 59, 0.08),
+    0 8px 24px -18px rgba(12, 45, 59, 0.16);
+  --msg-read-receipt: var(--afin-green);
+  --msg-presence-online: var(--afin-green);
+
+  --msg-av-1: #2f7a8a;
+  --msg-av-2: #3d5560;
+  --msg-av-3: #6b56a0;
+  --msg-av-4: #4a6e9a;
+  --msg-av-5: #8a7a5e;
+
+  /* Step 25b — bubble column max-width. List + header break out of
+     the parent .nova-tab-content's 32px padding via negative inline
+     margin and re-center the content via .__inner wrappers. The
+     composer goes full-bleed without an inner wrapper so the
+     paperclip + send sit at the parent's gutter (32px). */
+  --msgs-content-max-w: 980px;
+  --msgs-bleed-pad-x: 32px;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+}
+
+/* ---------- Header ---------- */
+
+.nova-mvp-root .messages-header {
+  margin-inline: calc(var(--msgs-bleed-pad-x) * -1);
+  padding: 4px 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+.nova-mvp-root .messages-header.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.nova-mvp-root .messages-header__inner {
+  max-width: var(--msgs-content-max-w);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nova-mvp-root .messages-header__title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.nova-mvp-root .messages-header__pill {
+  background: rgba(49, 184, 151, 0.16);
+  color: #167b62;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.nova-mvp-root .messages-header__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.nova-mvp-root .messages-header__icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: white;
+  border-radius: 8px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.nova-mvp-root .messages-header__icon-btn:hover {
+  border-color: rgba(12, 45, 59, 0.30);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .messages-header__search-input {
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 12px;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  border-radius: 999px;
+  outline: none;
+  width: 220px;
+  background: white;
+}
+.nova-mvp-root .messages-header__search-input:focus {
+  border-color: rgba(12, 45, 59, 0.32);
+}
+
+/* ---------- List + day separator ---------- */
+
+.nova-mvp-root .messages-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-block: 16px;
+  margin-inline: calc(var(--msgs-bleed-pad-x) * -1);
+}
+
+.nova-mvp-root .messages-list__inner {
+  max-width: var(--msgs-content-max-w);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nova-mvp-root .messages-day {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nova-mvp-root .messages-day__label {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: center;
+  padding: 8px 0;
+  position: relative;
+}
+.nova-mvp-root .messages-day__label::before,
+.nova-mvp-root .messages-day__label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 32%;
+  height: 1px;
+  background: var(--line);
+}
+.nova-mvp-root .messages-day__label::before {
+  left: 0;
+}
+.nova-mvp-root .messages-day__label::after {
+  right: 0;
+}
+
+/* ---------- Sender group ---------- */
+
+.nova-mvp-root .messages-group {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+}
+.nova-mvp-root .messages-group--self {
+  grid-template-columns: 1fr;
+}
+.nova-mvp-root .messages-group__avatar {
+  padding-top: 18px;
+}
+.nova-mvp-root .messages-group__column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.nova-mvp-root .messages-group--self .messages-group__column {
+  align-items: flex-end;
+}
+
+.nova-mvp-root .messages-group__sender-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+}
+.nova-mvp-root .messages-group__sender-name {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+.nova-mvp-root .messages-group__sender-role {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.nova-mvp-root .messages-group__sender-time {
+  color: var(--ink-4);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.nova-mvp-root .messages-group__self-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ink-4);
+  align-self: flex-end;
+}
+.nova-mvp-root .messages-group__read-receipt {
+  color: var(--msg-read-receipt);
+  display: inline-flex;
+}
+
+/* ---------- Bubble ---------- */
+
+.nova-mvp-root .messages-bubble {
+  max-width: 66%;
+  padding: 12px 16px;
+  border-radius: var(--msg-bubble-radius);
+  font-size: 13.5px;
+  line-height: 1.55;
+  box-shadow: var(--msg-bubble-shadow);
+  word-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nova-mvp-root .messages-bubble--self {
+  background: var(--msg-bubble-self-bg);
+  color: var(--msg-bubble-self-fg);
+  align-self: flex-end;
+}
+.nova-mvp-root .messages-bubble--other {
+  background: var(--msg-bubble-other-bg);
+  color: var(--msg-bubble-other-fg);
+  border: 1px solid var(--msg-bubble-other-border);
+}
+.nova-mvp-root .messages-bubble__body {
+  white-space: pre-wrap;
+}
+
+/* ---------- Inline attachment card ---------- */
+
+.nova-mvp-root .messages-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink-1);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+}
+.nova-mvp-root .messages-attachment--in-self {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.20);
+  color: var(--msg-bubble-self-fg);
+}
+
+.nova-mvp-root .messages-attachment__ftype {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 5px;
+  background: rgba(12, 45, 59, 0.08);
+  color: var(--ink-2);
+  border-radius: 4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.nova-mvp-root .messages-attachment--in-self .messages-attachment__ftype {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--msg-bubble-self-fg);
+}
+
+.nova-mvp-root .messages-attachment__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.nova-mvp-root .messages-attachment__name {
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nova-mvp-root .messages-attachment__size {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .messages-attachment--in-self .messages-attachment__size {
+  color: rgba(239, 236, 227, 0.65);
+}
+
+.nova-mvp-root .messages-attachment__download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.nova-mvp-root .messages-attachment__download-btn:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+.nova-mvp-root .messages-attachment--in-self .messages-attachment__download-btn {
+  color: rgba(239, 236, 227, 0.75);
+}
+.nova-mvp-root .messages-attachment--in-self .messages-attachment__download-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--msg-bubble-self-fg);
+}
+
+/* ---------- Avatar ---------- */
+
+.nova-mvp-root .messages-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.nova-mvp-root .messages-avatar.palette-1 { background: var(--msg-av-1); }
+.nova-mvp-root .messages-avatar.palette-2 { background: var(--msg-av-2); }
+.nova-mvp-root .messages-avatar.palette-3 { background: var(--msg-av-3); }
+.nova-mvp-root .messages-avatar.palette-4 { background: var(--msg-av-4); }
+.nova-mvp-root .messages-avatar.palette-5 { background: var(--msg-av-5); }
+
+.nova-mvp-root .messages-avatar__inner {
+  pointer-events: none;
+  user-select: none;
+}
+
+.nova-mvp-root .messages-avatar__presence {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--msg-presence-online);
+  box-shadow: 0 0 0 2px var(--afin-paper);
+}
+
+/* ---------- Typing indicator ---------- */
+
+.nova-mvp-root .messages-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.nova-mvp-root .messages-typing__bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--msg-bubble-shadow);
+}
+.nova-mvp-root .messages-typing__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  animation: msgTypingPulse 1s ease-in-out infinite;
+}
+.nova-mvp-root .messages-typing__dot:nth-child(1) { animation-delay: 0ms; }
+.nova-mvp-root .messages-typing__dot:nth-child(2) { animation-delay: 160ms; }
+.nova-mvp-root .messages-typing__dot:nth-child(3) { animation-delay: 320ms; }
+
+.nova-mvp-root .messages-typing__label {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+@keyframes msgTypingPulse {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+
+/* ---------- Composer ---------- */
+
+.nova-mvp-root .messages-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-block: 12px;
+  padding-inline: var(--msgs-bleed-pad-x);
+  margin-inline: calc(var(--msgs-bleed-pad-x) * -1);
+  border-top: 1px solid var(--line);
+  background: rgba(255, 252, 245, 0.85);
+  position: sticky;
+  bottom: 0;
+}
+.nova-mvp-root .messages-composer.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.nova-mvp-root .messages-composer__attach-btn,
+.nova-mvp-root .messages-composer__emoji-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: white;
+  border-radius: 8px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.nova-mvp-root .messages-composer__attach-btn:hover,
+.nova-mvp-root .messages-composer__emoji-btn:hover {
+  border-color: rgba(12, 45, 59, 0.30);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .messages-composer__textarea {
+  flex: 1 1 auto;
+  min-height: 34px;
+  max-height: 120px;
+  resize: none;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.45;
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.12);
+  border-radius: 10px;
+  color: var(--ink-1);
+  outline: none;
+}
+.nova-mvp-root .messages-composer__textarea:focus {
+  border-color: rgba(12, 45, 59, 0.32);
+}
+
+.nova-mvp-root .messages-composer__send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--afin-green);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nova-mvp-root .messages-composer__send-btn:hover:not(:disabled) {
+  background: #1f9b7d;
+}
+.nova-mvp-root .messages-composer__send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Empty state ---------- */
+
+.nova-mvp-root .messages-empty {
+  margin: 64px auto;
+  padding: 24px;
+  text-align: center;
+  color: var(--ink-3);
+  max-width: 360px;
+}
+.nova-mvp-root .messages-empty h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0 0 6px;
+}
+.nova-mvp-root .messages-empty p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ---------- Skeleton ---------- */
+
+.nova-mvp-root .messages-skeleton {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.nova-mvp-root .messages-skeleton__day {
+  width: 110px;
+  height: 11px;
+  background: rgba(12, 45, 59, 0.10);
+  border-radius: 4px;
+  margin: 12px auto 4px;
+  animation: msgSkeletonPulse 1.6s ease-in-out infinite;
+}
+.nova-mvp-root .messages-skeleton__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 4px;
+}
+.nova-mvp-root .messages-skeleton__row--self {
+  justify-content: flex-end;
+}
+.nova-mvp-root .messages-skeleton__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(12, 45, 59, 0.10);
+  animation: msgSkeletonPulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.nova-mvp-root .messages-skeleton__column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.nova-mvp-root .messages-skeleton__row--self .messages-skeleton__column {
+  align-items: flex-end;
+}
+.nova-mvp-root .messages-skeleton__bar {
+  height: 32px;
+  border-radius: 12px;
+  background: rgba(12, 45, 59, 0.10);
+  animation: msgSkeletonPulse 1.6s ease-in-out infinite;
+}
+.nova-mvp-root .messages-skeleton__bar.sender {
+  height: 11px;
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+@keyframes msgSkeletonPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.35; }
+}

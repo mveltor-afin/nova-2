@@ -1,0 +1,39 @@
+/* ============================================================
+   Nova v3 — design tokens
+   Mirror of the :root block in Nova v3 - Design Proposal _Standalone_.html
+   Do not redefine these in Tailwind. Single source of truth.
+   ============================================================ */
+
+:root {
+  /* Brand palette */
+  --afin-stone-1: #0C2D3B;
+  --afin-stone-2: #1A4A54;
+  --afin-cream: #EFECE3;
+  --afin-paper: #F5F1E8;
+  --afin-coral: #FF6B61;
+  --afin-coral-soft: rgba(255, 107, 97, 0.12);
+  --afin-green: #31B897;
+  --afin-yellow: #F2B33D;
+
+  /* Ink scale */
+  --ink-1: #0C2D3B;
+  --ink-2: #3D5560;
+  --ink-3: #6B7B83;
+  --ink-4: #98A3A8;
+
+  /* Lines */
+  --line: rgba(12, 45, 59, 0.10);
+  --line-strong: rgba(12, 45, 59, 0.18);
+
+  /* Paper */
+  --paper: rgba(255, 255, 255, 0.55);
+  --paper-solid: #ffffff;
+
+  /* Shadows */
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 8px 24px -18px rgba(12, 45, 59, 0.20);
+  --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 18px 36px -22px rgba(12, 45, 59, 0.30);
+
+  /* Radii */
+  --radius-card: 16px;
+  --radius-pill: 999px;
+}

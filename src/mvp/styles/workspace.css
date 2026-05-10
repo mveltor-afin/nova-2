@@ -1,0 +1,7482 @@
+@import './tokens.css';
+
+/* ============================================================
+   Nova v3 MVP — workspace styles
+   Scoped to .nova-mvp-root so they never leak into the prototype.
+   ============================================================ */
+
+.nova-mvp-root {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  color: var(--ink-1);
+  background:
+    radial-gradient(1400px 800px at 50% -20%, rgba(49, 184, 151, 0.06), transparent 70%),
+    linear-gradient(180deg, #f5f1e8 0%, #ede8db 100%);
+  background-attachment: fixed;
+  /* Prototype's global index.css sets `body { overflow: hidden }`, so we
+     can't rely on the document scrolling. Lock the workspace to viewport
+     height and let `.nova-tab-content` handle internal scrolling. */
+  height: 100vh;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+}
+
+.nova-mvp-root *,
+.nova-mvp-root *::before,
+.nova-mvp-root *::after {
+  box-sizing: border-box;
+}
+
+.nova-mvp-root button {
+  font-family: inherit;
+}
+
+/* === Main column === */
+.nova-mvp-main {
+  flex: 1;
+  min-width: 0;
+  /* min-height: 0 lets the flex column shrink below content size so the
+     inner `.nova-tab-content` overflow-y can take effect. */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Sidebar === */
+.nova-sidebar {
+  width: 64px;
+  flex-shrink: 0;
+  background: rgba(12, 45, 59, 0.04);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-right: 1px solid rgba(12, 45, 59, 0.08);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 10px;
+}
+
+.nova-brand-mark {
+  width: 36px;
+  height: 36px;
+  background: var(--afin-stone-1);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-family: 'Sora', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.nova-nav-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.nova-nav-icon:hover {
+  background: rgba(12, 45, 59, 0.06);
+}
+
+.nova-nav-icon.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-sidebar-spacer {
+  flex: 1;
+}
+
+.nova-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--afin-green), var(--afin-stone-2));
+  display: grid;
+  place-items: center;
+  color: white;
+  font: 700 11px/1 'Source Sans 3', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* === Context header === */
+.nova-context-header {
+  padding: 26px 32px 0;
+}
+
+.nova-head-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.nova-head-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.nova-cta-cluster {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 6px;
+}
+
+.nova-crumbs {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.nova-crumbs .sep { padding: 0 8px; opacity: 0.5; }
+.nova-crumbs strong { color: var(--ink-1); font-weight: 600; }
+
+.nova-app-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 500;
+  font-size: 26px;
+  margin: 6px 0 12px;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  color: var(--ink-1);
+}
+
+.nova-ref-badge {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  background: rgba(12, 45, 59, 0.06);
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.nova-facts {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink-2);
+  flex-wrap: wrap;
+}
+
+.nova-facts .lbl {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-right: 6px;
+}
+
+.nova-facts .val {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.nova-facts-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--line-strong);
+}
+
+/* Progress ring */
+.nova-ring {
+  --p: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: conic-gradient(var(--afin-stone-1) calc(var(--p) * 1%), rgba(12, 45, 59, 0.12) 0);
+  display: grid;
+  place-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.nova-ring::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background: var(--afin-paper);
+  border-radius: 50%;
+}
+
+.nova-ring .pct {
+  position: relative;
+  font: 600 13px/1 'Source Sans 3', sans-serif;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .nova-ring-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  box-shadow: 0 12px 28px -16px rgba(12, 45, 59, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+.nova-mvp-root .nova-ring:hover .nova-ring-tooltip,
+.nova-mvp-root .nova-ring:focus-within .nova-ring-tooltip {
+  opacity: 1;
+}
+.nova-mvp-root .nova-ring-tooltip__phase {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(239, 236, 227, 0.65);
+  margin-top: 4px;
+}
+
+/* DIP / Full Application toggle pill — Step 23b: lock to one row so
+   the stepper to the right has a stable parent and can compute its
+   `flex: 1 1 auto` against. */
+.nova-flow-bar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 18px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.nova-flow-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(12, 45, 59, 0.06);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.nova-flow-toggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font: 500 12.5px/1 'Source Sans 3', sans-serif;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.nova-flow-toggle button.active {
+  background: white;
+  color: var(--afin-stone-1);
+  font-weight: 600;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 1px 2px rgba(12, 45, 59, 0.08);
+}
+
+.nova-flow-toggle .phase-indicator__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--afin-stone-1);
+  flex-shrink: 0;
+}
+
+/* Submit button + tooltip */
+.nova-submit-wrap {
+  position: relative;
+}
+
+.nova-submit-btn {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font: 600 13px/1 'Source Sans 3', sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 22px -10px rgba(12, 45, 59, 0.45), 0 2px 4px rgba(12, 45, 59, 0.16);
+}
+
+.nova-submit-btn:disabled {
+  background: rgba(12, 45, 59, 0.30);
+  cursor: not-allowed;
+  box-shadow: none;
+  color: rgba(239, 236, 227, 0.85);
+}
+
+.nova-submit-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  background: var(--afin-stone-1);
+  color: white;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  box-shadow: 0 4px 12px rgba(12, 45, 59, 0.25);
+}
+
+.nova-submit-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 14px;
+  border: 5px solid transparent;
+  border-top-color: var(--afin-stone-1);
+}
+
+.nova-submit-wrap:hover .nova-submit-tooltip {
+  opacity: 1;
+}
+
+/* Stage rail — Step 23b: six stops on one row at standard workspace
+   widths. Equal-width columns via the grid, tighter per-stop padding
+   so stage names like "Underwriting" stay readable in full. */
+.nova-stage-rail {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  background: rgba(12, 45, 59, 0.04);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.nova-stage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  border: none;
+  font-family: 'Source Sans 3', sans-serif;
+  text-align: left;
+  min-width: 0;
+}
+
+.nova-stage .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(12, 45, 59, 0.18);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 11px/1 'Source Sans 3', sans-serif;
+  flex-shrink: 0;
+}
+
+.nova-stage.done .num { background: rgba(12, 45, 59, 0.4); }
+
+.nova-stage.now {
+  background: white;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 1px 2px rgba(12, 45, 59, 0.08);
+  color: var(--ink-1);
+}
+
+.nova-stage.now .num { background: var(--afin-stone-1); }
+
+.nova-stage .lbl-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.nova-stage .lbl-min {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin-bottom: 3px;
+}
+
+.nova-stage.now .lbl-min {
+  color: var(--afin-stone-1);
+  font-weight: 600;
+}
+
+.nova-stage .lbl-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Step 23b — Tier 2 compact mode for narrower workspace canvases
+   (~1300px and below). Non-current stops drop their PENDING / NEXT
+   label so the six stage names always fit on one row. The current
+   stop keeps IN PROGRESS so the broker can see where they are. */
+@media (max-width: 1320px) {
+  .nova-mvp-root .nova-stage:not(.now) .lbl-min {
+    display: none;
+  }
+}
+
+/* === Tab strip === */
+.nova-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 32px;
+  margin: 24px 0 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.nova-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'Source Sans 3', sans-serif;
+  text-decoration: none;
+}
+
+.nova-tab.active {
+  color: var(--ink-1);
+  border-bottom-color: var(--afin-stone-1);
+}
+
+.nova-tab .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(12, 45, 59, 0.18);
+}
+
+.nova-tab .dot.complete { background: rgba(12, 45, 59, 0.32); }
+.nova-tab .dot.partial { background: rgba(12, 45, 59, 0.45); }
+.nova-tab .dot.attention {
+  background: rgba(255, 107, 97, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 107, 97, 0.10);
+}
+
+.nova-tab .count {
+  font: 600 10.5px/1 'Source Sans 3', sans-serif;
+  background: rgba(12, 45, 59, 0.08);
+  color: var(--ink-2);
+  padding: 3px 6px;
+  border-radius: 999px;
+  margin-left: 2px;
+}
+
+.nova-tab.active .count {
+  background: var(--afin-stone-1);
+  color: white;
+}
+
+.nova-tab-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--line-strong);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+/* === Tab content area === */
+.nova-tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+.nova-tab-placeholder {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 80px 40px;
+  text-align: center;
+  color: var(--ink-3);
+  box-shadow: var(--shadow-1);
+}
+
+.nova-tab-placeholder h2 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--ink-1);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.nova-tab-placeholder p {
+  font-size: 14px;
+  margin: 0 auto;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.nova-tab-placeholder .step-tag {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 4px 10px;
+  font: 600 10.5px/1 'Source Sans 3', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-3);
+  border-radius: 999px;
+}
+
+/* === Document rail === */
+.nova-rail {
+  flex-shrink: 0;
+  background: rgba(12, 45, 59, 0.03);
+  border-left: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nova-rail.collapsed { width: 48px; }
+.nova-rail.expanded {
+  width: 380px;
+  background: white;
+}
+
+.nova-rail-collapsed-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 14px;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  font-family: 'Source Sans 3', sans-serif;
+  color: var(--ink-3);
+}
+
+.nova-rail-collapsed-btn:hover {
+  background: rgba(12, 45, 59, 0.05);
+}
+
+.nova-rail-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(12, 45, 59, 0.08);
+  display: grid;
+  place-items: center;
+  font: 600 11px/1 'Source Sans 3', sans-serif;
+  color: var(--ink-2);
+}
+
+.nova-rail-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nova-rail-expanded {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.nova-rail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nova-rail-head h4 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  margin: 0;
+  color: var(--ink-1);
+}
+
+.nova-rail-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+
+.nova-rail-close:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+.nova-rail-placeholder {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  text-align: center;
+  padding: 40px 16px;
+  line-height: 1.5;
+}
+
+/* =========================
+   Dev panel
+   Floating utility for screenshot-driving review.
+   Hidden by default; toggle with Cmd+Shift+D.
+   ========================= */
+
+.nova-mvp-root .nova-dev-fab {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(12, 45, 59, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--ink-2);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.5;
+  transition: opacity 120ms ease, transform 120ms ease;
+  z-index: 80;
+}
+
+.nova-mvp-root .nova-dev-fab:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.nova-mvp-root .nova-dev-panel {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 320px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(12, 45, 59, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(12, 45, 59, 0.18);
+  padding: 12px 14px 14px;
+  z-index: 90;
+  font-size: 12px;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .nova-dev-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-1);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.08);
+}
+
+.nova-mvp-root .nova-dev-close {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: var(--ink-3);
+  cursor: pointer;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.nova-mvp-root .nova-dev-close:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .nova-dev-section {
+  margin: 10px 0;
+}
+
+.nova-mvp-root .nova-dev-section-title {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.nova-mvp-root .nova-dev-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.nova-mvp-root .nova-dev-seg {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(12, 45, 59, 0.12);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.nova-mvp-root .nova-dev-seg:hover {
+  background: rgba(12, 45, 59, 0.04);
+}
+
+.nova-mvp-root .nova-dev-seg.active {
+  background: var(--afin-stone-1);
+  border-color: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-mvp-root .nova-dev-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nova-mvp-root .nova-dev-toggle input[type='checkbox'] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.nova-mvp-root .nova-dev-foot {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(12, 45, 59, 0.08);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+
+/* =====================================================================
+   Atomic components (Step 4)
+   Glass card, provenance footer, field row + states, conditional field,
+   nudge card, pip, confidence pill, chip, drop zone.
+   All scoped under .nova-mvp-root.
+   ===================================================================== */
+
+/* ---------- Glass card ---------- */
+
+.nova-mvp-root .glass-card {
+  background: rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+.nova-mvp-root .glass-card.tone-strong { background: rgba(255, 252, 245, 0.85); }
+.nova-mvp-root .glass-card.tone-soft   { background: rgba(255, 252, 245, 0.55); }
+
+.nova-mvp-root .glass-card.pad-none { padding: 0; }
+.nova-mvp-root .glass-card.pad-sm   { padding: 12px; }
+.nova-mvp-root .glass-card.pad-md   { padding: 20px; }
+.nova-mvp-root .glass-card.pad-lg   { padding: 28px; }
+
+/* ---------- Provenance footer ---------- */
+
+.nova-mvp-root .prov {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 0;
+  font-size: 11.5px;
+  font-family: var(--font-sans);
+  color: var(--ink-3);
+  background: transparent;
+  border: none;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.nova-mvp-root .prov.is-clickable {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-left: -6px;
+  transition: background-color 120ms ease;
+}
+
+.nova-mvp-root .prov.is-clickable:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .prov .src {
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .prov .sep {
+  color: var(--ink-4);
+  font-size: 10px;
+}
+
+.nova-mvp-root .prov .method {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.nova-mvp-root .prov.meta-manual .src,
+.nova-mvp-root .prov.meta-updated-post-dip .src {
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .prov.meta-dip-locked .src {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+/* ---------- Confidence pill ---------- */
+
+.nova-mvp-root .conf-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  padding: 1px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+}
+
+.nova-mvp-root .conf-pill.high {
+  background: rgba(49, 184, 151, 0.14);
+  color: #167b62;
+}
+.nova-mvp-root .conf-pill.mid {
+  background: rgba(242, 179, 61, 0.18);
+  color: #8a6500;
+}
+.nova-mvp-root .conf-pill.low {
+  background: rgba(255, 107, 97, 0.16);
+  color: #a13027;
+}
+
+/* ---------- Chip ---------- */
+
+.nova-mvp-root .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.nova-mvp-root .chip .chip-ico {
+  display: inline-flex;
+  align-items: center;
+}
+
+.nova-mvp-root .chip.green   { background: rgba(49, 184, 151, 0.16); color: #167b62; }
+.nova-mvp-root .chip.amber   { background: rgba(242, 179, 61, 0.18); color: #8a6500; }
+.nova-mvp-root .chip.coral   { background: rgba(255, 107, 97, 0.16); color: #a13027; }
+.nova-mvp-root .chip.neutral { background: rgba(12, 45, 59, 0.06);  color: var(--ink-2); }
+.nova-mvp-root .chip.stone   { background: var(--afin-stone-1);     color: var(--afin-cream); }
+
+/* ---------- Pip ---------- */
+
+.nova-mvp-root .pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .pip.empty     { background: rgba(12, 45, 59, 0.18); }
+.nova-mvp-root .pip.partial   { background: rgba(12, 45, 59, 0.35); }
+.nova-mvp-root .pip.done      { background: var(--afin-green); }
+.nova-mvp-root .pip.attention {
+  background: var(--afin-coral);
+  box-shadow: 0 0 0 3px rgba(255, 107, 97, 0.18);
+}
+
+/* ---------- Field row + states ---------- */
+
+.nova-mvp-root .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .field:last-child,
+.nova-mvp-root .field:nth-last-child(2) {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nova-mvp-root .field .lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-3);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nova-mvp-root .field .lbl-suffix {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-4);
+  font-style: italic;
+}
+
+.nova-mvp-root .field .lbl-lock {
+  display: inline-flex;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .field .val {
+  font-size: 14px;
+  color: var(--ink-1);
+  font-weight: 500;
+}
+
+/* Awaiting review — yellow wash + amber border-left */
+.nova-mvp-root .field.review {
+  position: relative;
+  padding: 10px 12px;
+  margin: -4px -8px;
+  border: 1px solid rgba(242, 179, 61, 0.30);
+  border-radius: 10px;
+  background: rgba(242, 179, 61, 0.06);
+}
+.nova-mvp-root .field.review::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--afin-yellow);
+  border-radius: 999px;
+}
+.nova-mvp-root .field.review .lbl { color: #8a6500; }
+.nova-mvp-root .field.review .val { color: var(--ink-1); }
+
+.nova-mvp-root .field .review-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.nova-mvp-root .field .review-accept,
+.nova-mvp-root .field .review-reject {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+}
+.nova-mvp-root .field .review-accept {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .field .review-accept:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .field .review-reject {
+  background: transparent;
+  color: var(--ink-2);
+  border: 1px solid rgba(12, 45, 59, 0.18);
+}
+.nova-mvp-root .field .review-reject:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+/* Missing — coral wash + border-left + inline upload + type-it-in */
+.nova-mvp-root .field.needs {
+  position: relative;
+  padding: 10px 12px;
+  margin: -4px -8px;
+  border: 1px solid rgba(255, 107, 97, 0.30);
+  border-radius: 10px;
+  background: rgba(255, 107, 97, 0.05);
+}
+.nova-mvp-root .field.needs::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--afin-coral);
+  border-radius: 999px;
+}
+.nova-mvp-root .field.needs .lbl { color: #a13027; }
+.nova-mvp-root .field.needs .val.needs-val {
+  color: var(--ink-3);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nova-mvp-root .field.needs .placeholder {
+  font-style: italic;
+}
+.nova-mvp-root .field.needs .upload-cta {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  background: var(--afin-coral);
+  padding: 4px 10px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+}
+.nova-mvp-root .field.needs .upload-cta:hover { background: #e85a50; }
+.nova-mvp-root .field.needs .typein-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: #a13027;
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.nova-mvp-root .field.needs .typein-link:hover { color: var(--afin-coral); }
+.nova-mvp-root .field.needs .hint {
+  font-size: 11.5px;
+  color: #a13027;
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Conflict — coral border, redacted value, Resolve link */
+.nova-mvp-root .field.conflict {
+  position: relative;
+  padding: 10px 12px;
+  margin: -4px -8px;
+  border: 1px solid var(--afin-coral);
+  border-radius: 10px;
+  background: rgba(255, 107, 97, 0.06);
+}
+.nova-mvp-root .field.conflict .lbl { color: #a13027; }
+.nova-mvp-root .field.conflict .val.conflict-val {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nova-mvp-root .field.conflict .redacted {
+  font-family: var(--font-sans);
+  letter-spacing: 0.2em;
+  color: var(--ink-4);
+}
+.nova-mvp-root .field.conflict .resolve-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--afin-coral);
+  background: transparent;
+  border: 1px solid rgba(255, 107, 97, 0.4);
+  border-radius: 7px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.nova-mvp-root .field.conflict .resolve-link:hover {
+  background: rgba(255, 107, 97, 0.1);
+}
+.nova-mvp-root .field.conflict .conflict-hint {
+  font-size: 11.5px;
+  color: #a13027;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Locked — read-only, lock icon in label */
+.nova-mvp-root .field.locked .val {
+  color: var(--ink-2);
+}
+.nova-mvp-root .field.locked .lbl {
+  color: var(--ink-3);
+}
+
+/* Manual override — small banner above the row */
+.nova-mvp-root .field.manual-override .field-override-banner {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8a6500;
+  background: rgba(242, 179, 61, 0.12);
+  border: 1px solid rgba(242, 179, 61, 0.28);
+  padding: 3px 8px;
+  border-radius: 999px;
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+
+/* ---------- Conditional field — OBTL active wrapper ---------- */
+
+.nova-mvp-root .cond-field.obtl-active {
+  border-left: 2px dashed rgba(242, 179, 61, 0.5);
+  background: rgba(242, 179, 61, 0.03);
+  padding: 6px 10px 6px 12px;
+  margin-left: -14px;
+  border-radius: 4px;
+}
+
+/* ---------- Nudge card ---------- */
+
+.nova-mvp-root .nudge {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px 14px 16px;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(242, 179, 61, 0.10), rgba(242, 179, 61, 0.04)),
+    rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(242, 179, 61, 0.28);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 6px 20px -16px rgba(12, 45, 59, 0.14);
+}
+
+.nova-mvp-root .nudge .nudge-ico {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(242, 179, 61, 0.22);
+  color: #8a6500;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .nudge .nudge-body .lbl {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8a6500;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.nova-mvp-root .nudge .nudge-body h4 {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  color: var(--afin-stone-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .nudge .nudge-body p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .nudge .nudge-body p b {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.nova-mvp-root .nudge .nudge-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nova-mvp-root .nudge-action {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--afin-stone-1);
+  background: transparent;
+  border: 1px solid rgba(12, 45, 59, 0.18);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.nova-mvp-root .nudge-action:hover {
+  background: rgba(12, 45, 59, 0.04);
+  border-color: rgba(12, 45, 59, 0.32);
+}
+
+.nova-mvp-root .nudge-dismiss {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--ink-3);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.nova-mvp-root .nudge-dismiss:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+/* ---------- Drop zone ---------- */
+
+.nova-mvp-root .drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 24px;
+  border: 2px dashed rgba(12, 45, 59, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 252, 245, 0.5);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.nova-mvp-root .drop-zone:hover,
+.nova-mvp-root .drop-zone.is-dragover,
+.nova-mvp-root .drop-zone:focus-visible {
+  border-color: var(--afin-stone-2);
+  background: rgba(255, 252, 245, 0.85);
+  outline: none;
+}
+
+.nova-mvp-root .drop-zone.compact {
+  padding: 20px 16px;
+}
+
+.nova-mvp-root .drop-zone-icon {
+  color: var(--ink-3);
+  margin-bottom: 4px;
+}
+
+.nova-mvp-root .drop-zone-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .drop-zone-sublabel {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+}
+
+.nova-mvp-root .drop-zone-browse {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.nova-mvp-root .drop-zone-browse:hover {
+  background: var(--afin-stone-2);
+}
+
+/* =====================================================================
+   Drawers (Step 5)
+   Right-side slide-in panel + overlay. Field review, source evidence,
+   conflict resolver share the base recipe and add their own innards.
+   ===================================================================== */
+
+@keyframes nova-drawer-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes nova-drawer-panel-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+.nova-mvp-root .drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(12, 45, 59, 0.32);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: flex-end;
+  animation: nova-drawer-overlay-in 160ms ease-out;
+}
+
+.nova-mvp-root .drawer-panel {
+  background: rgba(255, 252, 245, 0.96);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border-left: 1px solid rgba(12, 45, 59, 0.08);
+  box-shadow: -24px 0 48px -32px rgba(12, 45, 59, 0.32);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 92vw;
+  animation: nova-drawer-panel-in 200ms cubic-bezier(0.32, 0.72, 0.0, 1.0);
+}
+
+.nova-mvp-root .drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.08);
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .drawer-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-mvp-root .drawer-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .drawer-subtitle {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+
+.nova-mvp-root .drawer-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nova-mvp-root .drawer-close:hover {
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .drawer-body {
+  padding: 16px 22px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nova-mvp-root .drawer-foot {
+  padding: 12px 22px;
+  border-top: 1px solid rgba(12, 45, 59, 0.08);
+  background: rgba(255, 252, 245, 0.85);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ---------- Field review drawer ---------- */
+
+.nova-mvp-root .review-filters {
+  display: inline-flex;
+  background: rgba(12, 45, 59, 0.05);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+.nova-mvp-root .review-filter {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.nova-mvp-root .review-filter:hover { color: var(--ink-1); }
+.nova-mvp-root .review-filter.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-mvp-root .review-queue {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-mvp-root .review-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--ink-3);
+}
+.nova-mvp-root .review-empty-title {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin-bottom: 4px;
+}
+.nova-mvp-root .review-empty-body { font-size: 12.5px; line-height: 1.5; }
+
+/* ---------- Field review card ---------- */
+
+.nova-mvp-root .review-card {
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+.nova-mvp-root .review-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.nova-mvp-root .review-card-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.nova-mvp-root .review-card-entity { color: var(--ink-3); }
+.nova-mvp-root .review-card-arrow { color: var(--ink-4); }
+.nova-mvp-root .review-card-attr { color: var(--ink-1); }
+
+.nova-mvp-root .review-card-value {
+  font-size: 16px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin-top: 2px;
+}
+.nova-mvp-root .review-card-edit-input {
+  width: 100%;
+  font-size: 14.5px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.20);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink-1);
+}
+.nova-mvp-root .review-card-edit-input:focus {
+  outline: none;
+  border-color: var(--afin-stone-2);
+}
+
+.nova-mvp-root .review-card-source {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .review-card-source-chip {
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(12, 45, 59, 0.06);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  color: var(--ink-2);
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.nova-mvp-root .review-card-source-chip:hover {
+  background: rgba(12, 45, 59, 0.10);
+  color: var(--ink-1);
+}
+.nova-mvp-root .review-card-method {
+  font-style: italic;
+  color: var(--ink-3);
+}
+.nova-mvp-root .review-card-bandhint {
+  font-size: 11px;
+  font-weight: 500;
+}
+.nova-mvp-root .review-card-bandhint.mid { color: #8a6500; }
+.nova-mvp-root .review-card-bandhint.low { color: #a13027; }
+
+.nova-mvp-root .review-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.nova-mvp-root .review-card-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.nova-mvp-root .review-card-btn.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .review-card-btn.primary:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .review-card-btn.secondary {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: rgba(12, 45, 59, 0.18);
+}
+.nova-mvp-root .review-card-btn.secondary:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+.nova-mvp-root .review-card-btn.quiet {
+  background: transparent;
+  color: var(--ink-3);
+}
+.nova-mvp-root .review-card-btn.quiet:hover {
+  color: var(--afin-coral);
+}
+
+/* Conflict card variant */
+.nova-mvp-root .review-card-conflict {
+  border-color: rgba(255, 107, 97, 0.32);
+  background:
+    linear-gradient(135deg, rgba(255, 107, 97, 0.04), rgba(255, 252, 245, 0.85));
+}
+.nova-mvp-root .review-card-conflict-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+.nova-mvp-root .review-card-conflict-grid .conflict-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(12, 45, 59, 0.06);
+  border-radius: 10px;
+}
+.nova-mvp-root .conflict-side-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.nova-mvp-root .conflict-side-value {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+}
+.nova-mvp-root .conflict-side-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ink-3);
+  flex-wrap: wrap;
+}
+.nova-mvp-root .conflict-side-doc {
+  font-weight: 500;
+}
+.nova-mvp-root .review-card-vs {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+
+/* Success card */
+.nova-mvp-root .review-card-success {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(49, 184, 151, 0.08);
+  border-color: rgba(49, 184, 151, 0.28);
+  animation: nova-drawer-panel-in 160ms ease-out;
+}
+.nova-mvp-root .review-card-success.rejected {
+  background: rgba(255, 107, 97, 0.06);
+  border-color: rgba(255, 107, 97, 0.22);
+}
+.nova-mvp-root .review-card-success .success-detail {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* ---------- Source evidence drawer ---------- */
+
+.nova-mvp-root .evidence-layout {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 14px;
+}
+
+.nova-mvp-root .evidence-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 540px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.nova-mvp-root .evidence-thumb {
+  width: 56px;
+  height: 76px;
+  border: 1px solid rgba(12, 45, 59, 0.12);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nova-mvp-root .evidence-thumb:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+.nova-mvp-root .evidence-thumb.active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 2px rgba(12, 45, 59, 0.05);
+}
+.nova-mvp-root .evidence-thumb-page {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .evidence-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nova-mvp-root .evidence-page {
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 12px 28px -20px rgba(12, 45, 59, 0.18);
+  padding: 28px 28px 24px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: var(--font-sans);
+  position: relative;
+}
+
+.nova-mvp-root .evidence-page-margin {
+  display: flex;
+  justify-content: space-between;
+}
+.nova-mvp-root .evidence-page-pseudo {
+  font-size: 10.5px;
+  color: rgba(12, 45, 59, 0.30);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.nova-mvp-root .evidence-page-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.nova-mvp-root .evidence-snippet-wrap {
+  margin: 16px 0;
+}
+
+.nova-mvp-root .evidence-snippet-highlight {
+  background: rgba(242, 179, 61, 0.22);
+  border: 1.5px solid rgba(242, 179, 61, 0.7);
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+
+.nova-mvp-root .evidence-snippet-text {
+  margin: 0;
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  color: var(--ink-1);
+  line-height: 1.5;
+}
+
+.nova-mvp-root .evidence-snippet-placeholder {
+  color: var(--ink-4);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.nova-mvp-root .evidence-meta {
+  background: rgba(12, 45, 59, 0.03);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.nova-mvp-root .evidence-meta-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+.nova-mvp-root .evidence-meta-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 6px 12px;
+}
+.nova-mvp-root .evidence-meta-row {
+  display: contents;
+}
+.nova-mvp-root .evidence-meta-row dt {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.nova-mvp-root .evidence-meta-row dd {
+  font-size: 12.5px;
+  color: var(--ink-1);
+  margin: 0;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nova-mvp-root .evidence-empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* ---------- Conflict resolver drawer ---------- */
+
+.nova-mvp-root .conflict-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.nova-mvp-root .conflict-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 12px;
+  background: rgba(255, 252, 245, 0.7);
+}
+
+.nova-mvp-root .conflict-col-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nova-mvp-root .conflict-col-value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  padding: 4px 0;
+}
+
+.nova-mvp-root .conflict-col-evidence {
+  text-align: left;
+  background: rgba(12, 45, 59, 0.04);
+  border: 1px solid rgba(12, 45, 59, 0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-sans);
+}
+.nova-mvp-root .conflict-col-evidence:hover {
+  background: rgba(12, 45, 59, 0.07);
+}
+.nova-mvp-root .conflict-col-doc {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.nova-mvp-root .conflict-col-snippet {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+  font-family: 'SF Mono', ui-monospace, Menlo, monospace;
+}
+.nova-mvp-root .conflict-col-evidence-cta {
+  font-size: 11px;
+  color: var(--afin-stone-2);
+  font-weight: 600;
+  text-decoration: underline;
+  margin-top: 2px;
+}
+
+.nova-mvp-root .conflict-col-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .conflict-col-method {
+  font-style: italic;
+}
+
+.nova-mvp-root .conflict-col-use {
+  margin-top: auto;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.nova-mvp-root .conflict-col-use:hover { background: var(--afin-stone-2); }
+
+.nova-mvp-root .conflict-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px;
+  color: var(--ink-4);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.nova-mvp-root .conflict-divider::before,
+.nova-mvp-root .conflict-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(12, 45, 59, 0.10);
+}
+.nova-mvp-root .conflict-divider span {
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .conflict-manual {
+  background: rgba(12, 45, 59, 0.03);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nova-mvp-root .conflict-manual-trigger {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(12, 45, 59, 0.22);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.nova-mvp-root .conflict-manual-trigger:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+  border-color: rgba(12, 45, 59, 0.32);
+}
+.nova-mvp-root .conflict-manual-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.nova-mvp-root .conflict-manual-input {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.20);
+  background: white;
+  color: var(--ink-1);
+}
+.nova-mvp-root .conflict-manual-input:focus {
+  outline: none;
+  border-color: var(--afin-stone-2);
+}
+.nova-mvp-root .conflict-manual-actions {
+  display: flex;
+  gap: 8px;
+}
+.nova-mvp-root .conflict-manual-save {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.nova-mvp-root .conflict-manual-save:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .conflict-manual-save:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.nova-mvp-root .conflict-manual-cancel {
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid rgba(12, 45, 59, 0.18);
+  color: var(--ink-2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.nova-mvp-root .conflict-manual-cancel:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .conflict-foot {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.nova-mvp-root .conflict-foot-link {
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.nova-mvp-root .conflict-foot-link:hover { color: var(--ink-1); }
+.nova-mvp-root .conflict-foot-cancel {
+  background: transparent;
+  border: 1px solid rgba(12, 45, 59, 0.18);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.nova-mvp-root .conflict-foot-cancel:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+.nova-mvp-root .conflict-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* =====================================================================
+   Quick input tab (Step 6)
+   Identity bar · two-mode entry · active dropzone · doc stack · tally
+   ===================================================================== */
+
+.nova-mvp-root .qi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------- Identity bar ---------- */
+
+.nova-mvp-root .qi-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.nova-mvp-root .qi-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 12px;
+  background: rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--ink-1);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.nova-mvp-root .qi-tag:hover {
+  border-color: rgba(12, 45, 59, 0.22);
+  background: rgba(255, 252, 245, 0.95);
+}
+.nova-mvp-root .qi-tag.indicative {
+  border-style: dashed;
+  border-color: rgba(12, 45, 59, 0.22);
+}
+
+.nova-mvp-root .qi-tag .qi-lbl {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.nova-mvp-root .qi-tag .qi-val {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+.nova-mvp-root .qi-tag .qi-edit {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  color: var(--ink-3);
+  background: transparent;
+}
+.nova-mvp-root .qi-tag:hover .qi-edit {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+/* ---------- Two-mode entry block ---------- */
+
+.nova-mvp-root .qi-two-mode {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.nova-mvp-root .qi-upload-col,
+.nova-mvp-root .qi-manual-col {
+  padding: 28px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nova-mvp-root .qi-upload-col { align-items: flex-start; }
+
+.nova-mvp-root .qi-divider {
+  background: rgba(12, 45, 59, 0.08);
+  width: 1px;
+  align-self: stretch;
+}
+
+.nova-mvp-root .qi-upload-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(12, 45, 59, 0.06);
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+
+.nova-mvp-root .qi-col-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .qi-col-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.nova-mvp-root .dz-browse {
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  margin-top: auto;
+}
+.nova-mvp-root .dz-browse:hover { background: var(--afin-stone-2); }
+
+/* ---------- Manual entry groups ---------- */
+
+.nova-mvp-root .qi-manual-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.nova-mvp-root .qi-mgroup {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 252, 245, 0.5);
+  overflow: hidden;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.nova-mvp-root .qi-mgroup.open {
+  background: rgba(255, 252, 245, 0.95);
+  border-color: rgba(12, 45, 59, 0.18);
+}
+
+.nova-mvp-root .qi-mgroup-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.nova-mvp-root .qi-mgroup-head:hover {
+  background: rgba(12, 45, 59, 0.03);
+}
+
+.nova-mvp-root .qi-mgroup-ico {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .qi-mgroup-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .qi-mgroup-chev {
+  display: inline-flex;
+  color: var(--ink-3);
+  transition: transform 160ms ease;
+}
+.nova-mvp-root .qi-mgroup-chev.rotated {
+  transform: rotate(180deg);
+}
+
+.nova-mvp-root .qi-mgroup-body {
+  padding: 4px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid rgba(12, 45, 59, 0.06);
+  margin-top: 0;
+}
+
+.nova-mvp-root .qi-applicant-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0 12px;
+  border-bottom: 1px dashed rgba(12, 45, 59, 0.08);
+}
+.nova-mvp-root .qi-applicant-block:last-child { border-bottom: none; }
+
+.nova-mvp-root .qi-mgroup-subhead {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 4px 0 2px;
+}
+
+.nova-mvp-root .qi-field-grid {
+  display: grid;
+  gap: 10px 12px;
+}
+.nova-mvp-root .qi-field-grid.cols-1 { grid-template-columns: 1fr; }
+.nova-mvp-root .qi-field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.nova-mvp-root .qi-field-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+.nova-mvp-root .qi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nova-mvp-root .qi-field-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nova-mvp-root .qi-field-fid {
+  font-size: 9.5px;
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  color: var(--ink-4);
+  background: rgba(12, 45, 59, 0.04);
+  border-radius: 4px;
+  padding: 1px 4px;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+}
+
+.nova-mvp-root .qi-input,
+.nova-mvp-root .qi-select {
+  font-size: 13px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  background: white;
+  color: var(--ink-1);
+  width: 100%;
+}
+.nova-mvp-root .qi-input:focus,
+.nova-mvp-root .qi-select:focus {
+  outline: none;
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .qi-money-wrap {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+}
+.nova-mvp-root .qi-money-wrap:focus-within {
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(12, 45, 59, 0.06);
+}
+.nova-mvp-root .qi-money-prefix,
+.nova-mvp-root .qi-money-suffix {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  background: rgba(12, 45, 59, 0.04);
+}
+.nova-mvp-root .qi-money-input {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  flex: 1;
+}
+.nova-mvp-root .qi-money-input:focus { box-shadow: none; }
+
+.nova-mvp-root .qi-field-hint {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* ---------- Active drop zone (compact) ---------- */
+
+.nova-mvp-root .qi-active-dropzone {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1.5px dashed rgba(12, 45, 59, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 252, 245, 0.5);
+}
+.nova-mvp-root .qi-adz-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(12, 45, 59, 0.05);
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+}
+.nova-mvp-root .qi-adz-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+.nova-mvp-root .qi-adz-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .qi-adz-browse {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid rgba(12, 45, 59, 0.18);
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.nova-mvp-root .qi-adz-browse:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+/* ---------- Document stack ---------- */
+
+.nova-mvp-root .doc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nova-mvp-root .doc-card {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.nova-mvp-root .doc-card:hover {
+  border-color: rgba(12, 45, 59, 0.18);
+  box-shadow: 0 6px 18px -16px rgba(12, 45, 59, 0.32);
+}
+.nova-mvp-root .doc-card:focus-visible {
+  outline: none;
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(12, 45, 59, 0.08);
+}
+
+.nova-mvp-root .dc-ico {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+}
+.nova-mvp-root .dc-ico.processing {
+  background: rgba(242, 179, 61, 0.18);
+  color: #8a6500;
+}
+.nova-mvp-root .dc-ico.done {
+  background: rgba(49, 184, 151, 0.16);
+  color: #167b62;
+}
+.nova-mvp-root .dc-ico.attention {
+  background: rgba(255, 107, 97, 0.16);
+  color: #a13027;
+}
+
+.nova-mvp-root .dc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nova-mvp-root .dc-name {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nova-mvp-root .dc-class-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .doc-class-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  background: rgba(49, 184, 151, 0.14);
+  color: #167b62;
+  border-radius: 999px;
+}
+
+.nova-mvp-root .dc-meta {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .ocr-substate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #8a6500;
+  font-weight: 500;
+}
+
+@keyframes nova-spinner {
+  to { transform: rotate(360deg); }
+}
+
+.nova-mvp-root .ocr-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(242, 179, 61, 0.30);
+  border-top-color: #8a6500;
+  animation: nova-spinner 700ms linear infinite;
+  display: inline-block;
+}
+
+.nova-mvp-root .dc-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.nova-mvp-root .dc-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.nova-mvp-root .dc-btn.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .dc-btn.primary:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .dc-btn.ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: rgba(12, 45, 59, 0.14);
+}
+.nova-mvp-root .dc-btn.ghost:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+.nova-mvp-root .dc-btn.coral {
+  background: transparent;
+  color: var(--afin-coral);
+  border-color: rgba(255, 107, 97, 0.40);
+}
+.nova-mvp-root .dc-btn.coral:hover {
+  background: rgba(255, 107, 97, 0.08);
+}
+
+/* ---------- Tally bar ---------- */
+
+.nova-mvp-root .qi-tally {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .qi-tally-stat {
+  background: transparent;
+  border: none;
+  color: var(--ink-2);
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.nova-mvp-root .qi-tally-stat:hover {
+  color: var(--ink-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(12, 45, 59, 0.20);
+}
+.nova-mvp-root .qi-tally-stat strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .qi-tally-sep {
+  color: var(--ink-4);
+  font-weight: 700;
+}
+
+.nova-mvp-root .tally-link {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--afin-stone-1);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.nova-mvp-root .tally-link:hover {
+  background: rgba(12, 45, 59, 0.04);
+}
+.nova-mvp-root .tally-link-arrow {
+  font-weight: 600;
+}
+
+/* ---------- Footer ---------- */
+
+.nova-mvp-root .qi-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 4px 4px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .skip-link {
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(12, 45, 59, 0.18);
+}
+.nova-mvp-root .skip-link:hover { color: var(--ink-1); }
+
+.nova-mvp-root .step-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .step-hint-link {
+  background: transparent;
+  border: none;
+  color: var(--afin-stone-1);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.nova-mvp-root .step-hint-link:hover {
+  text-decoration-color: var(--afin-stone-2);
+}
+.nova-mvp-root .step-hint-arrow {
+  margin-left: 4px;
+  color: var(--afin-stone-1);
+}
+
+/* =====================================================================
+   Applicants tab (Step 7)
+   Applicant cards · sub-pills · context switcher · sections incl.
+   nested Professional yellow sub-card
+   ===================================================================== */
+
+.nova-mvp-root .applicants-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------- Applicant card list ---------- */
+
+.nova-mvp-root .applicant-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nova-mvp-root .applicant-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  font-family: var(--font-sans);
+}
+.nova-mvp-root .applicant-card:hover {
+  border-color: rgba(12, 45, 59, 0.20);
+}
+.nova-mvp-root .applicant-card.active {
+  border-color: var(--afin-stone-1);
+  box-shadow: 0 0 0 1px var(--afin-stone-1);
+}
+
+.nova-mvp-root .applicant-card .av-1,
+.nova-mvp-root .applicant-card .av-2 {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.nova-mvp-root .applicant-card .av-1 {
+  background: linear-gradient(135deg, var(--afin-stone-2), var(--afin-stone-1));
+}
+.nova-mvp-root .applicant-card .av-2 {
+  background: linear-gradient(135deg, #ff8a76, #b04937);
+}
+
+.nova-mvp-root .applicant-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.nova-mvp-root .applicant-card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+}
+.nova-mvp-root .applicant-card-role {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .add-applicant-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px dashed rgba(12, 45, 59, 0.22);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.nova-mvp-root .add-applicant-btn:hover {
+  border-color: rgba(12, 45, 59, 0.40);
+  color: var(--ink-1);
+  background: rgba(255, 252, 245, 0.5);
+}
+.nova-mvp-root .add-applicant-plus {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------- Applicant focused record ---------- */
+
+.nova-mvp-root .applicant-record {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Context switcher ---------- */
+
+.nova-mvp-root .context-switcher {
+  display: inline-flex;
+  background: rgba(12, 45, 59, 0.04);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  align-self: flex-start;
+}
+.nova-mvp-root .context-pill {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.nova-mvp-root .context-pill:hover { color: var(--ink-1); }
+.nova-mvp-root .context-pill.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .context-pill.joint .context-pill-aside {
+  font-size: 10.5px;
+  font-style: italic;
+  font-weight: 400;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
+/* ---------- Sub-tab pills ---------- */
+
+.nova-mvp-root .sub-pills-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nova-mvp-root .sub-pills {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 2px;
+  align-self: flex-start;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.nova-mvp-root .sub-pill {
+  position: relative;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nova-mvp-root .sub-pill:hover { color: var(--ink-1); }
+.nova-mvp-root .sub-pill.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-mvp-root .sub-pills.sub-pills--full {
+  display: flex;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.nova-mvp-root .sub-pills.sub-pills--full .sub-pill {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.nova-mvp-root .sub-pill-dot,
+.nova-mvp-root .overflow-dot,
+.nova-mvp-root .overflow-item-dot,
+.nova-mvp-root .sub-pill-hint-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--afin-coral);
+  display: inline-block;
+}
+
+.nova-mvp-root .sub-pill-overflow-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.nova-mvp-root .overflow-btn {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nova-mvp-root .overflow-btn:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+.nova-mvp-root .overflow-btn.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-mvp-root .overflow-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 180px;
+  background: rgba(255, 252, 245, 0.98);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 10px;
+  box-shadow: 0 18px 36px -22px rgba(12, 45, 59, 0.32);
+  padding: 4px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.nova-mvp-root .overflow-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--ink-1);
+  cursor: pointer;
+  text-align: left;
+}
+.nova-mvp-root .overflow-item:hover { background: rgba(12, 45, 59, 0.05); }
+.nova-mvp-root .overflow-item.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-mvp-root .sub-pill-hint {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+}
+.nova-mvp-root .sub-pill-hint span:first-child {
+  color: var(--ink-4);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Section card ---------- */
+
+.nova-mvp-root .applicant-section {
+  /* GlassCard already provides the chrome; we just add section-level
+     spacing for the title and nested elements. */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-mvp-root .section-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+.nova-mvp-root .section-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin: 0;
+  line-height: 1.55;
+}
+.nova-mvp-root .section-sub.adverse-note {
+  background: rgba(255, 107, 97, 0.06);
+  border: 1px solid rgba(255, 107, 97, 0.22);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #a13027;
+  font-weight: 500;
+}
+
+/* ---------- Professional nested yellow sub-card ---------- */
+
+.nova-mvp-root .prof-nested {
+  margin-top: 4px;
+  border: 1px solid rgba(242, 179, 61, 0.28);
+  background: rgba(242, 179, 61, 0.04);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.nova-mvp-root .prof-nested-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.nova-mvp-root .prof-nested-head:hover {
+  background: rgba(242, 179, 61, 0.06);
+}
+
+.nova-mvp-root .prof-nested-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8a6500;
+}
+
+.nova-mvp-root .prof-nested-title {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .prof-nested-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  background: rgba(242, 179, 61, 0.20);
+  color: #8a6500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+
+.nova-mvp-root .prof-nested-chev {
+  margin-left: auto;
+  color: var(--ink-3);
+  display: inline-flex;
+  transition: transform 160ms ease;
+}
+.nova-mvp-root .prof-nested-chev.rotated {
+  transform: rotate(180deg);
+}
+
+.nova-mvp-root .prof-nested-body {
+  padding: 6px 16px 16px;
+  border-top: 1px solid rgba(242, 179, 61, 0.20);
+  background: rgba(242, 179, 61, 0.025);
+}
+
+/* ---------- Liabilities list ---------- */
+
+.nova-mvp-root .liab-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nova-mvp-root .liab-list-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0 0 4px;
+}
+.nova-mvp-root .liab-row {
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 252, 245, 0.5);
+}
+.nova-mvp-root .liab-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.nova-mvp-root .liab-row-index {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+}
+.nova-mvp-root .liab-row-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-1);
+}
+.nova-mvp-root .liab-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .liab-row-meta strong {
+  color: var(--ink-1);
+  font-weight: 600;
+}
+
+/* =====================================================================
+   Security tab (Step 8)
+   Property cards · sub-pills · OBTL preview block · PersonReference
+   ===================================================================== */
+
+.nova-mvp-root .security-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.nova-mvp-root .security-record {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Property card list ---------- */
+
+.nova-mvp-root .property-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nova-mvp-root .property-card {
+  flex: 1 1 280px;
+  min-width: 240px;
+  text-align: left;
+  padding: 14px 16px 12px;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nova-mvp-root .property-card:hover {
+  border-color: rgba(12, 45, 59, 0.20);
+}
+.nova-mvp-root .property-card.active {
+  border-color: var(--afin-stone-1);
+  box-shadow: 0 0 0 1px var(--afin-stone-1);
+}
+
+.nova-mvp-root .pc-addr {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .pc-role {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .pc-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .pc-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.nova-mvp-root .pc-pip.done    { background: var(--afin-green); }
+.nova-mvp-root .pc-pip.partial { background: rgba(12, 45, 59, 0.35); }
+
+.nova-mvp-root .pc-meta-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(12, 45, 59, 0.22);
+  display: inline-block;
+}
+
+.nova-mvp-root .add-card {
+  flex: 0 1 220px;
+  min-height: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px dashed rgba(12, 45, 59, 0.22);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.nova-mvp-root .add-card:hover {
+  border-color: rgba(12, 45, 59, 0.40);
+  color: var(--ink-1);
+  background: rgba(255, 252, 245, 0.5);
+}
+.nova-mvp-root .add-card-plus {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------- Bulk-drop wrapper ---------- */
+
+.nova-mvp-root .bulk-drop {
+  /* DropZone handles its own chrome; wrapper kept for spacing parity. */
+}
+
+/* ---------- Section card ---------- */
+
+.nova-mvp-root .security-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- OBTL preview block ---------- */
+
+.nova-mvp-root .obtl-preview-block {
+  margin-top: 8px;
+  padding: 14px 16px 16px;
+  background: rgba(242, 179, 61, 0.045);
+  border: 1px solid rgba(242, 179, 61, 0.18);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nova-mvp-root .obtl-preview-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px dashed rgba(242, 179, 61, 0.30);
+  padding-bottom: 8px;
+}
+
+.nova-mvp-root .obtl-preview-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8a6500;
+  text-transform: uppercase;
+}
+
+.nova-mvp-root .obtl-preview-note {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* ---------- PersonReference ---------- */
+
+.nova-mvp-root .person-ref {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-mvp-root .person-ref-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: 1.5px dashed rgba(12, 45, 59, 0.20);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: var(--ink-3);
+  cursor: pointer;
+  align-self: flex-start;
+}
+.nova-mvp-root .person-ref.obtl .person-ref-add {
+  border-color: rgba(242, 179, 61, 0.40);
+  color: #8a6500;
+}
+.nova-mvp-root .person-ref-add:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+.nova-mvp-root .person-ref-add-plus {
+  font-weight: 700;
+}
+
+.nova-mvp-root .person-ref.editing {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.nova-mvp-root .person-ref-input {
+  font-size: 13px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.20);
+  background: white;
+  color: var(--ink-1);
+  flex: 1;
+  min-width: 0;
+}
+.nova-mvp-root .person-ref-input:focus {
+  outline: none;
+  border-color: var(--afin-stone-2);
+}
+.nova-mvp-root .person-ref-save {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.nova-mvp-root .person-ref-save:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .person-ref-cancel {
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--ink-3);
+  border: 1px solid rgba(12, 45, 59, 0.18);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.nova-mvp-root .person-ref-cancel:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .person-ref-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  align-self: flex-start;
+}
+.nova-mvp-root .person-ref.obtl .person-ref-pill {
+  border-color: rgba(242, 179, 61, 0.40);
+  background: rgba(242, 179, 61, 0.06);
+}
+.nova-mvp-root .person-ref-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+}
+.nova-mvp-root .person-ref-edit {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.nova-mvp-root .person-ref-edit:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .person-ref-confirm {
+  font-size: 11.5px;
+  color: #167b62;
+  font-weight: 500;
+}
+
+/* =====================================================================
+   Products tab (Step 9)
+   Comparison .product-table with DIP status pip column, selected /
+   ineligible row variants, simulated-run animation, doc preview modal.
+   ===================================================================== */
+
+.nova-mvp-root .products-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ---------- The table ---------- */
+
+.nova-mvp-root .product-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 18px 36px -28px rgba(12, 45, 59, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.nova-mvp-root .product-table thead th {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.10);
+  background: rgba(12, 45, 59, 0.03);
+}
+
+.nova-mvp-root .product-table tbody td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.06);
+  font-size: 13px;
+  color: var(--ink-1);
+  vertical-align: middle;
+}
+
+.nova-mvp-root .product-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nova-mvp-root .product-table tbody tr.selected {
+  background: rgba(49, 184, 151, 0.08);
+}
+
+.nova-mvp-root .product-table tbody tr.ineligible td {
+  color: var(--ink-3);
+  background: rgba(12, 45, 59, 0.025);
+}
+
+/* ---------- Product cell ---------- */
+
+.nova-mvp-root .td-product {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+}
+
+.nova-mvp-root .td-product-name {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .product-table tr.ineligible .td-product-name {
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .selected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #167b62;
+  background: rgba(49, 184, 151, 0.16);
+  padding: 2px 8px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.nova-mvp-root .ineligible-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  background: rgba(12, 45, 59, 0.08);
+  padding: 2px 8px;
+  border-radius: 999px;
+  width: fit-content;
+  cursor: help;
+}
+
+/* ---------- DIP status pip ---------- */
+
+.nova-mvp-root .dip-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.nova-mvp-root .dip-pip .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.nova-mvp-root .dip-pip .dot.green  { background: var(--afin-green); }
+.nova-mvp-root .dip-pip .dot.coral  { background: var(--afin-coral); }
+.nova-mvp-root .dip-pip .dot.amber  { background: var(--afin-yellow); }
+
+@keyframes nova-dip-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.4); opacity: 0.5; }
+}
+
+.nova-mvp-root .dip-pip .dot.pulse {
+  background: var(--afin-stone-1);
+  animation: nova-dip-pulse 1.1s ease-in-out infinite;
+}
+
+.nova-mvp-root .dip-pip.approved { color: #167b62; font-weight: 600; }
+.nova-mvp-root .dip-pip.declined { color: #a13027; font-weight: 600; }
+.nova-mvp-root .dip-pip.errored  { color: #8a6500; font-weight: 600; }
+.nova-mvp-root .dip-pip.running  { color: var(--ink-2); }
+.nova-mvp-root .dip-pip.not-run  { color: var(--ink-3); font-style: italic; }
+
+/* ---------- Rate / monthly / etc. ---------- */
+
+.nova-mvp-root .td-rate {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .product-table tr.ineligible .td-rate {
+  color: var(--ink-3);
+}
+
+/* ---------- Actions cell ---------- */
+
+.nova-mvp-root .td-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.nova-mvp-root .action-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.nova-mvp-root .action-text {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+.nova-mvp-root .action-text.muted { color: var(--ink-3); }
+.nova-mvp-root .action-text.declined { color: #a13027; font-style: normal; font-weight: 500; }
+
+.nova-mvp-root .stale-prompt {
+  font-size: 11.5px;
+  color: #8a6500;
+  font-style: italic;
+  margin-right: 2px;
+}
+
+.nova-mvp-root .row-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.nova-mvp-root .row-btn.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .row-btn.primary:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .row-btn.ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: rgba(12, 45, 59, 0.16);
+}
+.nova-mvp-root .row-btn.ghost:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+/* ---------- Doc preview modal ---------- */
+
+@keyframes nova-doc-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.nova-mvp-root .doc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: rgba(12, 45, 59, 0.32);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  animation: nova-drawer-overlay-in 160ms ease-out;
+}
+
+.nova-mvp-root .doc-modal {
+  width: min(720px, 100%);
+  max-height: 84vh;
+  background: rgba(255, 252, 245, 0.98);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 30px 60px -30px rgba(12, 45, 59, 0.40);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: nova-doc-in 200ms cubic-bezier(0.32, 0.72, 0.0, 1.0);
+}
+
+.nova-mvp-root .doc-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.08);
+}
+
+.nova-mvp-root .doc-modal-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-mvp-root .doc-modal-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+.nova-mvp-root .doc-modal-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .doc-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.nova-mvp-root .doc-modal-close:hover {
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .doc-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: linear-gradient(180deg, rgba(12, 45, 59, 0.02), rgba(12, 45, 59, 0.04));
+}
+
+.nova-mvp-root .doc-modal-page {
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 16px 32px -22px rgba(12, 45, 59, 0.20);
+  padding: 36px 44px 40px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.nova-mvp-root .doc-modal-page-margin {
+  display: flex;
+  justify-content: space-between;
+}
+
+.nova-mvp-root .doc-modal-pseudo {
+  font-size: 10.5px;
+  color: rgba(12, 45, 59, 0.30);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.nova-mvp-root .doc-modal-page-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 12px;
+  text-align: center;
+}
+
+.nova-mvp-root .doc-modal-placeholder {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  background: rgba(12, 45, 59, 0.04);
+  padding: 18px 28px;
+  border-radius: 12px;
+  border: 1px dashed rgba(12, 45, 59, 0.18);
+}
+
+.nova-mvp-root .doc-modal-hint {
+  margin: 0;
+  max-width: 380px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+/* =====================================================================
+   Connected Parties tab (Step 10)
+   Grouped party cards · p-source origin chip · OBTL conditional group
+   · Add modal · party-details drawer chrome
+   ===================================================================== */
+
+.nova-mvp-root .parties-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.nova-mvp-root .parties-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px 18px;
+  background: rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow-2);
+}
+
+.nova-mvp-root .party-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nova-mvp-root .parties-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 4px 0 8px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.10);
+  margin-bottom: 4px;
+}
+.nova-mvp-root .parties-group-head.obtl {
+  border-bottom-color: rgba(242, 179, 61, 0.32);
+}
+
+.nova-mvp-root .parties-group-title {
+  font-size: 11px;
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.nova-mvp-root .parties-group-head.obtl .parties-group-title {
+  color: #8a6500;
+}
+
+.nova-mvp-root .parties-group-note {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-style: italic;
+}
+
+/* ---------- Party card ---------- */
+
+.nova-mvp-root .party-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'name expand'
+    'chip expand'
+    'details details'
+    'origin origin';
+  column-gap: 16px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 252, 245, 0.85);
+  transition: border-color 120ms ease;
+}
+.nova-mvp-root .party-card:hover {
+  border-color: rgba(12, 45, 59, 0.18);
+}
+
+.nova-mvp-root .party-card.placeholder {
+  background: rgba(12, 45, 59, 0.03);
+  border-style: dashed;
+  border-color: rgba(12, 45, 59, 0.16);
+}
+
+.nova-mvp-root .party-card.obtl {
+  background: rgba(242, 179, 61, 0.04);
+  border-color: rgba(242, 179, 61, 0.32);
+  border-style: dashed;
+}
+
+.nova-mvp-root .party-card-name {
+  grid-area: name;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+.nova-mvp-root .party-card.placeholder .party-card-name {
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .party-card-chip {
+  grid-area: chip;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nova-mvp-root .party-card-details {
+  grid-area: details;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.nova-mvp-root .party-card-tbc {
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.nova-mvp-root .party-expand {
+  grid-area: expand;
+  align-self: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--ink-2);
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.nova-mvp-root .party-expand:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+/* p-source origin chip — small, italic, with arrow */
+.nova-mvp-root .p-source {
+  grid-area: origin;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  background: rgba(12, 45, 59, 0.04);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 999px;
+  padding: 2px 9px;
+  margin-top: 2px;
+  font-style: italic;
+}
+.nova-mvp-root .p-source-arrow {
+  color: var(--ink-4);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ---------- OBTL designed-in group block ---------- */
+
+.nova-mvp-root .parties-group-obtl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  background: rgba(242, 179, 61, 0.04);
+  border: 1px solid rgba(242, 179, 61, 0.22);
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+/* ---------- Add Connected Party button ---------- */
+
+.nova-mvp-root .btn.btn-ghost.btn-add-party {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(12, 45, 59, 0.22);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+}
+.nova-mvp-root .btn.btn-ghost.btn-add-party:hover {
+  border-color: rgba(12, 45, 59, 0.40);
+  color: var(--ink-1);
+  background: rgba(255, 252, 245, 0.5);
+}
+.nova-mvp-root .btn-add-party-plus {
+  font-weight: 700;
+}
+
+/* ---------- Add Connected Party modal ---------- */
+
+@keyframes nova-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.nova-mvp-root .add-party-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: rgba(12, 45, 59, 0.32);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  animation: nova-drawer-overlay-in 160ms ease-out;
+}
+
+.nova-mvp-root .add-party-modal {
+  width: min(560px, 100%);
+  max-height: 84vh;
+  background: rgba(255, 252, 245, 0.98);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 30px 60px -30px rgba(12, 45, 59, 0.40);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: nova-modal-in 200ms cubic-bezier(0.32, 0.72, 0.0, 1.0);
+}
+
+.nova-mvp-root .add-party-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.08);
+}
+
+.nova-mvp-root .add-party-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-mvp-root .add-party-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .add-party-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .add-party-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.nova-mvp-root .add-party-close:hover {
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .add-party-body {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nova-mvp-root .add-party-section-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .add-party-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.nova-mvp-root .add-party-chip {
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.nova-mvp-root .add-party-chip:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+  border-color: rgba(12, 45, 59, 0.32);
+}
+
+.nova-mvp-root .add-party-pickback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.06);
+}
+.nova-mvp-root .add-party-back {
+  font-size: 12px;
+  color: var(--ink-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.nova-mvp-root .add-party-back:hover { color: var(--ink-1); }
+
+.nova-mvp-root .add-party-relchip {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.nova-mvp-root .add-party-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nova-mvp-root .add-party-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-mvp-root .add-party-field-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.nova-mvp-root .add-party-input {
+  font-size: 13px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  background: white;
+  color: var(--ink-1);
+}
+.nova-mvp-root .add-party-input:focus {
+  outline: none;
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .add-party-ambiguous {
+  font-size: 12px;
+  color: #8a6500;
+  background: rgba(242, 179, 61, 0.10);
+  border: 1px solid rgba(242, 179, 61, 0.32);
+  border-radius: 10px;
+  padding: 8px 12px;
+  line-height: 1.5;
+}
+.nova-mvp-root .add-party-ambiguous strong {
+  font-weight: 700;
+  color: #8a6500;
+}
+
+.nova-mvp-root .add-party-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.nova-mvp-root .add-party-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.nova-mvp-root .add-party-btn.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .add-party-btn.primary:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .add-party-btn.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.nova-mvp-root .add-party-btn.ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: rgba(12, 45, 59, 0.18);
+}
+.nova-mvp-root .add-party-btn.ghost:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+/* ---------- Party-details drawer ---------- */
+
+.nova-mvp-root .party-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-mvp-root .party-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nova-mvp-root .party-field-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.nova-mvp-root .party-input {
+  font-size: 13px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  background: white;
+  color: var(--ink-1);
+}
+.nova-mvp-root .party-input:focus {
+  outline: none;
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .party-fields-divider {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 6px;
+  margin-top: 6px;
+  border-top: 1px solid rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .party-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.nova-mvp-root .party-saved {
+  font-size: 11.5px;
+  color: #167b62;
+  font-weight: 500;
+}
+
+.nova-mvp-root .party-foot-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.nova-mvp-root .party-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.nova-mvp-root .party-btn.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .party-btn.primary:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .party-btn.ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: rgba(12, 45, 59, 0.18);
+}
+.nova-mvp-root .party-btn.ghost:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .party-empty {
+  font-size: 13px;
+  color: var(--ink-3);
+  padding: 24px;
+  text-align: center;
+  line-height: 1.55;
+}
+
+/* =====================================================================
+   Documents tab + Documents rail real content (Step 11)
+   Document tray · doc rows · reclassify menu · viewer panel · rail expanded
+   ===================================================================== */
+
+.nova-mvp-root .documents-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------- Document tray ---------- */
+
+.nova-mvp-root .doc-tray {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 12px 28px -22px rgba(12, 45, 59, 0.18);
+}
+
+.nova-mvp-root .doc-tray-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nova-mvp-root .doc-tray-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.nova-mvp-root .doc-tray-meta {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.nova-mvp-root .doc-tray-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Doc row ---------- */
+
+.nova-mvp-root .doc-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 18px;
+  cursor: pointer;
+  border-top: 1px solid var(--line);
+  background: white;
+  transition: background-color 120ms ease;
+}
+.nova-mvp-root .doc-tray-rows .doc-row:first-child {
+  border-top: none;
+}
+.nova-mvp-root .doc-row:hover {
+  background: rgba(12, 45, 59, 0.025);
+}
+.nova-mvp-root .doc-row.selected {
+  background: rgba(12, 45, 59, 0.045);
+}
+.nova-mvp-root .doc-row.compact {
+  padding: 10px 12px;
+  gap: 10px;
+  border-radius: 10px;
+  border-top: none;
+  border: 1px solid rgba(12, 45, 59, 0.06);
+  background: rgba(255, 252, 245, 0.7);
+}
+.nova-mvp-root .doc-row.compact + .doc-row.compact {
+  margin-top: 6px;
+}
+
+.nova-mvp-root .doc-row .dc-ico {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.nova-mvp-root .doc-row-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.nova-mvp-root .doc-row-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nova-mvp-root .doc-row-classification {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .doc-class-chip.clickable {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  background: rgba(49, 184, 151, 0.14);
+  color: #167b62;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.nova-mvp-root .doc-class-chip.clickable:hover {
+  background: rgba(49, 184, 151, 0.22);
+}
+.nova-mvp-root .doc-class-conf {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nova-mvp-root .doc-row-meta {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .doc-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.nova-mvp-root .doc-overflow-wrap {
+  position: relative;
+}
+
+.nova-mvp-root .doc-overflow-btn {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.nova-mvp-root .doc-overflow-btn:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .doc-overflow-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 160px;
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 10px;
+  box-shadow: 0 18px 36px -22px rgba(12, 45, 59, 0.32);
+  padding: 4px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.nova-mvp-root .doc-overflow-item {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-1);
+  background: transparent;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.nova-mvp-root .doc-overflow-item:hover {
+  background: rgba(12, 45, 59, 0.05);
+}
+.nova-mvp-root .doc-overflow-item.destructive {
+  color: var(--afin-coral);
+}
+.nova-mvp-root .doc-overflow-item.destructive:hover {
+  background: rgba(255, 107, 97, 0.08);
+}
+
+/* ---------- Reclassify menu ---------- */
+
+.nova-mvp-root .reclassify-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 10px;
+  box-shadow: 0 18px 36px -22px rgba(12, 45, 59, 0.32);
+  padding: 6px 4px 8px;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nova-mvp-root .reclassify-menu-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+  padding: 4px 10px 6px;
+}
+
+.nova-mvp-root .reclassify-item {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-1);
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.nova-mvp-root .reclassify-item:hover {
+  background: rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .reclassify-sep {
+  border: none;
+  border-top: 1px solid rgba(12, 45, 59, 0.08);
+  margin: 4px 6px;
+}
+
+.nova-mvp-root .reclassify-warn {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 6px 10px;
+  border-top: 1px solid rgba(12, 45, 59, 0.06);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ---------- Viewer panel ---------- */
+
+.nova-mvp-root .doc-viewer-panel {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 12px 28px -22px rgba(12, 45, 59, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.nova-mvp-root .doc-viewer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.nova-mvp-root .doc-viewer-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nova-mvp-root .doc-viewer-name {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+.nova-mvp-root .doc-viewer-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nova-mvp-root .doc-viewer-chip {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.nova-mvp-root .doc-viewer-chip-pill {
+  display: inline-flex;
+}
+
+.nova-mvp-root .doc-viewer-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.nova-mvp-root .doc-viewer-close:hover {
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .doc-viewer-body {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(280px, 1fr);
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
+.nova-mvp-root .doc-viewer-preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.nova-mvp-root .doc-viewer-page {
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 12px 28px -20px rgba(12, 45, 59, 0.18);
+  padding: 24px 28px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.nova-mvp-root .doc-viewer-page-margin {
+  display: flex;
+  justify-content: space-between;
+}
+.nova-mvp-root .doc-viewer-page-pseudo {
+  font-size: 10px;
+  color: rgba(12, 45, 59, 0.30);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+.nova-mvp-root .doc-viewer-page-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.nova-mvp-root .doc-viewer-snippet {
+  background: rgba(242, 179, 61, 0.18);
+  border: 1px solid rgba(242, 179, 61, 0.50);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--ink-1);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.nova-mvp-root .doc-viewer-empty {
+  color: var(--ink-4);
+  font-style: italic;
+  font-size: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.nova-mvp-root .doc-viewer-extractions {
+  background: rgba(12, 45, 59, 0.025);
+  border: 1px solid rgba(12, 45, 59, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.nova-mvp-root .doc-viewer-extractions-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .doc-viewer-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Documents rail expanded — wired content ---------- */
+
+.nova-mvp-root .nova-rail-dropzone {
+  padding: 10px 14px 6px;
+}
+
+.nova-mvp-root .nova-rail-recent {
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.nova-mvp-root .nova-rail-section-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .nova-rail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nova-mvp-root .nova-rail-empty {
+  font-size: 12px;
+  color: var(--ink-4);
+  font-style: italic;
+  padding: 12px;
+  text-align: center;
+}
+
+.nova-mvp-root .nova-rail-tally {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .nova-rail-tally strong {
+  color: var(--ink-1);
+  font-weight: 700;
+}
+
+.nova-mvp-root .nova-rail-tally-sep {
+  color: var(--ink-4);
+}
+
+.nova-mvp-root .nova-rail-fulltab {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--afin-stone-1);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.nova-mvp-root .nova-rail-fulltab:hover {
+  background: rgba(12, 45, 59, 0.06);
+}
+.nova-mvp-root .nova-rail-fulltab-arrow {
+  margin-left: 2px;
+}
+
+/* =====================================================================
+   Consents tab (Step 12)
+   ===================================================================== */
+
+.nova-mvp-root .consents-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.nova-mvp-root .consents-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nova-mvp-root .consents-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.nova-mvp-root .consents-sub {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+  line-height: 1.55;
+  max-width: 640px;
+}
+
+.nova-mvp-root .consents-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Consent card ---------- */
+
+.nova-mvp-root .consent-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 12px;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.nova-mvp-root .consent-card.conditional {
+  border-left: 2px dashed rgba(242, 179, 61, 0.50);
+  background: rgba(242, 179, 61, 0.03);
+}
+
+.nova-mvp-root .consent-card.btl-only {
+  opacity: 0.5;
+}
+
+.nova-mvp-root .consent-card.gating {
+  border: 1.5px solid var(--afin-stone-1);
+  background: rgba(12, 45, 59, 0.02);
+  box-shadow: 0 12px 28px -22px rgba(12, 45, 59, 0.18);
+}
+
+.nova-mvp-root .consent-card.asserted:not(.gating) {
+  border-color: rgba(49, 184, 151, 0.40);
+  background: rgba(49, 184, 151, 0.04);
+}
+
+.nova-mvp-root .consent-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nova-mvp-root .consent-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.nova-mvp-root .consent-card-title {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.nova-mvp-root .consent-card-rid {
+  font-size: 9.5px;
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  color: var(--ink-4);
+  background: rgba(12, 45, 59, 0.04);
+  border-radius: 4px;
+  padding: 1px 5px;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.nova-mvp-root .consent-card-body {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+.nova-mvp-root .consent-card-sub {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.nova-mvp-root .consent-card-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .consent-action {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.nova-mvp-root .consent-action.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .consent-action.primary:hover { background: var(--afin-stone-2); }
+
+.nova-mvp-root .consent-action.gating {
+  background: var(--afin-coral);
+  color: white;
+  padding: 8px 16px;
+}
+.nova-mvp-root .consent-action.gating:hover { background: #e85a50; }
+
+.nova-mvp-root .consent-action.ghost {
+  background: transparent;
+  border-color: rgba(12, 45, 59, 0.16);
+  color: var(--ink-2);
+}
+.nova-mvp-root .consent-action.ghost.asserted {
+  border-color: rgba(49, 184, 151, 0.40);
+  color: #167b62;
+}
+.nova-mvp-root .consent-action.ghost:hover {
+  background: rgba(12, 45, 59, 0.04);
+}
+
+/* Step 21 — checkbox + date-picker action variants. */
+
+.nova-mvp-root .consent-item__action--checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 10px;
+  border: 1px solid rgba(12, 45, 59, 0.14);
+  border-radius: 8px;
+  background: white;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.nova-mvp-root .consent-item__action--checkbox:hover {
+  border-color: rgba(12, 45, 59, 0.30);
+}
+.nova-mvp-root .consent-item__action--checkbox input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--afin-stone-1);
+}
+.nova-mvp-root .consent-card.asserted .consent-item__action--checkbox {
+  border-color: rgba(49, 184, 151, 0.40);
+  background: rgba(49, 184, 151, 0.08);
+  color: #167b62;
+}
+
+.nova-mvp-root .consent-item__action--date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.nova-mvp-root .consent-item__date-picker {
+  width: 96px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 10px;
+  border: 1px solid rgba(12, 45, 59, 0.14);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink-1);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.nova-mvp-root .consent-item__date-picker:focus {
+  outline: 2px solid var(--afin-stone-2);
+  outline-offset: 1px;
+}
+
+.nova-mvp-root .consent-item__date-caption {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+  text-align: right;
+  max-width: 220px;
+}
+
+/* Disbursed — entire workspace locks; the consent action surfaces
+   inherit the global lock via .is-locked, but explicit rules keep
+   the visual cue obvious for native-form children that don't pick
+   up the inherited pointer-events: none. */
+.nova-mvp-root.is-locked .consent-item__action--checkbox,
+.nova-mvp-root.is-locked .consent-item__date-picker {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* =====================================================================
+   Downloads tab (Step 12)
+   ===================================================================== */
+
+.nova-mvp-root .downloads-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.nova-mvp-root .downloads-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nova-mvp-root .downloads-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.nova-mvp-root .downloads-sub {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.nova-mvp-root .downloads-section {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.nova-mvp-root .download-row {
+  display: grid;
+  grid-template-columns: 38px 1fr 110px 90px 110px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+  background: white;
+}
+.nova-mvp-root .downloads-section .download-row:first-child {
+  border-top: none;
+}
+.nova-mvp-root .download-row.parked {
+  opacity: 0.55;
+}
+
+.nova-mvp-root .download-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: rgba(12, 45, 59, 0.05);
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .download-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nova-mvp-root .download-filename {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nova-mvp-root .download-ref {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+
+.nova-mvp-root .download-date {
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.nova-mvp-root .download-source {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .download-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nova-mvp-root .download-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.nova-mvp-root .download-btn:hover { background: var(--afin-stone-2); }
+
+.nova-mvp-root .download-parked {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* =====================================================================
+   Submission gate · tooltip · modal · banner · submitted state
+   ===================================================================== */
+
+.nova-mvp-root .nova-submit-tooltip-title {
+  font-weight: 700;
+  font-size: 11.5px;
+  margin-bottom: 6px;
+  color: white;
+}
+.nova-mvp-root .nova-submit-tooltip-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: disc;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.nova-mvp-root .nova-submitted-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #167b62;
+  background: rgba(49, 184, 151, 0.16);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.nova-mvp-root .nova-submitted-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(49, 184, 151, 0.18);
+  color: #167b62;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(49, 184, 151, 0.32);
+}
+
+/* ---------- Submit confirm modal ---------- */
+
+.nova-mvp-root .submit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(12, 45, 59, 0.32);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  animation: nova-drawer-overlay-in 160ms ease-out;
+}
+
+.nova-mvp-root .submit-modal {
+  width: min(520px, 100%);
+  max-height: 84vh;
+  background: rgba(255, 252, 245, 0.98);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 30px 60px -30px rgba(12, 45, 59, 0.40);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: nova-modal-in 200ms cubic-bezier(0.32, 0.72, 0.0, 1.0);
+}
+
+.nova-mvp-root .submit-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.08);
+}
+
+.nova-mvp-root .submit-modal-eyebrow {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .submit-modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin-top: 2px;
+}
+
+.nova-mvp-root .submit-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.nova-mvp-root .submit-modal-close:hover {
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .submit-modal-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-mvp-root .submit-modal-line {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-1);
+  line-height: 1.55;
+}
+.nova-mvp-root .submit-modal-line b {
+  font-weight: 600;
+}
+
+.nova-mvp-root .submit-modal-summary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(12, 45, 59, 0.03);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.nova-mvp-root .submit-modal-summary li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .submit-modal-summary li strong {
+  color: var(--ink-1);
+  font-weight: 600;
+}
+
+.nova-mvp-root .submit-modal-fineprint {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.nova-mvp-root .submit-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 14px;
+  border-top: 1px solid rgba(12, 45, 59, 0.08);
+  background: rgba(255, 252, 245, 0.85);
+}
+
+.nova-mvp-root .submit-modal-cancel {
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid rgba(12, 45, 59, 0.18);
+  color: var(--ink-2);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.nova-mvp-root .submit-modal-cancel:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .submit-modal-confirm {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.nova-mvp-root .submit-modal-confirm:hover { background: var(--afin-stone-2); }
+
+/* ---------- Submit success banner ---------- */
+
+@keyframes nova-banner-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.nova-mvp-root .submit-banner {
+  background: linear-gradient(135deg, rgba(49, 184, 151, 0.18), rgba(49, 184, 151, 0.08));
+  border-bottom: 1px solid rgba(49, 184, 151, 0.32);
+  padding: 12px 24px;
+  animation: nova-banner-in 280ms cubic-bezier(0.32, 0.72, 0.0, 1.0);
+}
+
+.nova-mvp-root .submit-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nova-mvp-root .submit-banner-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--afin-green);
+  color: white;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .submit-banner-text {
+  font-size: 13px;
+  color: var(--ink-1);
+  flex: 1;
+  line-height: 1.5;
+}
+.nova-mvp-root .submit-banner-text strong {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .submit-banner-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: var(--ink-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nova-mvp-root .submit-banner-close:hover {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-1);
+}
+
+/* =====================================================================
+   Step 13 — DIP Decisions panel + per-card variants
+   Sits above the Product table on /products. Hidden when no results.
+   Status colors reuse the existing .dip-pip palette (green / amber /
+   coral / stone) so panel and table feel like one system.
+   ===================================================================== */
+
+.nova-mvp-root .dip-pip.referred {
+  color: #8a6500;
+  font-weight: 600;
+}
+
+.nova-mvp-root .dip-decisions-panel {
+  background: rgba(255, 252, 245, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-card);
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow-2);
+}
+
+.nova-mvp-root .dip-decisions-panel__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .dip-decisions-panel__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.nova-mvp-root .dip-decisions-panel__count {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.nova-mvp-root .dip-decisions-panel__count strong {
+  color: var(--ink-1);
+  font-weight: 700;
+}
+
+.nova-mvp-root .dip-decisions-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+/* ---------- Decision card ---------- */
+
+.nova-mvp-root .dip-decision-card {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.nova-mvp-root .dip-decision-card.is-approved {
+  border-color: rgba(49, 184, 151, 0.30);
+}
+
+.nova-mvp-root .dip-decision-card.is-stale .dip-decision-card__pricing,
+.nova-mvp-root .dip-decision-card.is-stale .dip-decision-card__status {
+  opacity: 0.55;
+}
+
+.nova-mvp-root .dip-decision-card.is-declined {
+  border-color: rgba(255, 107, 97, 0.32);
+  background: rgba(255, 107, 97, 0.02);
+}
+
+.nova-mvp-root .dip-decision-card.is-referred {
+  border-color: rgba(242, 179, 61, 0.34);
+  background: rgba(242, 179, 61, 0.03);
+}
+
+.nova-mvp-root .dip-decision-card.is-selected {
+  border-color: var(--afin-green);
+  box-shadow: 0 0 0 2px rgba(49, 184, 151, 0.22);
+}
+
+.nova-mvp-root .dip-decision-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nova-mvp-root .dip-decision-card__name {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .dip-decision-card__chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .dip-decision-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
+.nova-mvp-root .dip-decision-card__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .dip-decision-card__status.status-approved {
+  background: rgba(49, 184, 151, 0.16);
+  color: #167b62;
+}
+.nova-mvp-root .dip-decision-card__status.status-approved .dip-decision-card__status-dot {
+  background: var(--afin-green);
+}
+
+.nova-mvp-root .dip-decision-card__status.status-declined {
+  background: rgba(255, 107, 97, 0.14);
+  color: #a13027;
+}
+.nova-mvp-root .dip-decision-card__status.status-declined .dip-decision-card__status-dot {
+  background: var(--afin-coral);
+}
+
+.nova-mvp-root .dip-decision-card__status.status-referred {
+  background: rgba(242, 179, 61, 0.18);
+  color: #8a6500;
+}
+.nova-mvp-root .dip-decision-card__status.status-referred .dip-decision-card__status-dot {
+  background: var(--afin-yellow);
+}
+
+.nova-mvp-root .dip-decision-card__selected {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #167b62;
+  background: rgba(49, 184, 151, 0.16);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.nova-mvp-root .dip-decision-card__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #8a6500;
+  background: rgba(242, 179, 61, 0.14);
+  border: 1px solid rgba(242, 179, 61, 0.40);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.nova-mvp-root .dip-decision-card__warning-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.nova-mvp-root .dip-decision-card__pricing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 10px 12px;
+  background: rgba(12, 45, 59, 0.025);
+  border-radius: 8px;
+}
+
+.nova-mvp-root .dip-decision-card__pricing > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nova-mvp-root .dip-decision-card__pricing dt {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.nova-mvp-root .dip-decision-card__pricing dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+  font-family: var(--font-display);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .dip-decision-card__reason {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
+.nova-mvp-root .dip-decision-card__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .dip-card-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.nova-mvp-root .dip-card-btn.primary {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+.nova-mvp-root .dip-card-btn.primary:hover { background: var(--afin-stone-2); }
+.nova-mvp-root .dip-card-btn.primary.disabled {
+  background: rgba(49, 184, 151, 0.16);
+  color: #167b62;
+  cursor: default;
+}
+.nova-mvp-root .dip-card-btn.ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: rgba(12, 45, 59, 0.16);
+}
+.nova-mvp-root .dip-card-btn.ghost:hover {
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-1);
+}
+
+/* =====================================================================
+   ESIS + DIP certificate full-screen modals
+   Same structural weight as SubmitConfirmModal — paper-card body on a
+   dim overlay, with mock document content.
+   ===================================================================== */
+
+.nova-mvp-root .esis-modal__overlay,
+.nova-mvp-root .dip-cert-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  background: rgba(12, 45, 59, 0.36);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  animation: nova-drawer-overlay-in 160ms ease-out;
+}
+
+.nova-mvp-root .esis-modal,
+.nova-mvp-root .dip-cert-modal {
+  width: min(720px, 100%);
+  max-height: 86vh;
+  background: rgba(255, 252, 245, 0.98);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 30px 60px -30px rgba(12, 45, 59, 0.40);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: nova-modal-in 200ms cubic-bezier(0.32, 0.72, 0.0, 1.0);
+}
+
+.nova-mvp-root .esis-modal__head,
+.nova-mvp-root .dip-cert-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(12, 45, 59, 0.08);
+}
+
+.nova-mvp-root .esis-modal__brand,
+.nova-mvp-root .dip-cert-modal__brand {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--afin-stone-1);
+  letter-spacing: 0.02em;
+}
+
+.nova-mvp-root .esis-modal__close,
+.nova-mvp-root .dip-cert-modal__close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  background: transparent;
+  font-size: 18px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.nova-mvp-root .esis-modal__close:hover,
+.nova-mvp-root .dip-cert-modal__close:hover {
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .esis-modal__document,
+.nova-mvp-root .dip-cert-modal__document {
+  background: white;
+  margin: 18px 22px 22px;
+  padding: 28px 32px 32px;
+  border: 1px solid rgba(12, 45, 59, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px -22px rgba(12, 45, 59, 0.20);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nova-mvp-root .esis-modal__doc-eyebrow,
+.nova-mvp-root .dip-cert-modal__doc-eyebrow {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.nova-mvp-root .esis-modal__doc-title,
+.nova-mvp-root .dip-cert-modal__doc-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+
+.nova-mvp-root .esis-modal__doc-ref,
+.nova-mvp-root .dip-cert-modal__doc-ref {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+}
+
+.nova-mvp-root .esis-modal__doc-section,
+.nova-mvp-root .dip-cert-modal__doc-section {
+  margin: 14px 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(12, 45, 59, 0.06);
+}
+.nova-mvp-root .esis-modal__doc-section:first-of-type,
+.nova-mvp-root .dip-cert-modal__doc-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.nova-mvp-root .esis-modal__doc-section h3,
+.nova-mvp-root .dip-cert-modal__doc-section h3 {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-1);
+  letter-spacing: 0.02em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.nova-mvp-root .esis-modal__doc-section p,
+.nova-mvp-root .dip-cert-modal__doc-section p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-1);
+  line-height: 1.55;
+}
+
+.nova-mvp-root .esis-modal__doc-muted {
+  color: var(--ink-3);
+  font-size: 11.5px;
+  margin-top: 6px;
+}
+
+.nova-mvp-root .esis-modal__doc-grid,
+.nova-mvp-root .dip-cert-modal__doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 18px;
+  margin: 0;
+}
+.nova-mvp-root .esis-modal__doc-grid > div,
+.nova-mvp-root .dip-cert-modal__doc-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nova-mvp-root .esis-modal__doc-grid dt,
+.nova-mvp-root .dip-cert-modal__doc-grid dt {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.nova-mvp-root .esis-modal__doc-grid dd,
+.nova-mvp-root .dip-cert-modal__doc-grid dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  font-family: var(--font-display);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .esis-modal__doc-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.nova-mvp-root .esis-modal__doc-list li {
+  margin-bottom: 4px;
+}
+
+.nova-mvp-root .esis-modal__doc-foot,
+.nova-mvp-root .dip-cert-modal__doc-foot {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(12, 45, 59, 0.06);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+.nova-mvp-root .dip-cert-modal__verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  padding: 8px 14px;
+  border-radius: 999px;
+}
+.nova-mvp-root .dip-cert-modal__verdict-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.nova-mvp-root .dip-cert-modal__verdict-date {
+  margin-left: 8px;
+  font-weight: 500;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+  opacity: 0.78;
+}
+.nova-mvp-root .dip-cert-modal__verdict.v-approved {
+  background: rgba(49, 184, 151, 0.14);
+  color: #167b62;
+}
+.nova-mvp-root .dip-cert-modal__verdict.v-approved .dip-cert-modal__verdict-dot {
+  background: var(--afin-green);
+}
+.nova-mvp-root .dip-cert-modal__verdict.v-declined {
+  background: rgba(255, 107, 97, 0.14);
+  color: #a13027;
+}
+.nova-mvp-root .dip-cert-modal__verdict.v-declined .dip-cert-modal__verdict-dot {
+  background: var(--afin-coral);
+}
+.nova-mvp-root .dip-cert-modal__verdict.v-referred {
+  background: rgba(242, 179, 61, 0.18);
+  color: #8a6500;
+}
+.nova-mvp-root .dip-cert-modal__verdict.v-referred .dip-cert-modal__verdict-dot {
+  background: var(--afin-yellow);
+}
+
+.nova-mvp-root .dip-cert-modal__doc-reason {
+  font-size: 13px;
+  color: var(--ink-1);
+  line-height: 1.6;
+  background: rgba(12, 45, 59, 0.025);
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 3px solid rgba(12, 45, 59, 0.20);
+}
+
+/* =====================================================================
+   Dev panel — Step 13 additions (steppers + outcome hint)
+   ===================================================================== */
+
+.nova-mvp-root .nova-dev-stepper {
+  display: grid;
+  grid-template-columns: 64px auto 1fr auto;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.nova-mvp-root .nova-dev-stepper-label {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.nova-mvp-root .nova-dev-stepper-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  background: white;
+  color: var(--ink-1);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+.nova-mvp-root .nova-dev-stepper-btn:hover {
+  background: rgba(12, 45, 59, 0.04);
+}
+.nova-mvp-root .nova-dev-stepper-value {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-1);
+  font-family: var(--font-display);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .nova-dev-hint {
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* =====================================================================
+   Interest-type chip — shared between Product table column and DIP
+   Decisions card header. Two visual variants distinguish C&I (neutral
+   stone) from Interest Only (subtle plum so it reads as deliberate).
+   ===================================================================== */
+
+.nova-mvp-root .interest-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+.nova-mvp-root .interest-chip.interest-ci {
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .interest-chip.interest-io {
+  background: rgba(94, 67, 144, 0.12);
+  color: #553a82;
+}
+
+.nova-mvp-root .product-table td.td-interest {
+  white-space: nowrap;
+}
+
+/* =====================================================================
+   Step 14b — Configuration Strip
+   Two rows of controls (financials, fees & strategy) on the left, a
+   results panel (Effective loan + Effective LTV) on the right
+   separated by a vertical divider. Property + deposit drive the
+   derived loan amount; brokers don't enter loan amount directly.
+   ===================================================================== */
+
+.nova-mvp-root .config-strip {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0;
+  padding: 18px 20px;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1px solid rgba(12, 45, 59, 0.10);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 6px 18px -16px rgba(12, 45, 59, 0.18);
+}
+
+.nova-mvp-root .config-strip__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nova-mvp-root .config-strip__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+/* Strategy row — the two segmented controls need extra breathing
+   room beyond the standard 32px so they read as two distinct controls. */
+.nova-mvp-root .config-strip__row--strategy .config-strip__group + .config-strip__group {
+  margin-left: 0;
+}
+.nova-mvp-root .config-strip__row--strategy {
+  gap: 32px;
+}
+
+.nova-mvp-root .config-strip__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+  flex: 0 1 auto;
+}
+
+.nova-mvp-root .config-strip__label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+/* Numeric input with prefix/suffix slots */
+
+.nova-mvp-root .config-strip__input-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border: 1px solid rgba(12, 45, 59, 0.16);
+  border-radius: 8px;
+  padding: 0 10px;
+  height: 36px;
+  min-width: 140px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.nova-mvp-root .config-strip__input-wrap:focus-within {
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .config-strip__prefix,
+.nova-mvp-root .config-strip__suffix {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.nova-mvp-root .config-strip__prefix { margin-right: 4px; }
+.nova-mvp-root .config-strip__suffix { margin-left: 4px; }
+
+.nova-mvp-root .config-strip__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.nova-mvp-root .config-strip__input::-webkit-outer-spin-button,
+.nova-mvp-root .config-strip__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Derived display — read-only loan amount */
+
+.nova-mvp-root .config-strip__derived-input {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  min-width: 140px;
+  padding: 0 12px;
+  background: rgba(12, 45, 59, 0.04);
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+/* Caption — used for "auto-calculated" + the disabled-state hint.
+   Sits inside the group's footprint, stays a single small line. */
+
+.nova-mvp-root .config-strip__caption {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Segmented controls */
+
+.nova-mvp-root .config-strip__segmented {
+  display: inline-flex;
+  background: rgba(12, 45, 59, 0.05);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+  height: 36px;
+  align-items: stretch;
+  width: fit-content;
+}
+
+.nova-mvp-root .config-strip__seg {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+}
+.nova-mvp-root .config-strip__seg:hover { color: var(--ink-1); }
+.nova-mvp-root .config-strip__seg.active {
+  background: var(--afin-stone-1);
+  color: var(--afin-cream);
+}
+
+.nova-mvp-root .config-strip__segmented.is-disabled {
+  background: rgba(12, 45, 59, 0.03);
+  cursor: not-allowed;
+}
+.nova-mvp-root .config-strip__segmented.is-disabled .config-strip__seg {
+  cursor: not-allowed;
+  color: var(--ink-4);
+}
+
+/* Right-side results panel — vertical divider on its left edge,
+   40px gap from the controls, vertical stack of the two derived
+   values with larger numerals. */
+
+.nova-mvp-root .config-strip__results {
+  margin-left: 40px;
+  padding-left: 32px;
+  border-left: 1px solid rgba(12, 45, 59, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-width: 180px;
+}
+
+.nova-mvp-root .config-strip__results-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-mvp-root .config-strip__results-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.nova-mvp-root .config-strip__results-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink-1);
+  letter-spacing: -0.012em;
+  line-height: 1.05;
+}
+
+/* Provenance footer below each control sits a bit tighter than
+   the FieldRow default — the strip is dense by nature. */
+.nova-mvp-root .config-strip__group .prov {
+  margin-top: 2px;
+}
+
+/* =====================================================================
+   Step 16 — Phase indicator
+   - Active phase shows via the legacy `.nova-flow-toggle` (DIP / Full
+     Application). The toggle stays the canonical visual.
+   - Full-application phase additionally renders the legacy
+     `.nova-stage-rail` (5 stops with state labels above the name).
+   - Disbursed swaps in the terminal `.phase-indicator--disbursed` pill.
+   ===================================================================== */
+
+.nova-mvp-root .phase-indicator--disbursed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: rgba(49, 184, 151, 0.14);
+  color: #126850;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(49, 184, 151, 0.32);
+}
+
+.nova-mvp-root .phase-indicator--disbursed .phase-indicator__check {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--afin-green);
+  color: white;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =====================================================================
+   Lock state — phase === 'disbursed'
+   Edit affordances become non-interactive + visually muted. Navigation
+   (Sidebar, TabStrip), drawer close buttons, dev panel, and the
+   PhaseIndicator stay live.
+   ===================================================================== */
+
+.nova-mvp-root.is-locked .qi-input,
+.nova-mvp-root.is-locked .qi-select,
+.nova-mvp-root.is-locked .config-strip__input,
+.nova-mvp-root.is-locked .party-input,
+.nova-mvp-root.is-locked .add-party-input,
+.nova-mvp-root.is-locked .conflict-manual-input,
+.nova-mvp-root.is-locked .review-card-edit-input,
+.nova-mvp-root.is-locked .person-ref-input {
+  pointer-events: none;
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
+.nova-mvp-root.is-locked .config-strip__seg,
+.nova-mvp-root.is-locked .row-btn,
+.nova-mvp-root.is-locked .dip-card-btn,
+.nova-mvp-root.is-locked .dc-btn,
+.nova-mvp-root.is-locked .review-card-btn,
+.nova-mvp-root.is-locked .consent-action,
+.nova-mvp-root.is-locked .person-ref-add,
+.nova-mvp-root.is-locked .person-ref-edit,
+.nova-mvp-root.is-locked .add-card,
+.nova-mvp-root.is-locked .add-applicant-btn,
+.nova-mvp-root.is-locked .qi-tag,
+.nova-mvp-root.is-locked .btn.btn-ghost.btn-add-party,
+.nova-mvp-root.is-locked .party-expand,
+.nova-mvp-root.is-locked .dz-browse,
+.nova-mvp-root.is-locked .qi-adz-browse,
+.nova-mvp-root.is-locked .nova-submit-btn:not(.allow-when-locked) {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.nova-mvp-root.is-locked .doc-row {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Step 23 — partial lock that covers fields/products surfaces but
+   leaves Documents interactive so the lender can still receive
+   uploads during underwriting. Mirrors the .is-locked input rules. */
+.nova-mvp-root.is-locked-fields .qi-input,
+.nova-mvp-root.is-locked-fields .qi-select,
+.nova-mvp-root.is-locked-fields .config-strip__input,
+.nova-mvp-root.is-locked-fields .party-input,
+.nova-mvp-root.is-locked-fields .add-party-input,
+.nova-mvp-root.is-locked-fields .conflict-manual-input,
+.nova-mvp-root.is-locked-fields .review-card-edit-input,
+.nova-mvp-root.is-locked-fields .person-ref-input,
+.nova-mvp-root.is-locked-fields .reg-field-input,
+.nova-mvp-root.is-locked .reg-field-input {
+  pointer-events: none;
+  background: rgba(12, 45, 59, 0.04);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
+.nova-mvp-root.is-locked-fields .config-strip__seg,
+.nova-mvp-root.is-locked-fields .row-btn,
+.nova-mvp-root.is-locked-fields .dip-card-btn,
+.nova-mvp-root.is-locked-fields .review-card-btn,
+.nova-mvp-root.is-locked-fields .consent-action,
+.nova-mvp-root.is-locked-fields .person-ref-add,
+.nova-mvp-root.is-locked-fields .person-ref-edit,
+.nova-mvp-root.is-locked-fields .add-card,
+.nova-mvp-root.is-locked-fields .add-applicant-btn,
+.nova-mvp-root.is-locked-fields .qi-tag,
+.nova-mvp-root.is-locked-fields .btn.btn-ghost.btn-add-party,
+.nova-mvp-root.is-locked-fields .party-expand,
+.nova-mvp-root.is-locked-fields .dz-browse {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.nova-mvp-root.is-locked-fields .consent-item__action--checkbox,
+.nova-mvp-root.is-locked-fields .consent-item__date-picker {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Documents tab stays interactive at .is-locked-fields — overrides
+   in case any nested input class above bleeds in. */
+.nova-mvp-root.is-locked-fields .documents-page,
+.nova-mvp-root.is-locked-fields .documents-page * {
+  pointer-events: auto;
+}
+
+/* ============================================================
+   Step 23 — ProductSummary (post-submission read-only card)
+   ============================================================ */
+
+.nova-mvp-root .product-summary {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: var(--shadow-1);
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nova-mvp-root .product-summary__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nova-mvp-root .product-summary__eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .product-summary__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.nova-mvp-root .product-summary__subtitle {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .product-summary__pricing {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 24px;
+  padding: 8px 0;
+  margin: 0;
+}
+
+.nova-mvp-root .product-summary__pricing > div,
+.nova-mvp-root .product-summary__inputs > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-mvp-root .product-summary__pricing dt,
+.nova-mvp-root .product-summary__inputs dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .product-summary__pricing dd,
+.nova-mvp-root .product-summary__inputs dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .product-summary__divider {
+  height: 1px;
+  background: var(--line);
+  margin: 6px 0;
+}
+
+.nova-mvp-root .product-summary__section-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.nova-mvp-root .product-summary__inputs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 24px;
+  margin: 0;
+}
+
+.nova-mvp-root .product-summary__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.nova-mvp-root .product-summary__caption {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin: 4px 0 0;
+  line-height: 1.55;
+}
+
+.nova-mvp-root .product-summary--missing {
+  font-size: 13px;
+  color: var(--ink-3);
+  padding: 24px;
+  font-style: italic;
+}
+
+/* ============================================================
+   Step 17 — Documents tab overhaul
+   ============================================================ */
+
+.nova-mvp-root .documents-tab__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Drop drawer (top) ---------- */
+
+.nova-mvp-root .documents-drop-drawer {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  padding: 18px 22px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-1);
+}
+
+.nova-mvp-root .documents-drop-drawer__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: center;
+}
+
+.nova-mvp-root .documents-drop-drawer__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.nova-mvp-root .documents-drop-drawer__sublabel {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.nova-mvp-root .documents-drop-drawer .drop-zone {
+  min-height: 120px;
+}
+
+/* ---------- Placeholder group ---------- */
+
+.nova-mvp-root .placeholder-group {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.nova-mvp-root .placeholder-group__header {
+  display: grid;
+  grid-template-columns: 28px 1fr auto 24px;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 18px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: background-color 120ms ease;
+}
+.nova-mvp-root .placeholder-group__header:hover {
+  background: rgba(12, 45, 59, 0.025);
+}
+
+.nova-mvp-root .placeholder-group__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(12, 45, 59, 0.06);
+  color: var(--ink-2);
+}
+
+.nova-mvp-root .placeholder-group__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .placeholder-group__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  padding: 3px 10px;
+  background: rgba(12, 45, 59, 0.06);
+  border-radius: 999px;
+}
+
+.nova-mvp-root .placeholder-group__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  transition: transform 160ms ease;
+}
+.nova-mvp-root .placeholder-group.is-open .placeholder-group__chevron {
+  transform: rotate(180deg);
+}
+
+.nova-mvp-root .placeholder-group__body {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Placeholder row ---------- */
+
+.nova-mvp-root .placeholder-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.nova-mvp-root .placeholder-group__body .placeholder-row:first-child {
+  border-top: none;
+}
+
+.nova-mvp-root .placeholder-row__main {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.nova-mvp-root .placeholder-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(12, 45, 59, 0.05);
+  color: var(--ink-3);
+}
+.nova-mvp-root .placeholder-row.is-done .placeholder-row__icon {
+  background: rgba(49, 184, 151, 0.16);
+  color: #1f8c70;
+}
+.nova-mvp-root .placeholder-row.is-awaiting-review .placeholder-row__icon {
+  background: rgba(242, 179, 61, 0.20);
+  color: #a36e00;
+}
+.nova-mvp-root .placeholder-row.is-error .placeholder-row__icon {
+  background: var(--afin-coral-soft);
+  color: var(--afin-coral);
+}
+
+.nova-mvp-root .placeholder-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nova-mvp-root .placeholder-row__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .placeholder-row__pip {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--afin-coral);
+}
+
+.nova-mvp-root .placeholder-applicant-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink-2);
+  background: rgba(12, 45, 59, 0.06);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.nova-mvp-root .placeholder-row__desc {
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+.nova-mvp-root .placeholder-row__filename {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nova-mvp-root .placeholder-row__substate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.nova-mvp-root .placeholder-row__substate.awaiting {
+  color: #a36e00;
+}
+.nova-mvp-root .placeholder-row__substate.error {
+  color: var(--afin-coral);
+}
+
+.nova-mvp-root .placeholder-row__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .placeholder-row__processing {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* Inline dropzone (empty state) */
+
+.nova-mvp-root .placeholder-row__dropzone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  padding: 8px 14px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 10px;
+  background: rgba(12, 45, 59, 0.025);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.nova-mvp-root .placeholder-row__dropzone:hover,
+.nova-mvp-root .placeholder-row__dropzone.is-over {
+  border-color: var(--afin-stone-2);
+  background: rgba(26, 74, 84, 0.06);
+  color: var(--afin-stone-1);
+}
+
+.nova-mvp-root .placeholder-row__dropzone-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ---------- Unclassified ---------- */
+
+.nova-mvp-root .unclassified-section {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.nova-mvp-root .unclassified-section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(242, 179, 61, 0.08);
+}
+
+.nova-mvp-root .unclassified-section__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.nova-mvp-root .unclassified-section__count {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.nova-mvp-root .unclassified-section__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.nova-mvp-root .unclassified-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.nova-mvp-root .unclassified-section__body .unclassified-row:first-child {
+  border-top: none;
+}
+
+.nova-mvp-root .unclassified-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(242, 179, 61, 0.16);
+  color: #a36e00;
+}
+
+.nova-mvp-root .unclassified-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nova-mvp-root .unclassified-row__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nova-mvp-root .unclassified-row__meta {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .unclassified-row__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nova-mvp-root .unclassified-row__assign {
+  position: relative;
+}
+
+.nova-mvp-root .unclassified-picker {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  min-width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-2);
+  padding: 6px;
+}
+
+.nova-mvp-root .unclassified-picker__empty {
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .unclassified-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  color: var(--ink-1);
+  text-align: left;
+  cursor: pointer;
+}
+.nova-mvp-root .unclassified-picker__item:hover {
+  background: rgba(12, 45, 59, 0.05);
+}
+
+.nova-mvp-root .unclassified-picker__label {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.nova-mvp-root .unclassified-picker__applicant {
+  font-size: 11px;
+  color: var(--ink-3);
+  background: rgba(12, 45, 59, 0.06);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+}
+
+/* ---------- Preview panel (right-side slide-in 560px) ---------- */
+
+.nova-mvp-root .preview-panel__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 45, 59, 0.32);
+  backdrop-filter: blur(2px);
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  animation: prev-fade-in 140ms ease;
+}
+
+@keyframes prev-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nova-mvp-root .preview-panel {
+  width: 560px;
+  max-width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -16px 0 36px -18px rgba(12, 45, 59, 0.30);
+  animation: prev-slide-in 200ms ease;
+}
+
+@keyframes prev-slide-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.nova-mvp-root .preview-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  gap: 16px;
+}
+
+.nova-mvp-root .preview-panel__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nova-mvp-root .preview-panel__name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+  word-break: break-all;
+}
+
+.nova-mvp-root .preview-panel__chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nova-mvp-root .preview-panel__chip {
+  font-size: 11px;
+  color: var(--ink-2);
+  padding: 2px 8px;
+  background: rgba(12, 45, 59, 0.06);
+  border-radius: 999px;
+}
+
+.nova-mvp-root .preview-panel__chip-pill {
+  display: inline-flex;
+}
+
+.nova-mvp-root .preview-panel__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nova-mvp-root .preview-panel__close:hover {
+  background: rgba(12, 45, 59, 0.06);
+}
+
+.nova-mvp-root .preview-panel__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.nova-mvp-root .preview-panel__document {
+  padding: 18px 22px;
+  background: rgba(245, 241, 232, 0.45);
+  border-bottom: 1px solid var(--line);
+}
+
+.nova-mvp-root .preview-panel__page {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+}
+
+.nova-mvp-root .preview-panel__page-margin {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 8px;
+}
+.nova-mvp-root .preview-panel__page-margin:last-child {
+  border-bottom: none;
+  border-top: 1px dashed var(--line);
+  padding-bottom: 0;
+  padding-top: 8px;
+}
+
+.nova-mvp-root .preview-panel__page-pseudo {
+  font-size: 10.5px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--ink-4);
+  letter-spacing: 0.02em;
+}
+
+.nova-mvp-root .preview-panel__page-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nova-mvp-root .preview-panel__snippet {
+  font-size: 12px;
+  color: var(--ink-2);
+  background: rgba(242, 179, 61, 0.14);
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1.5;
+}
+
+.nova-mvp-root .preview-panel__empty {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.nova-mvp-root .preview-panel__extractions {
+  padding: 18px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nova-mvp-root .preview-panel__extractions-title {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-1);
+  letter-spacing: -0.005em;
+}
+
+.nova-mvp-root .preview-panel__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nova-mvp-root.is-locked .preview-panel,
+.nova-mvp-root.is-locked .placeholder-row {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ============================================================
+   Step 18 — Quick Input restructure
+   ============================================================ */
+
+.nova-mvp-root .qi-drop-drawer {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  padding: 18px 22px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-1);
+}
+.nova-mvp-root .qi-drop-drawer__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: center;
+}
+.nova-mvp-root .qi-drop-drawer__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.nova-mvp-root .qi-drop-drawer__sublabel {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  margin: 0;
+}
+.nova-mvp-root .qi-drop-drawer .drop-zone {
+  min-height: 120px;
+}
+
+.nova-mvp-root .qi-sections-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-mvp-root .qi-section .qi-mgroup-head {
+  cursor: pointer;
+}
+
+.nova-mvp-root .qi-section__subtitle {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 4px 0 12px;
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 12px;
+}
+
+.nova-mvp-root .qi-loan__strip {
+  margin-bottom: 14px;
+}
+
+/* ---------- Product picker ---------- */
+
+.nova-mvp-root .qi-product-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.nova-mvp-root .qi-product-picker__current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: var(--ink-1);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.nova-mvp-root .qi-product-picker__current:hover,
+.nova-mvp-root .qi-product-picker__current.is-open {
+  border-color: var(--afin-stone-2);
+  box-shadow: 0 0 0 3px rgba(26, 74, 84, 0.08);
+}
+
+.nova-mvp-root .qi-product-picker__current-label {
+  font-weight: 600;
+  font-size: 13.5px;
+  flex: 0 0 auto;
+}
+
+.nova-mvp-root .qi-product-picker__current-meta {
+  font-size: 12px;
+  color: var(--ink-3);
+  flex: 1 1 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.nova-mvp-root .qi-product-picker__chev {
+  color: var(--ink-3);
+  transition: transform 160ms ease;
+}
+.nova-mvp-root .qi-product-picker__chev.rotated {
+  transform: rotate(180deg);
+}
+
+.nova-mvp-root .qi-product-picker__menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  max-height: 360px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-2);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-mvp-root .qi-product-picker__option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  color: var(--ink-1);
+  text-align: left;
+  cursor: pointer;
+}
+.nova-mvp-root .qi-product-picker__option:hover:not(:disabled) {
+  background: rgba(12, 45, 59, 0.05);
+}
+.nova-mvp-root .qi-product-picker__option.is-current {
+  border-color: var(--afin-green);
+  background: rgba(49, 184, 151, 0.08);
+}
+.nova-mvp-root .qi-product-picker__option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.nova-mvp-root .qi-product-picker__option.is-ineligible .qi-product-picker__option-name {
+  text-decoration: line-through;
+}
+
+.nova-mvp-root .qi-product-picker__option-row1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nova-mvp-root .qi-product-picker__option-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.nova-mvp-root .qi-product-picker__option-rate {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .qi-product-picker__option-row2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.nova-mvp-root .qi-product-picker__option-flag {
+  font-size: 10.5px;
+  color: var(--afin-coral);
+  background: var(--afin-coral-soft);
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-left: auto;
+}
+
+/* ---------- Consent tiles ---------- */
+
+.nova-mvp-root .qi-consent-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nova-mvp-root .qi-consent-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.nova-mvp-root .qi-consent-tile.is-granted {
+  border-color: var(--afin-green);
+  background: rgba(49, 184, 151, 0.06);
+}
+
+.nova-mvp-root .qi-consent-tile__text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nova-mvp-root .qi-consent-tile__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.nova-mvp-root .qi-consent-tile__desc {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Step 19 — Applicants tab: side-by-side, cap, add flow
+   ============================================================ */
+
+.nova-mvp-root .applicants-section__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.nova-mvp-root .applicants-section__grid .field {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nova-mvp-root .applicants-section__field--full {
+  grid-column: 1 / -1;
+}
+
+.nova-mvp-root .field--editable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nova-mvp-root .field--editable .reg-field-input,
+.nova-mvp-root .field--editable .qi-input,
+.nova-mvp-root .field--editable .qi-select {
+  width: 100%;
+}
+.nova-mvp-root .field--editable .qi-money-wrap {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .nova-mvp-root .applicants-section__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Add-applicant trigger + drawer ---------- */
+
+.nova-mvp-root .add-applicant-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px dashed rgba(12, 45, 59, 0.22);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+}
+.nova-mvp-root .add-applicant-trigger:hover {
+  border-color: rgba(12, 45, 59, 0.40);
+  color: var(--ink-1);
+  background: rgba(255, 252, 245, 0.5);
+}
+.nova-mvp-root .add-applicant-trigger__plus {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.nova-mvp-root .drawer-panel.add-applicant-drawer .drawer-body {
+  padding: 18px 22px;
+}
+
+.nova-mvp-root .add-applicant-drawer__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nova-mvp-root .add-applicant-drawer__footer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.nova-mvp-root .add-applicant-drawer__error {
+  font-size: 12.5px;
+  color: var(--afin-coral);
+  background: var(--afin-coral-soft);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+/* ---------- Pill non-truncation defensive overrides ---------- */
+
+.nova-mvp-root .applicants-page .chip,
+.nova-mvp-root .applicants-page .qi-tag,
+.nova-mvp-root .applicants-page .applicant-pill,
+.nova-mvp-root .applicants-page .p-source {
+  white-space: normal;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.nova-mvp-root .applicants-page .applicant-card-name,
+.nova-mvp-root .applicants-page .applicant-card-role {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
